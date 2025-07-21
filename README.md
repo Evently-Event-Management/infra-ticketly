@@ -267,10 +267,10 @@ The `events-service` client is configured as a resource server:
 ```bash
 curl -X POST http://localhost:8080/realms/event-ticketing/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=login-testing" \
   -d "grant_type=password" \
-  -d "client_id=events-service" \
-  -d "username=user@yopmail.com" \
-  -d "password=user123"
+  -d "username=admin@yopmail.com" \
+  -d "password=admin123"
 ```
 
 ---
