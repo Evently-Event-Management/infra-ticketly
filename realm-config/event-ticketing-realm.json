@@ -1,88 +1,88 @@
 {
-  "realm": "event-ticketing",
-  "enabled": true,
-  "displayName": "Event Ticketing Platform",
-  "registrationAllowed": true,
-  "registrationEmailAsUsername": true,
-  "rememberMe": true,
-  "verifyEmail": true,
-  "loginWithEmailAllowed": true,
-  "duplicateEmailsAllowed": false,
-  "resetPasswordAllowed": true,
-  "editUsernameAllowed": false,
-  "bruteForceProtected": true,
-  
-  "smtpServer": {
-    "host": "smtp.gmail.com",
-    "port": "587",
-    "from": "noreply@eventtickets.local",
-    "fromDisplayName": "Event Ticketing Platform",
-    "ssl": "false",
-    "starttls": "true",
-    "auth": "false",
-    "user": "",
-    "password": ""
-  },
+    "realm": "event-ticketing",
+    "enabled": true,
+    "displayName": "Event Ticketing Platform",
+    "registrationAllowed": true,
+    "registrationEmailAsUsername": true,
+    "rememberMe": true,
+    "verifyEmail": true,
+    "loginWithEmailAllowed": true,
+    "duplicateEmailsAllowed": false,
+    "resetPasswordAllowed": true,
+    "editUsernameAllowed": false,
+    "bruteForceProtected": true,
 
-  "roles": {
-    "realm": [
-      {
-        "name": "system-admin",
-        "description": "Platform administrators who can approve events and manage system"
-      },
-      {
-        "name": "user", 
-        "description": "General users who can create and manage events"
-      }
-    ]
-  },
-
-  "defaultRoles": ["user"],
-
-  "clients": [
-    {
-      "clientId": "events-service",
-      "name": "Events Microservice",
-      "enabled": true,
-      "publicClient": false,
-      "serviceAccountsEnabled": true,
-      "directAccessGrantsEnabled": true,
-      "secret": "events-service-secret-change-in-prod"
-    }
-  ],
-
-  "users": [
-    {
-      "username": "admin@yopmail.com",
-      "email": "admin@yopmail.com",
-      "firstName": "System",
-      "lastName": "Admin",
-      "enabled": true,
-      "emailVerified": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "admin123",
-          "temporary": false
-        }
-      ],
-      "realmRoles": ["system-admin", "event-organizer", "ticket-buyer"]
+    "smtpServer": {
+        "host": "smtp.gmail.com",
+        "port": "587",
+        "from": "noreply@eventtickets.local",
+        "fromDisplayName": "Event Ticketing Platform",
+        "ssl": "false",
+        "starttls": "true",
+        "auth": "false",
+        "user": "",
+        "password": ""
     },
-    {
-      "username": "user@yopmail.com",
-      "email": "user@yopmail.com",
-      "firstName": "Event",
-      "lastName": "User",
-      "enabled": true,
-      "emailVerified": true,
-      "credentials": [
+
+    "roles": {
+        "realm": [
+            {
+                "name": "system-admin",
+                "description": "Platform administrators who can approve events and manage system"
+            },
+            {
+                "name": "user",
+                "description": "General users who can create and manage events"
+            }
+        ]
+    },
+
+    "defaultRoles": ["user"],
+
+    "clients": [
         {
-          "type": "password",
-          "value": "user123",
-          "temporary": false
+            "clientId": "events-service",
+            "name": "Events Microservice",
+            "enabled": true,
+            "publicClient": false,
+            "serviceAccountsEnabled": false,
+            "directAccessGrantsEnabled": false,
+            "bearerOnly": true
         }
-      ],
-      "realmRoles": ["user"]
-    }
-  ]
+    ],
+
+    "users": [
+        {
+            "username": "admin@yopmail.com",
+            "email": "admin@yopmail.com",
+            "firstName": "System",
+            "lastName": "Admin",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "admin123",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": ["system-admin", "event-organizer", "ticket-buyer"]
+        },
+        {
+            "username": "user@yopmail.com",
+            "email": "user@yopmail.com",
+            "firstName": "Event",
+            "lastName": "User",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "user123",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": ["user"]
+        }
+    ]
 }
