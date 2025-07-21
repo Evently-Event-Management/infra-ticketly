@@ -27,17 +27,17 @@
     "roles": {
         "realm": [
             {
-                "name": "system-admin",
+                "name": "role-system-admin",
                 "description": "Platform administrators who can approve events and manage system"
             },
             {
-                "name": "user",
+                "name": "role-user",
                 "description": "General users who can create and manage events"
             }
         ]
     },
 
-    "defaultRoles": ["user"],
+    "defaultRoles": ["role-user"],
 
     "clients": [
         {
@@ -48,6 +48,15 @@
             "serviceAccountsEnabled": false,
             "directAccessGrantsEnabled": false,
             "bearerOnly": true
+        },
+        {
+            "clientId": "login-testing",
+            "name": "Login Testing Client",
+            "enabled": true,
+            "publicClient": true,
+            "serviceAccountsEnabled": false,
+            "directAccessGrantsEnabled": true,
+            "bearerOnly": false
         }
     ],
 
@@ -66,7 +75,7 @@
                     "temporary": false
                 }
             ],
-            "realmRoles": ["system-admin", "event-organizer", "ticket-buyer"]
+            "realmRoles": ["role-system-admin"]
         },
         {
             "username": "user@yopmail.com",
@@ -82,7 +91,7 @@
                     "temporary": false
                 }
             ],
-            "realmRoles": ["user"]
+            "realmRoles": ["role-user"]
         }
     ]
 }
