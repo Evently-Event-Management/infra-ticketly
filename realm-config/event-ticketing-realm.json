@@ -31,44 +31,15 @@
         "description": "Platform administrators who can approve events and manage system"
       },
       {
-        "name": "event-organizer", 
-        "description": "Users who can create and manage events"
-      },
-      {
-        "name": "ticket-buyer",
-        "description": "Regular users who can buy tickets"
-      },
-      {
-        "name": "scanner",
-        "description": "Staff who can scan QR codes at events"
+        "name": "user", 
+        "description": "General users who can create and manage events"
       }
     ]
   },
 
-  "defaultRoles": ["ticket-buyer"],
+  "defaultRoles": ["user"],
 
   "clients": [
-    {
-      "clientId": "event-frontend",
-      "name": "Event Ticketing Frontend",
-      "enabled": true,
-      "publicClient": true,
-      "directAccessGrantsEnabled": false,
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "redirectUris": [
-        "http://localhost:3000/*",
-        "http://localhost:3001/*"
-      ],
-      "webOrigins": [
-        "http://localhost:3000",
-        "http://localhost:3001"
-      ],
-      "protocol": "openid-connect",
-      "attributes": {
-        "pkce.code.challenge.method": "S256"
-      }
-    },
     {
       "clientId": "events-service",
       "name": "Events Microservice",
@@ -77,24 +48,6 @@
       "serviceAccountsEnabled": true,
       "directAccessGrantsEnabled": true,
       "secret": "events-service-secret-change-in-prod"
-    },
-    {
-      "clientId": "tickets-service", 
-      "name": "Tickets Microservice",
-      "enabled": true,
-      "publicClient": false,
-      "serviceAccountsEnabled": true,
-      "directAccessGrantsEnabled": true,
-      "secret": "tickets-service-secret-change-in-prod"
-    },
-    {
-      "clientId": "payments-service",
-      "name": "Payments Microservice", 
-      "enabled": true,
-      "publicClient": false,
-      "serviceAccountsEnabled": true,
-      "directAccessGrantsEnabled": true,
-      "secret": "payments-service-secret-change-in-prod"
     }
   ],
 
@@ -116,36 +69,20 @@
       "realmRoles": ["system-admin", "event-organizer", "ticket-buyer"]
     },
     {
-      "username": "organizer@yopmail.com",
-      "email": "organizer@yopmail.com", 
+      "username": "user@yopmail.com",
+      "email": "user@yopmail.com",
       "firstName": "Event",
-      "lastName": "Organizer",
+      "lastName": "User",
       "enabled": true,
       "emailVerified": true,
       "credentials": [
         {
           "type": "password",
-          "value": "organizer123",
+          "value": "user123",
           "temporary": false
         }
       ],
-      "realmRoles": ["event-organizer", "ticket-buyer"]
-    },
-    {
-      "username": "buyer@yopmail.com",
-      "email": "buyer@yopmail.com",
-      "firstName": "Ticket", 
-      "lastName": "Buyer",
-      "enabled": true,
-      "emailVerified": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "buyer123",
-          "temporary": false
-        }
-      ],
-      "realmRoles": ["ticket-buyer"]
+      "realmRoles": ["user"]
     }
   ]
 }
