@@ -34,12 +34,8 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: false
     ports:
       - "8080:8080"
-    volumes:
-      # Mount realm configuration
-      - ./realm-config:/opt/keycloak/data/import
     command: 
       - start-dev
-      - --import-realm
     depends_on:
       - postgres
     networks:
