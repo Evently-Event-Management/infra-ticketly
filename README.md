@@ -1,6 +1,28 @@
-# Keycloak Infrastructure for Event Ticketing Platform
+# Keycloak Infras### Roles
+- **role-system-admin**: Platform administrators who can approve events and manage the system
+- **role-user**: General users who can create and manage events (default role)
+
+### Users (Development)
+| Username | Email | Password | Roles |
+|----------|-------|----------|-------|
+| admin@yopmail.com | admin@yopmail.com | admin123 | role-system-admin |
+| user@yopmail.com | user@yopmail.com | user123 | role-user |
+
+### Clients
+- **events-service**: Resource server (bearer-only) for the Events microservice
+  - Bearer-only client (no secret required)
+  - Used for token validation only
+- **login-testing**: Public client for authentication testing
+  - Supports password grant for development/testing
+  - Used for obtaining tokensvent Ticketing Platform
 
 This repository contains the Keycloak setup for the Event Ticketing Platform, providing authentication and authorization services for the microservices architecture.
+
+## Deployment Options
+
+This infrastructure supports two deployment methods:
+1. **Docker Compose** - Quick setup for development and testing
+2. **Terraform** - Infrastructure as Code for production and automated deployments
 
 ## System Overview
 
@@ -30,6 +52,9 @@ This repository contains the Keycloak setup for the Event Ticketing Platform, pr
 ### Prerequisites
 - Docker and Docker Compose installed
 - Ports 8080 available on your system
+- For Terraform: Terraform >= 1.0 installed
+
+## Deployment Method 1: Docker Compose (Development)
 
 ### 1. Starting the System
 
@@ -57,8 +82,184 @@ docker-compose logs -f keycloak
    - Users are imported
    - Roles are configured
    - Client `events-service` is set up as bearer-only
+   - Client `login-testing` is available for authentication
+
+## Deployment Method 2: Terraform (Production)
+
+### Overview
+The Terraform configuration provides Infrastructure as Code (IaC) for deploying and managing the Keycloak realm configuration. This method is recommended for production environments and CI/CD pipelines.
+
+### Terraform Structure
+```
+terraform/
+├── main.tf          # Provider configuration
+├── realm.tf         # Realm configuration with security settings
+├── role.tf          # Role definitions and default roles
+├── clients.tf       # Client configurations (events-service, login-testing)
+├── users.tf         # User creation and role assignments
+├── variables.tf     # Input variables with defaults
+├── outputs.tf       # Output values for integration
+└── terraform.tfvars # Environment-specific values
+```
+
+### Terraform Prerequisites
+1. **Keycloak Server Running**: Ensure Keycloak is accessible
+   ```bash
+   # Start Keycloak with Docker Compose (infrastructure only)
+   docker-compose up -d
+   ```
+
+2. **Terraform Installed**: Version >= 1.0
+   ```bash
+   # Verify installation
+   terraform version
+   ```
+
+### Terraform Deployment
+
+#### Initialize Terraform
+```bash
+cd terraform
+terraform init
+```
+
+#### Plan Deployment
+```bash
+# Review what will be created
+terraform plan
+
+# Plan with custom variables
+terraform plan -var="keycloak_url=https://your-keycloak.com"
+```
+
+#### Apply Configuration
+```bash
+# Apply with confirmation
+terraform apply
+
+# Apply without confirmation (CI/CD)
+terraform apply -auto-approve
+```
+
+#### View Current State
+```bash
+# List all resources
+terraform state list
+
+# Show specific resource
+terraform show keycloak_realm.event_ticketing
+```
+
+### Terraform Variables
+
+#### Required Variables
+```hcl
+# terraform.tfvars
+keycloak_url              = "http://localhost:8080"
+keycloak_admin_username   = "admin"
+keycloak_admin_password   = "admin123"
+```
+
+#### Optional Variables (with defaults)
+```hcl
+# Realm Configuration
+realm_name               = "event-ticketing"
+realm_display_name       = "Event Ticketing Platform"
+
+# SMTP Configuration
+smtp_host               = "smtp.gmail.com"
+smtp_port               = "587"
+smtp_from_email         = "noreply@eventtickets.local"
+smtp_from_display_name  = "Event Ticketing Platform"
+
+# User Configuration
+admin_email             = "admin@yopmail.com"
+admin_password          = "admin123"
+regular_user_email      = "user@yopmail.com"
+regular_user_password   = "user123"
+```
+
+### Terraform Outputs
+After successful deployment, Terraform provides:
+```hcl
+realm_id                  = "event-ticketing"
+realm_name               = "event-ticketing"
+admin_user_id            = "user-uuid"
+regular_user_id          = "user-uuid"
+system_admin_role_id     = "role-uuid"
+user_role_id             = "role-uuid"
+events_service_client_id = "events-service"
+login_testing_client_id  = "login-testing"
+```
+
+### Terraform vs Docker Compose
+
+| Feature | Docker Compose | Terraform |
+|---------|----------------|-----------|
+| **Use Case** | Development, Quick Setup | Production, CI/CD |
+| **Configuration** | JSON Import | HCL (Infrastructure as Code) |
+| **State Management** | Manual | Automatic State Tracking |
+| **Rollback** | Manual | `terraform apply` previous version |
+| **Drift Detection** | None | `terraform plan` shows changes |
+| **Integration** | Manual export/import | Programmatic outputs |
+| **Secrets** | Hardcoded in JSON | Variable-based, external sources |
+
+### Managing Configuration Changes
+
+#### With Terraform (Recommended)
+```bash
+# Make changes to .tf files
+# Plan changes
+terraform plan
+
+# Apply changes
+terraform apply
+
+# Export current state if needed
+terraform show -json > current-state.json
+```
+
+#### Hybrid Approach
+1. Use Docker Compose for initial development
+2. Export configuration from Keycloak admin console
+3. Convert to Terraform for production deployment
+
+### Terraform Best Practices
+
+#### Environment Management
+```bash
+# Use workspace for different environments
+terraform workspace new development
+terraform workspace new staging
+terraform workspace new production
+
+# Switch environments
+terraform workspace select production
+```
+
+#### Variable Management
+```bash
+# Environment-specific variable files
+terraform apply -var-file="environments/production.tfvars"
+terraform apply -var-file="environments/staging.tfvars"
+```
+
+#### State Management
+```bash
+# Use remote state for production
+# Configure in main.tf:
+terraform {
+  backend "s3" {
+    bucket = "your-terraform-state"
+    key    = "keycloak/terraform.tfstate"
+    region = "us-west-2"
+  }
+}
+```
 
 ## Operations
+
+### Docker Compose Operations
 
 ### 2. Rerunning the System
 
@@ -169,6 +370,52 @@ git checkout HEAD -- realm-config/event-ticketing-realm.json
 docker-compose up -d
 ```
 
+### Terraform Operations
+
+#### Update Configuration
+```bash
+cd terraform
+
+# Modify .tf files as needed
+# Plan changes
+terraform plan
+
+# Apply changes
+terraform apply
+```
+
+#### Destroy Resources
+```bash
+# Destroy all Terraform-managed resources
+terraform destroy
+
+# Destroy specific resource
+terraform destroy -target=keycloak_user.admin
+```
+
+#### Import Existing Resources
+```bash
+# Import manually created resources into Terraform state
+terraform import keycloak_realm.event_ticketing event-ticketing
+terraform import keycloak_user.admin user-uuid
+```
+
+#### Refresh State
+```bash
+# Sync Terraform state with actual infrastructure
+terraform refresh
+```
+
+#### Reset Terraform State
+```bash
+# Remove state file (careful!)
+rm terraform.tfstate terraform.tfstate.backup
+
+# Reinitialize
+terraform init
+terraform apply
+```
+
 ## Configuration Details
 
 ### Environment Variables
@@ -273,6 +520,68 @@ curl -X POST http://localhost:8080/realms/event-ticketing/protocol/openid-connec
   -d "password=admin123"
 ```
 
+## CI/CD Integration
+
+### GitHub Actions Example
+```yaml
+name: Deploy Keycloak Configuration
+
+on:
+  push:
+    branches: [main]
+    paths: ['terraform/**']
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+          
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
+        
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ./terraform
+        env:
+          TF_VAR_keycloak_admin_password: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+          
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve
+        working-directory: ./terraform
+        env:
+          TF_VAR_keycloak_admin_password: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+```
+
+### Docker + Terraform Workflow
+```bash
+# 1. Start infrastructure
+docker-compose up -d
+
+# 2. Wait for Keycloak to be ready
+while ! curl -f http://localhost:8080/health; do sleep 5; done
+
+# 3. Apply Terraform configuration
+cd terraform
+terraform init
+terraform apply -auto-approve
+
+# 4. Verify deployment
+terraform output
+```
+
 ---
 
-For more information, visit the [Keycloak Documentation](https://www.keycloak.org/documentation).
+## Additional Resources
+
+- [Keycloak Documentation](https://www.keycloak.org/documentation)
+- [Keycloak Terraform Provider](https://registry.terraform.io/providers/keycloak/keycloak/latest/docs)
+- [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [Terraform Documentation](https://www.terraform.io/docs)
