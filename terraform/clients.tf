@@ -32,3 +32,25 @@ resource "keycloak_openid_client" "login_testing" {
     "https://localhost:8080/*"
   ]
 }
+
+resource "keycloak_openid_client" "frontend_app" {
+  realm_id                     = keycloak_realm.event_ticketing.id
+  client_id                    = "web-frontend"
+  name                         = "Frontend SPA (Next.js)"
+  enabled                      = true
+
+  access_type                  = "PUBLIC"
+  standard_flow_enabled        = true         # Authorization Code with PKCE
+  implicit_flow_enabled        = false
+  direct_access_grants_enabled = false        # No password flow
+
+  valid_redirect_uris = [
+    "http://localhost:3000/*",
+    "https://localhost:3000/*"
+  ]
+
+  web_origins = [
+    "http://localhost:3000",
+    "https://localhost:3000"
+  ]
+}
