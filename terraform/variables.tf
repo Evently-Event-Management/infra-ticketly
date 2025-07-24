@@ -32,7 +32,6 @@ variable "smtp_from_email" {
 variable "smtp_from_password" {
   description = "SMTP from email password"
   type        = string
-  default     = "your_smtp_password"
   sensitive   = true     
 }
 
