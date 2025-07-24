@@ -14,19 +14,19 @@ resource "keycloak_realm" "event_ticketing" {
   reset_password_allowed        = true
   edit_username_allowed         = false
   
-#   # SMTP configuration
-#   smtp_server {
-#     host = "smtp.gmail.com"
-#     port = "587"
-#     from = "noreply@eventtickets.local"
-#     from_display_name = "Event Ticketing Platform"
-#     ssl = false
-#     starttls = true
-#     auth {
-#       username = ""
-#       password = ""
-#     }
-#   }
+  # SMTP configuration
+  smtp_server {
+    host = var.smtp_host
+    port = var.smtp_port
+    from = var.smtp_from_email
+    from_display_name = var.smtp_from_display_name
+    ssl = false
+    starttls = true
+    auth {
+      username = var.smtp_from_email
+      password = var.smtp_from_password
+    }
+  }
   
   # Security defenses including brute force protection
   security_defenses {
