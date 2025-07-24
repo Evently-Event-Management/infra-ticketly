@@ -29,10 +29,16 @@ variable "smtp_from_email" {
   default     = "noreply@eventtickets.local"
 }
 
+variable "smtp_from_password" {
+  description = "SMTP from email password"
+  type        = string
+  sensitive   = true     
+}
+
 variable "smtp_from_display_name" {
   description = "SMTP from display name"
   type        = string
-  default     = "Event Ticketing Platform"
+  default     = "Ticketly Event Ticketing Platform"
 }
 
 variable "admin_email" {
