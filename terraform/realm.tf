@@ -20,8 +20,8 @@ resource "keycloak_realm" "event_ticketing" {
     port = var.smtp_port
     from = var.smtp_from_email
     from_display_name = var.smtp_from_display_name
-    ssl = false
-    starttls = true
+    ssl = var.smtp_port == "465" ? true : false
+    starttls = var.smtp_port == "587" ? true : false
     auth {
       username = var.smtp_from_email
       password = var.smtp_from_password
