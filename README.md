@@ -1,286 +1,75 @@
-# Keycloak Infrastructure for Event Ticketing Platform
+# Keycloak Infrastructure
 
-This repository contains the Keycloak setup for the Event Ticketing Platform, providing authentication and authorization services for the microservices architecture.
+Infrastructure repository for Keycloak authentication service.
 
-## Deployment Options
+## Quick Start
 
-This infrastructure supports two deployment methods:
-1. **Docker Compose** - Quick setup for development and testing
-2. **Terraform** - Infrastructure as Code for production and automated deployments
+1. **Start services**:
+   ```bash
+   docker-compose up -d
+   ```
 
-## System Overview
+2. **Apply configuration**:
+   ```bash
+   cd terraform
+   terraform init
+   terraform apply
+   ```
 
-### Keycloak Realm: `event-ticketing`
-- **Display Name**: Event Ticketing Platform
-- **Features**: User registration, email verification, password reset, brute force protection
-- **SMTP**: Configured for Gmail (requires credentials)
+## Configuration
 
-### Roles
-- **role-system-admin**: Platform administrators who can approve events and manage the system
-- **role-user**: General users who can create and manage events (default role)
+### Environment Variables
 
-### Users (Development)
-| Username | Email | Password | Roles |
-|----------|-------|----------|-------|
-| admin@yopmail.com | admin@yopmail.com | admin123 | role-system-admin |
-| user@yopmail.com | user@yopmail.com | user123 | role-user |
-
-### Clients
-- **events-service**: Resource server (bearer-only) for the Events microservice
-  - Bearer-only client (no secret required)
-  - Used for token validation only
-- **login-testing**: Public client for authentication testing
-  - Supports password grant for development/testing
-  - Used for obtaining tokens
-- **web-frontend**: Frontend SPA client for Next.js applications
-  - Public client with PKCE support
-  - Authorization Code flow enabled
-
-### Default Client Roles
-All users automatically receive these account management roles:
-- **manage-account**: Allows users to manage their own account settings
-- **view-profile**: Allows users to view their profile information
-
-## Prerequisites
-
-- **Docker and Docker Compose** installed
-- **Port 8080** available on your system
-- **Terraform >= 1.0** (for Infrastructure as Code deployment)
-- **Gmail Account** (for SMTP email functionality)
-
-## SMTP Configuration
-
-### Gmail SMTP Setup
-
-1. **Enable 2-Factor Authentication** on your Gmail account
-2. **Generate App Password**:
-   - Go to Google Account settings
-   - Security → 2-Step Verification → App passwords
-   - Generate a new app password for "Mail"
-3. **Set Environment Variables** (see configuration sections below)
-
-### Required SMTP Variables
-```bash
-smtp_from_email = "your-email@gmail.com"
-smtp_from_password = "your-app-password"
-```
-
----
-
-## Deployment Method 1: Docker Compose (Development)
-
-### Quick Start
-```bash
-# Clone the repository
-git clone <repository-url>
-cd infra-keycloak
-
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f keycloak
-```
-
-### Docker Compose Commands
-
-#### Starting the System
-```bash
-# Start all services (Keycloak + PostgreSQL)
-docker-compose up -d
-
-# Start with logs visible
-docker-compose up
-
-# Start specific service
-docker-compose up -d postgres
-docker-compose up -d keycloak
-```
-
-#### Viewing Logs
-```bash
-# View all logs
-docker-compose logs
-
-# Follow logs in real-time
-docker-compose logs -f
-
-# View specific service logs
-docker-compose logs keycloak
-docker-compose logs postgres
-```
-
-#### Stopping Services
-```bash
-# Stop services (keeps containers and data)
-docker-compose stop
-
-# Stop and remove containers (keeps volumes)
-docker-compose down
-
-# Stop and remove containers and volumes (COMPLETE RESET)
-docker-compose down -v
-
-# Stop and remove everything including images
-docker-compose down -v --rmi all
-```
-
-#### Service Management
-```bash
-# Restart services
-docker-compose restart
-
-# Restart specific service
-docker-compose restart keycloak
-
-# Check service status
-docker-compose ps
-
-# View resource usage
-docker-compose top
-```
-
-#### Data Management
-```bash
-# Remove only volumes (reset database)
-docker volume rm infra-keycloak_postgres_data
-
-# List all volumes
-docker volume ls
-
-# Inspect volume
-docker volume inspect infra-keycloak_postgres_data
-```
-
-### Access Points
-- **Admin Console**: http://localhost:8080/admin
-  - Username: `admin`
-  - Password: `admin123`
-- **Realm**: http://localhost:8080/realms/event-ticketing
-- **Account Console**: http://localhost:8080/realms/event-ticketing/account
-
----
-
-## Deployment Method 2: Terraform (Production)
-
-### Terraform Structure
-```
-terraform/
-├── main.tf          # Provider configuration
-├── realm.tf         # Realm configuration with security settings
-├── role.tf          # Role definitions and default roles
-├── clients.tf       # Client configurations
-├── users.tf         # User creation and role assignments
-├── variables.tf     # Input variables with defaults
-├── outputs.tf       # Output values for integration
-└── terraform.tfvars # Environment-specific values (create this)
-```
-
-### Setting Up Terraform
-
-#### 1. Prerequisites
-```bash
-# Verify Terraform installation
-terraform version
-
-# Ensure Keycloak is running
-docker-compose up -d
-```
-
-#### 2. Configuration
-Create a `terraform.tfvars` file in the `terraform/` directory:
-
+Create `terraform/terraform.tfvars`:
 ```hcl
-# terraform/terraform.tfvars
-
 # Keycloak Connection
 keycloak_url              = "http://localhost:8080"
 keycloak_admin_username   = "admin"
 keycloak_admin_password   = "admin123"
 
-# SMTP Configuration (Required for email features)
+# SMTP Configuration
 smtp_from_email    = "your-email@gmail.com"
 smtp_from_password = "your-gmail-app-password"
 
-# Optional: Custom realm settings
-realm_display_name = "Ticketly Event Ticketing Platform"
-
-# Optional: Custom user credentials
-admin_password     = "secure-admin-password"
-regular_user_password = "secure-user-password"
+# Optional: Custom passwords
+admin_password     = "admin123"
+regular_user_password = "user123"
 ```
 
-#### 3. Environment Variables (Alternative to .tfvars)
-```bash
-# Set environment variables
-export TF_VAR_smtp_from_email="your-email@gmail.com"
-export TF_VAR_smtp_from_password="your-gmail-app-password"
-export TF_VAR_keycloak_admin_password="admin123"
-
-# On Windows (PowerShell)
+### PowerShell Environment Variables
+```powershell
 $env:TF_VAR_smtp_from_email="your-email@gmail.com"
-$env:TF_VAR_smtp_from_password="your-gmail-app-password"
+$env:TF_VAR_smtp_from_password="your-app-password"
 $env:TF_VAR_keycloak_admin_password="admin123"
 ```
 
-### Terraform Commands
+## Default Credentials
 
-#### Initialize Terraform
+### Keycloak Admin
+- **URL**: http://localhost:8080/admin
+- **Username**: `admin`
+- **Password**: `admin123`
+
+### Test Users
+| Username | Password | Role |
+|----------|----------|------|
+| admin@yopmail.com | admin123 | role-system-admin |
+| user@yopmail.com | user123 | role-user |
+
+## Terraform Commands
+
 ```bash
 cd terraform
 
-# Initialize Terraform (first time only)
+# Initialize and apply
 terraform init
-
-# Upgrade providers
-terraform init -upgrade
-```
-
-#### Planning Changes
-```bash
-# Review what will be created/changed
-terraform plan
-
-# Save plan to file
-terraform plan -out=tfplan
-
-# Plan with specific variables
-terraform plan -var="smtp_from_email=your-email@gmail.com" -var="smtp_from_password=your-app-password"
-
-# Plan with variable file
-terraform plan -var-file="production.tfvars"
-```
-
-#### Applying Changes
-```bash
-# Apply with confirmation prompt
 terraform apply
 
-# Apply without confirmation (CI/CD)
-terraform apply -auto-approve
+# With variables
+terraform apply -var="smtp_from_email=your@gmail.com"
 
-# Apply saved plan
-terraform apply tfplan
-
-# Apply with variables
-terraform apply -var="smtp_from_email=your-email@gmail.com" -var="smtp_from_password=your-app-password"
-```
-
-#### Viewing State
-```bash
-# List all resources
-terraform state list
-
-# Show specific resource details
-terraform show keycloak_realm.event_ticketing
-
-# Show all resources
-terraform show
-
-# Get outputs
-terraform output
-
-# Get specific output
+# Destroy
+terraform destroy
 terraform output realm_id
 ```
 
