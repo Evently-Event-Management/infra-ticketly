@@ -45,12 +45,12 @@ resource "keycloak_openid_client" "frontend_app" {
   direct_access_grants_enabled = false        # No password flow
 
   valid_redirect_uris = [
-    "http://localhost:3000/*",
-    "https://localhost:3000/*"
+    "http://localhost:8090/*",
+    "https://localhost:8090/*"
   ]
 
   web_origins = [
-    "http://localhost:3000",
-    "https://localhost:3000"
+    "http://localhost:8090",
+    "https://localhost:8090"
   ]
 }
