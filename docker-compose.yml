@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # Keycloak Database
   keycloak-db:
     image: postgres:17
     container_name: keycloak-postgres
@@ -9,10 +10,11 @@ services:
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: keycloak123
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - keycloak-postgres-data:/var/lib/postgresql/data
     networks:
       - infra-net
 
+  # Keycloak Server
   keycloak:
     image: quay.io/keycloak/keycloak:26.3.1
     container_name: keycloak
@@ -33,28 +35,45 @@ services:
       - keycloak-db
     networks:
       - infra-net
-    
-  # LocalStack configuration
-  # localstack:
-  #   container_name: localstack
-  #   image: localstack/localstack:latest
-  #   environment:
-  #     - DEBUG=1
-  #     - USE_SSL=0
-  #     - AWS_CBOR_DISABLE=1
-  #     - DOCKER_HOST=unix:///var/run/docker.sock
-  #     - HOSTNAME=localstack
-  #     - SERVICES=s3
-  #     - AWS_DEFAULT_REGION=us-east-1
-  #   ports:
-  #     - '4566-4583:4566-4583'
-  #   volumes:
-  #     - ${TEMPDIR:-/tmp/localstack}:/tmp/localstack
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - ./script/localstack/s3/init-s3-bucket.sh:/docker-entrypoint-initaws.d/init-s3-bucket.sh
+
+  # Event Seating PostgreSQL
+  event-seating-db:
+    image: postgres:17
+    container_name: event-seating-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: event_seating
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - event-seating-postgres-data:/var/lib/postgresql/data
+    networks:
+      - infra-net
+
+  # Localstack for S3
+  event-seating-localstack:
+    image: localstack/localstack:latest
+    container_name: event-seating-localstack
+    environment:
+      - DEBUG=1
+      - USE_SSL=0
+      - AWS_CBOR_DISABLE=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME=localstack
+      - SERVICES=s3
+      - AWS_DEFAULT_REGION=us-east-1
+    ports:
+      - '4566-4583:4566-4583'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./script/localstack/s3/init-s3-bucket.sh:/etc/localstack/init/ready.d/init-s3-bucket.sh
+    networks:
+      - infra-net
 
 volumes:
-  postgres_data:
+  keycloak-postgres-data:
+  event-seating-postgres-data:
 
 networks:
   infra-net:
