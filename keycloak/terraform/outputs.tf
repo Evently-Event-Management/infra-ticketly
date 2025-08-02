@@ -19,14 +19,14 @@ output "regular_user_id" {
   value       = keycloak_user.user.id
 }
 
-output "system_admin_role_id" {
-  description = "The ID of the system admin role"
-  value       = keycloak_role.system_admin.id
+output "system_admins_group_id" {
+  description = "The ID of the System Admins group"
+  value       = keycloak_group.system_admins.id
 }
 
-output "user_role_id" {
-  description = "The ID of the user role"
-  value       = keycloak_role.user.id
+output "users_group_id" {
+  description = "The ID of the Users group"
+  value       = keycloak_group.users.id
 }
 
 output "events_service_client_id" {
