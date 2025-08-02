@@ -44,8 +44,8 @@ resource "keycloak_user_groups" "admin_user_groups" {
 }
 
 # ✅ Assign the regular user to the "Users" group and a tier
-# Note: Since "Users" and "FREE" are default groups, this is explicit but optional.
-# It's useful if you need to assign existing users.
+# Note: "Users" and "FREE" are default groups, and new users may be automatically assigned to them.
+# However, explicit assignment here ensures Terraform manages group membership for both new and existing users.
 resource "keycloak_user_groups" "regular_user_groups" {
   realm_id = keycloak_realm.event_ticketing.id
   user_id  = keycloak_user.user.id
