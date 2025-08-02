@@ -1,4 +1,4 @@
-# Admin user with system administrator role
+# Admin user
 resource "keycloak_user" "admin" {
   realm_id       = keycloak_realm.event_ticketing.id
   username       = "admin@yopmail.com"
@@ -7,14 +7,14 @@ resource "keycloak_user" "admin" {
   email_verified = true
   first_name     = "System"
   last_name      = "Admin"
-  
+
   initial_password {
     value     = "admin123"
     temporary = false
   }
 }
 
-# Regular user with standard user role
+# Regular user
 resource "keycloak_user" "user" {
   realm_id       = keycloak_realm.event_ticketing.id
   username       = "user@yopmail.com"
@@ -23,29 +23,37 @@ resource "keycloak_user" "user" {
   email_verified = true
   first_name     = "Event"
   last_name      = "User"
-  
+
   initial_password {
     value     = "user123"
     temporary = false
   }
 }
 
-# Assign system admin role to admin user
-resource "keycloak_user_roles" "admin_roles" {
+# ✅ Assign the admin user to the "System Admins" group and a tier
+resource "keycloak_user_groups" "admin_user_groups" {
   realm_id = keycloak_realm.event_ticketing.id
   user_id  = keycloak_user.admin.id
-  
-  role_ids = [
-    keycloak_role.system_admin.id
+
+  group_ids = [
+    # This user gets all permissions from the System Admins group
+    keycloak_group.system_admins.id,
+    # Example: Assign the admin to the PRO tier
+    keycloak_group.tier_pro.id
   ]
 }
 
-# Assign user role to regular user
-resource "keycloak_user_roles" "user_roles" {
+# ✅ Assign the regular user to the "Users" group and a tier
+# Note: "Users" and "FREE" are default groups, and new users may be automatically assigned to them.
+# However, explicit assignment here ensures Terraform manages group membership for both new and existing users.
+resource "keycloak_user_groups" "regular_user_groups" {
   realm_id = keycloak_realm.event_ticketing.id
   user_id  = keycloak_user.user.id
-  
-  role_ids = [
-    keycloak_role.user.id
+
+  group_ids = [
+    # This user gets base permissions from the Users group
+    keycloak_group.users.id,
+    # This user is on the FREE tier
+    keycloak_group.tier_free.id
   ]
 }
