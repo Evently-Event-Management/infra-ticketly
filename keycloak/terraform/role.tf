@@ -84,7 +84,7 @@ data "keycloak_role" "view_profile" {
   name      = "view-profile"
 }
 
-# Assign base roles to the "Users" group
+# Assign account management client roles to the "Users" group
 resource "keycloak_group_roles" "users_group_roles" {
   realm_id = keycloak_realm.event_ticketing.id
   group_id = keycloak_group.users.id
@@ -102,8 +102,8 @@ resource "keycloak_group_roles" "system_admins_group_roles" {
   group_id = keycloak_group.system_admins.id
 
   role_ids = [
-    # They only need the specific, fine-grained realm roles.
-    # The base roles are inherited from the parent "Users" group.
+    # System Admins are directly assigned the specific, fine-grained realm roles below,
+    # and also inherit the base account management roles from the parent "Users" group.
     keycloak_role.approve_event.id,
     keycloak_role.manage_categories.id,
   ]
