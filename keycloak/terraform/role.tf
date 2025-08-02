@@ -84,7 +84,7 @@ data "keycloak_role" "view_profile" {
   name      = "view-profile"
 }
 
-# Assign base roles to the "Users" group
+# Assign account management client roles to the "Users" group
 resource "keycloak_group_roles" "users_group_roles" {
   realm_id = keycloak_realm.event_ticketing.id
   group_id = keycloak_group.users.id
