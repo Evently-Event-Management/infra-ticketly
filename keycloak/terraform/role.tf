@@ -2,14 +2,14 @@
 # 1. DEFINE FINE-GRAINED REALM ROLES
 # These represent specific actions, not user types.
 #==================================================================
-resource "keycloak_role" "approve_event" {
+resource "keycloak_role" "event_admin" {
   realm_id = keycloak_realm.event_ticketing.id
-  name     = "approve_event"
+  name     = "event_admin"
 }
 
-resource "keycloak_role" "manage_categories" {
+resource "keycloak_role" "category_admin" {
   realm_id = keycloak_realm.event_ticketing.id
-  name     = "manage_categories"
+  name     = "category_admin"
 }
 
 #==================================================================
@@ -104,8 +104,8 @@ resource "keycloak_group_roles" "system_admins_group_roles" {
   role_ids = [
     # System Admins are directly assigned the specific, fine-grained realm roles below,
     # and also inherit the base account management roles from the parent "Users" group.
-    keycloak_role.approve_event.id,
-    keycloak_role.manage_categories.id,
+    keycloak_role.event_admin.id,
+    keycloak_role.category_admin.id,
   ]
 }
 

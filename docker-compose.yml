@@ -23,8 +23,8 @@ services:
       KC_DB_PASSWORD: keycloak123
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin123
-      KC_HOSTNAME_STRICT: false
-      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
     ports:
       - "8080:8080"
     command:
@@ -44,28 +44,25 @@ services:
       POSTGRES_DB: event_seating
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    command: postgres -c wal_level=logical
     volumes:
       - event-seating-postgres-data:/var/lib/postgresql/data
     networks:
       - infra-net
 
-  # Localstack for S3
+  # Localstack for AWS Services
   event-seating-localstack:
     image: localstack/localstack:latest
     container_name: event-seating-localstack
     environment:
       - DEBUG=1
-      - USE_SSL=0
-      - AWS_CBOR_DISABLE=1
+      - SERVICES=s3,sqs,scheduler
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - HOSTNAME=localstack
-      - SERVICES=s3
-      - AWS_DEFAULT_REGION=us-east-1
     ports:
-      - '4566-4583:4566-4583'
+      - '4566:4566'
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./script/localstack/s3/init-s3-bucket.sh:/etc/localstack/init/ready.d/init-s3-bucket.sh
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./scripts/localstack:/etc/localstack/init/ready.d"
     networks:
       - infra-net
 
@@ -80,10 +77,73 @@ services:
     networks:
       - infra-net
 
+  # Kafka Broker in KRaft mode
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT_HOST://localhost:9092,PLAINTEXT://kafka:29092'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT_HOST://0.0.0.0:9092,PLAINTEXT://0.0.0.0:29092,CONTROLLER://kafka:9093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk' # A pre-generated cluster ID
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+    networks:
+      - infra-net
+
+  # Debezium for Change Data Capture (CDC)
+  debezium-connect:
+    image: debezium/connect:2.5
+    container_name: debezium-connect
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+      - event-seating-db
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+    networks:
+      - infra-net
+
+  # Debezium connector registration service
+  debezium-connector-init:
+    image: curlimages/curl:latest
+    container_name: debezium-connector-init
+    depends_on:
+      - debezium-connect
+    volumes:
+      - ./debezium:/debezium
+    command: >
+      sh -c "
+        echo 'Waiting for Debezium Connect to start...' &&
+        sleep 30 &&
+        curl -X POST -H 'Content-Type: application/json' --data @/debezium/debezium.json http://debezium-connect:8083/connectors &&
+        echo 'Connector registration complete!'
+      "
+    networks:
+      - infra-net
+
 volumes:
   keycloak-postgres-data:
   event-seating-postgres-data:
   redis-data:
+  kafka-data:
 
 networks:
   infra-net:

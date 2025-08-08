@@ -1,0 +1,15 @@
+{
+  "name": "event-seating-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "event-seating-db",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "database.dbname": "event_seating",
+    "database.server.name": "ticketly-postgres",
+    "table.include.list": "public.events,public.event_sessions,public.session_seating_maps,public.organizations,public.venues,public.categories",
+    "topic.prefix": "dbz.ticketly",
+    "plugin.name": "pgoutput"
+  }
+}
