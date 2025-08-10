@@ -1,11 +1,15 @@
-# Use a lightweight, modern Java base image
+# Build stage
+FROM maven:3.9-eclipse-temurin-21-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Run stage
 FROM openjdk:21-slim
 
-# Set an argument for the JAR file name for flexibility
-ARG JAR_FILE=target/*.jar
-
-# Copy the built JAR file from your target directory into the container
-COPY ${JAR_FILE} app.jar
+# Copy the built JAR file from the build stage
+COPY --from=build /app/target/*.jar app.jar
 
 # Expose the port the gateway runs on (as defined in your application.yml)
 EXPOSE 8088

@@ -9,14 +9,16 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://host.docker.internal:8080/realms/event-ticketing
+          issuer-uri: http://localhost:8080/realms/event-ticketing
 
   cloud:
     gateway:
       server:
         webflux:
+#          default-filters:
+#            - TokenRelay
           routes:
             - id: event_seating_service_route
-              uri: http://host.docker.internal:8081
+              uri: http://localhost:8081
               predicates:
                 - Path=/api/event-seating/**
