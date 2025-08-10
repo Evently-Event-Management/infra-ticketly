@@ -38,3 +38,8 @@ output "login_testing_client_id" {
   description = "The client ID of the login testing client"
   value       = keycloak_openid_client.login_testing.client_id
 }
+
+output "api_gateway_client_secret" {
+  value     = keycloak_openid_client.api_gateway.client_secret
+  sensitive = true # Hides the value from standard output logs
+}
