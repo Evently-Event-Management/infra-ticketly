@@ -56,7 +56,7 @@ services:
     container_name: event-seating-localstack
     environment:
       - DEBUG=1
-      - SERVICES=s3,sqs,scheduler
+      - SERVICES=s3,sqs,scheduler,iam
       - DOCKER_HOST=unix:///var/run/docker.sock
       - PERSISTENCE=1
     ports:
@@ -64,6 +64,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./scripts/localstack:/etc/localstack/init/ready.d"
+      - "./scripts/localstack/scheduler-role-policy.json:/etc/localstack/init/ready.d/scheduler-role-policy.json"
       - localstack-data:/var/lib/localstack
     networks:
       - infra-net
@@ -140,6 +141,22 @@ services:
       "
     networks:
       - infra-net
+
+
+    api-gateway:
+      image: springcloud/spring-cloud-gateway:latest # Or a specific version
+      container_name: api-gateway
+      ports:
+        - "8088:8088" # The frontend will talk to this port
+      environment:
+        SPRING_CONFIG_IMPORT: "optional:configtree:/etc/gateway/"
+      volumes:
+        - ./config/gateway:/etc/gateway
+      networks:
+        - infra-net
+      # ✅ This allows the container to resolve host.docker.internal
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
 
 volumes:
   keycloak-postgres-data:
