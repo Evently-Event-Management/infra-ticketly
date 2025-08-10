@@ -62,15 +62,9 @@ resource "keycloak_openid_client" "api_gateway" {
   client_id               = "api-gateway-client"
   name                    = "API Gateway"
   enabled                 = true
-
-  # ✅ Set to CONFIDENTIAL for a backend service
   access_type             = "CONFIDENTIAL"
-  
-  # The gateway only validates tokens, so it doesn't need any login flows
   standard_flow_enabled      = false
   implicit_flow_enabled      = false
   direct_access_grants_enabled = false
-
-  # Enable this if you need the gateway to perform actions on behalf of itself (M2M)
   service_accounts_enabled = true 
 }
