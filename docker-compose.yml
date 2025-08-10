@@ -142,21 +142,21 @@ services:
     networks:
       - infra-net
 
-
-    api-gateway:
-      image: springcloud/spring-cloud-gateway:latest # Or a specific version
-      container_name: api-gateway
-      ports:
-        - "8088:8088" # The frontend will talk to this port
-      environment:
-        SPRING_CONFIG_IMPORT: "optional:configtree:/etc/gateway/"
-      volumes:
-        - ./config/gateway:/etc/gateway
-      networks:
-        - infra-net
-      # ✅ This allows the container to resolve host.docker.internal
-      extra_hosts:
-        - "host.docker.internal:host-gateway"
+  # API Gateway
+  api-gateway:
+    image: springcloud/spring-cloud-gateway:latest # Or a specific version
+    container_name: api-gateway
+    ports:
+      - "8088:8088" # The frontend will talk to this port
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configtree:/etc/gateway/"
+    volumes:
+      - ./config/gateway:/etc/gateway
+    networks:
+      - infra-net
+    # ✅ This allows the container to resolve host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   keycloak-postgres-data:
