@@ -58,11 +58,13 @@ services:
       - DEBUG=1
       - SERVICES=s3,sqs,scheduler
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - PERSISTENCE=1
     ports:
       - '4566:4566'
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./scripts/localstack:/etc/localstack/init/ready.d"
+      - localstack-data:/var/lib/localstack
     networks:
       - infra-net
 
@@ -144,6 +146,7 @@ volumes:
   event-seating-postgres-data:
   redis-data:
   kafka-data:
+  localstack-data:
 
 networks:
   infra-net:

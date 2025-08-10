@@ -12,6 +12,11 @@ resource "keycloak_role" "category_admin" {
   name     = "category_admin"
 }
 
+resource "keycloak_role" "organization_admin" {
+  realm_id = keycloak_realm.event_ticketing.id
+  name     = "organization_admin"
+}
+
 #==================================================================
 # 2. CREATE THE GROUP HIERARCHY
 #==================================================================
@@ -106,6 +111,7 @@ resource "keycloak_group_roles" "system_admins_group_roles" {
     # and also inherit the base account management roles from the parent "Users" group.
     keycloak_role.event_admin.id,
     keycloak_role.category_admin.id,
+    keycloak_role.organization_admin.id
   ]
 }
 

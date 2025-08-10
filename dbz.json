@@ -1,4 +1,161 @@
-{"schema":{"type":"struct","fields":[{"type":"struct","fields":[{"type":"string","optional":false,"name":"io.debezium.data.Uuid","version":1,"field":"id"},{"type":"string","optional":false,"field":"name"},{"type":"string","optional":true,"field":"logo_url"},{"type":"string","optional":true,"field":"website"},{"type":"string","optional":false,"field":"user_id"},{"type":"int64","optional":false,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"created_at"},{"type":"int64","optional":true,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"updated_at"}],"optional":true,"name":"dbz.ticketly.public.organizations.Value","field":"before"},{"type":"struct","fields":[{"type":"string","optional":false,"name":"io.debezium.data.Uuid","version":1,"field":"id"},{"type":"string","optional":false,"field":"name"},{"type":"string","optional":true,"field":"logo_url"},{"type":"string","optional":true,"field":"website"},{"type":"string","optional":false,"field":"user_id"},{"type":"int64","optional":false,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"created_at"},{"type":"int64","optional":true,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"updated_at"}],"optional":true,"name":"dbz.ticketly.public.organizations.Value","field":"after"},{"type":"struct","fields":[{"type":"string","optional":false,"field":"version"},{"type":"string","optional":false,"field":"connector"},{"type":"string","optional":false,"field":"name"},{"type":"int64","optional":false,"field":"ts_ms"},{"type":"string","optional":true,"name":"io.debezium.data.Enum","version":1,"parameters":{"allowed":"true,last,false,incremental"},"default":"false","field":"snapshot"},{"type":"string","optional":false,"field":"db"},{"type":"string","optional":true,"field":"sequence"},{"type":"string","optional":false,"field":"schema"},{"type":"string","optional":false,"field":"table"},{"type":"int64","optional":true,"field":"txId"},{"type":"int64","optional":true,"field":"lsn"},{"type":"int64","optional":true,"field":"xmin"}],"optional":false,"name":"io.debezium.connector.postgresql.Source","field":"source"},{"type":"string","optional":false,"field":"op"},{"type":"int64","optional":true,"field":"ts_ms"},{"type":"struct","fields":[{"type":"string","optional":false,"field":"id"},{"type":"int64","optional":false,"field":"total_order"},{"type":"int64","optional":false,"field":"data_collection_order"}],"optional":true,"name":"event.block","version":1,"field":"transaction"}],"optional":false,"name":"dbz.ticketly.public.organizations.Envelope","version":1},"payload":{"before":null,"after":{"id":"d56ed86a-2f4f-41ea-b741-1afc4d8399fa","name":"Acme Inc.","logo_url":null,"website":null,"user_id":"85195a32-1341-4adc-bff1-9e5f2150e3e6","created_at":1754210488518992,"updated_at":1754210488518992},"source":{"version":"2.5.4.Final","connector":"postgresql","name":"dbz.ticketly","ts_ms":1754210488529,"snapshot":"false","db":"event_seating","sequence":"[\"28220984\",\"28362416\"]","schema":"public","table":"organizations","txId":807,"lsn":28362416,"xmin":null},"op":"c","ts_ms":1754210488665,"transaction":null}}
-{"schema":{"type":"struct","fields":[{"type":"struct","fields":[{"type":"string","optional":false,"name":"io.debezium.data.Uuid","version":1,"field":"id"},{"type":"string","optional":false,"field":"name"},{"type":"string","optional":true,"field":"logo_url"},{"type":"string","optional":true,"field":"website"},{"type":"string","optional":false,"field":"user_id"},{"type":"int64","optional":false,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"created_at"},{"type":"int64","optional":true,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"updated_at"}],"optional":true,"name":"dbz.ticketly.public.organizations.Value","field":"before"},{"type":"struct","fields":[{"type":"string","optional":false,"name":"io.debezium.data.Uuid","version":1,"field":"id"},{"type":"string","optional":false,"field":"name"},{"type":"string","optional":true,"field":"logo_url"},{"type":"string","optional":true,"field":"website"},{"type":"string","optional":false,"field":"user_id"},{"type":"int64","optional":false,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"created_at"},{"type":"int64","optional":true,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"updated_at"}],"optional":true,"name":"dbz.ticketly.public.organizations.Value","field":"after"},{"type":"struct","fields":[{"type":"string","optional":false,"field":"version"},{"type":"string","optional":false,"field":"connector"},{"type":"string","optional":false,"field":"name"},{"type":"int64","optional":false,"field":"ts_ms"},{"type":"string","optional":true,"name":"io.debezium.data.Enum","version":1,"parameters":{"allowed":"true,last,false,incremental"},"default":"false","field":"snapshot"},{"type":"string","optional":false,"field":"db"},{"type":"string","optional":true,"field":"sequence"},{"type":"string","optional":false,"field":"schema"},{"type":"string","optional":false,"field":"table"},{"type":"int64","optional":true,"field":"txId"},{"type":"int64","optional":true,"field":"lsn"},{"type":"int64","optional":true,"field":"xmin"}],"optional":false,"name":"io.debezium.connector.postgresql.Source","field":"source"},{"type":"string","optional":false,"field":"op"},{"type":"int64","optional":true,"field":"ts_ms"},{"type":"struct","fields":[{"type":"string","optional":false,"field":"id"},{"type":"int64","optional":false,"field":"total_order"},{"type":"int64","optional":false,"field":"data_collection_order"}],"optional":true,"name":"event.block","version":1,"field":"transaction"}],"optional":false,"name":"dbz.ticketly.public.organizations.Envelope","version":1},"payload":{"before":null,"after":{"id":"d56ed86a-2f4f-41ea-b741-1afc4d8399fa","name":"Color Novels","logo_url":null,"website":"","user_id":"85195a32-1341-4adc-bff1-9e5f2150e3e6","created_at":1754210488518992,"updated_at":1754210547827808},"source":{"version":"2.5.4.Final","connector":"postgresql","name":"dbz.ticketly","ts_ms":1754210547833,"snapshot":"false","db":"event_seating","sequence":"[\"28362768\",\"28676496\"]","schema":"public","table":"organizations","txId":812,"lsn":28676496,"xmin":null},"op":"u","ts_ms":1754210547883,"transaction":null}}
-{"schema":{"type":"struct","fields":[{"type":"struct","fields":[{"type":"string","optional":false,"name":"io.debezium.data.Uuid","version":1,"field":"id"},{"type":"string","optional":false,"field":"name"},{"type":"string","optional":true,"field":"logo_url"},{"type":"string","optional":true,"field":"website"},{"type":"string","optional":false,"field":"user_id"},{"type":"int64","optional":false,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"created_at"},{"type":"int64","optional":true,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"updated_at"}],"optional":true,"name":"dbz.ticketly.public.organizations.Value","field":"before"},{"type":"struct","fields":[{"type":"string","optional":false,"name":"io.debezium.data.Uuid","version":1,"field":"id"},{"type":"string","optional":false,"field":"name"},{"type":"string","optional":true,"field":"logo_url"},{"type":"string","optional":true,"field":"website"},{"type":"string","optional":false,"field":"user_id"},{"type":"int64","optional":false,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"created_at"},{"type":"int64","optional":true,"name":"io.debezium.time.MicroTimestamp","version":1,"field":"updated_at"}],"optional":true,"name":"dbz.ticketly.public.organizations.Value","field":"after"},{"type":"struct","fields":[{"type":"string","optional":false,"field":"version"},{"type":"string","optional":false,"field":"connector"},{"type":"string","optional":false,"field":"name"},{"type":"int64","optional":false,"field":"ts_ms"},{"type":"string","optional":true,"name":"io.debezium.data.Enum","version":1,"parameters":{"allowed":"true,last,false,incremental"},"default":"false","field":"snapshot"},{"type":"string","optional":false,"field":"db"},{"type":"string","optional":true,"field":"sequence"},{"type":"string","optional":false,"field":"schema"},{"type":"string","optional":false,"field":"table"},{"type":"int64","optional":true,"field":"txId"},{"type":"int64","optional":true,"field":"lsn"},{"type":"int64","optional":true,"field":"xmin"}],"optional":false,"name":"io.debezium.connector.postgresql.Source","field":"source"},{"type":"string","optional":false,"field":"op"},{"type":"int64","optional":true,"field":"ts_ms"},{"type":"struct","fields":[{"type":"string","optional":false,"field":"id"},{"type":"int64","optional":false,"field":"total_order"},{"type":"int64","optional":false,"field":"data_collection_order"}],"optional":true,"name":"event.block","version":1,"field":"transaction"}],"optional":false,"name":"dbz.ticketly.public.organizations.Envelope","version":1},"payload":{"before":null,"after":{"id":"d56ed86a-2f4f-41ea-b741-1afc4d8399fa","name":"Color Novelss","logo_url":null,"website":"","user_id":"85195a32-1341-4adc-bff1-9e5f2150e3e6","created_at":1754210488518992,"updated_at":1754210612420951},"source":{"version":"2.5.4.Final","connector":"postgresql","name":"dbz.ticketly","ts_ms":1754210612424,"snapshot":"false","db":"event_seating","sequence":"[\"28676704\",\"28693120\"]","schema":"public","table":"organizations","txId":813,"lsn":28693120,"xmin":null},"op":"u","ts_ms":1754210612661,"transaction":null}}
-^CProcessed a total of 3 messages
+{
+    "schema": {
+        "type": "struct",
+        "fields": [
+            {
+                "type": "struct",
+                "fields": [
+                    {
+                        "type": "string",
+                        "optional": false,
+                        "name": "io.debezium.data.Uuid",
+                        "version": 1,
+                        "field": "id"
+                    },
+                    { "type": "string", "optional": false, "field": "name" },
+                    { "type": "string", "optional": true, "field": "logo_url" },
+                    { "type": "string", "optional": true, "field": "website" },
+                    { "type": "string", "optional": false, "field": "user_id" },
+                    {
+                        "type": "int64",
+                        "optional": false,
+                        "name": "io.debezium.time.MicroTimestamp",
+                        "version": 1,
+                        "field": "created_at"
+                    },
+                    {
+                        "type": "int64",
+                        "optional": true,
+                        "name": "io.debezium.time.MicroTimestamp",
+                        "version": 1,
+                        "field": "updated_at"
+                    }
+                ],
+                "optional": true,
+                "name": "dbz.ticketly.public.organizations.Value",
+                "field": "before"
+            },
+            {
+                "type": "struct",
+                "fields": [
+                    {
+                        "type": "string",
+                        "optional": false,
+                        "name": "io.debezium.data.Uuid",
+                        "version": 1,
+                        "field": "id"
+                    },
+                    { "type": "string", "optional": false, "field": "name" },
+                    { "type": "string", "optional": true, "field": "logo_url" },
+                    { "type": "string", "optional": true, "field": "website" },
+                    { "type": "string", "optional": false, "field": "user_id" },
+                    {
+                        "type": "int64",
+                        "optional": false,
+                        "name": "io.debezium.time.MicroTimestamp",
+                        "version": 1,
+                        "field": "created_at"
+                    },
+                    {
+                        "type": "int64",
+                        "optional": true,
+                        "name": "io.debezium.time.MicroTimestamp",
+                        "version": 1,
+                        "field": "updated_at"
+                    }
+                ],
+                "optional": true,
+                "name": "dbz.ticketly.public.organizations.Value",
+                "field": "after"
+            },
+            {
+                "type": "struct",
+                "fields": [
+                    { "type": "string", "optional": false, "field": "version" },
+                    {
+                        "type": "string",
+                        "optional": false,
+                        "field": "connector"
+                    },
+                    { "type": "string", "optional": false, "field": "name" },
+                    { "type": "int64", "optional": false, "field": "ts_ms" },
+                    {
+                        "type": "string",
+                        "optional": true,
+                        "name": "io.debezium.data.Enum",
+                        "version": 1,
+                        "parameters": {
+                            "allowed": "true,last,false,incremental"
+                        },
+                        "default": "false",
+                        "field": "snapshot"
+                    },
+                    { "type": "string", "optional": false, "field": "db" },
+                    { "type": "string", "optional": true, "field": "sequence" },
+                    { "type": "string", "optional": false, "field": "schema" },
+                    { "type": "string", "optional": false, "field": "table" },
+                    { "type": "int64", "optional": true, "field": "txId" },
+                    { "type": "int64", "optional": true, "field": "lsn" },
+                    { "type": "int64", "optional": true, "field": "xmin" }
+                ],
+                "optional": false,
+                "name": "io.debezium.connector.postgresql.Source",
+                "field": "source"
+            },
+            { "type": "string", "optional": false, "field": "op" },
+            { "type": "int64", "optional": true, "field": "ts_ms" },
+            {
+                "type": "struct",
+                "fields": [
+                    { "type": "string", "optional": false, "field": "id" },
+                    {
+                        "type": "int64",
+                        "optional": false,
+                        "field": "total_order"
+                    },
+                    {
+                        "type": "int64",
+                        "optional": false,
+                        "field": "data_collection_order"
+                    }
+                ],
+                "optional": true,
+                "name": "event.block",
+                "version": 1,
+                "field": "transaction"
+            }
+        ],
+        "optional": false,
+        "name": "dbz.ticketly.public.organizations.Envelope",
+        "version": 1
+    },
+    "payload": {
+        "before": null,
+        "after": {
+            "id": "d56ed86a-2f4f-41ea-b741-1afc4d8399fa",
+            "name": "Color Novelss",
+            "logo_url": null,
+            "website": "",
+            "user_id": "85195a32-1341-4adc-bff1-9e5f2150e3e6",
+            "created_at": 1754210488518992,
+            "updated_at": 1754210612420951
+        },
+        "source": {
+            "version": "2.5.4.Final",
+            "connector": "postgresql",
+            "name": "dbz.ticketly",
+            "ts_ms": 1754210612424,
+            "snapshot": "false",
+            "db": "event_seating",
+            "sequence": "[\"28676704\",\"28693120\"]",
+            "schema": "public",
+            "table": "organizations",
+            "txId": 813,
+            "lsn": 28693120,
+            "xmin": null
+        },
+        "op": "u",
+        "ts_ms": 1754210612661,
+        "transaction": null
+    }
+}
