@@ -1,0 +1,20 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        # Route for the Event Service
+        - id: event_seating_service_route
+          # ✅ The URI now points to your host machine
+          uri: http://host.docker.internal:8081
+          predicates:
+            # Match any request to this path
+            - Path=/api/event-seating/**
+
+        # You would add routes for other services here
+        # - id: order_service_route
+        #   uri: http://host.docker.internal:8082
+        #   predicates:
+        #     - Path=/api/orders/**
+
+server:
+  port: 8088

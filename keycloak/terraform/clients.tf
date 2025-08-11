@@ -54,3 +54,17 @@ resource "keycloak_openid_client" "frontend_app" {
     "https://localhost:8090"
   ]
 }
+
+
+# API Gateway Client - Confidential client for token validation
+resource "keycloak_openid_client" "api_gateway" {
+  realm_id                = keycloak_realm.event_ticketing.id
+  client_id               = "api-gateway-client"
+  name                    = "API Gateway"
+  enabled                 = true
+  access_type             = "CONFIDENTIAL"
+  standard_flow_enabled      = false
+  implicit_flow_enabled      = false
+  direct_access_grants_enabled = false
+  service_accounts_enabled = true 
+}
