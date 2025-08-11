@@ -68,3 +68,15 @@ resource "keycloak_openid_client" "api_gateway" {
   direct_access_grants_enabled = false
   service_accounts_enabled = true 
 }
+
+
+resource "keycloak_openid_client" "scheduler_service" {
+  realm_id               = keycloak_realm.event_ticketing.id
+  client_id              = "scheduler-service-client"
+  name                   = "Scheduler Service"
+  enabled                = true
+  access_type            = "CONFIDENTIAL"
+    standard_flow_enabled      = false
+  direct_access_grants_enabled = false
+  service_accounts_enabled = true
+}

@@ -43,3 +43,8 @@ output "api_gateway_client_secret" {
   value     = keycloak_openid_client.api_gateway.client_secret
   sensitive = true # Hides the value from standard output logs
 }
+
+output "scheduler_service_client_secret" {
+  value     = keycloak_openid_client.scheduler_service.client_secret
+  sensitive = true
+}

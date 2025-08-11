@@ -64,7 +64,6 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./scripts/localstack:/etc/localstack/init/ready.d"
-      - "./scripts/localstack/scheduler-role-policy.json:/etc/localstack/init/ready.d/scheduler-role-policy.json"
       - localstack-data:/var/lib/localstack
     networks:
       - infra-net
@@ -106,6 +105,20 @@ services:
     networks:
       - infra-net
 
+    # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "9000:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - infra-net
+
   # Debezium for Change Data Capture (CDC)
   debezium-connect:
     image: debezium/connect:2.5
@@ -141,6 +154,27 @@ services:
       "
     networks:
       - infra-net
+
+  scheduler-service:
+    # ✅ Corrected: Pull the pre-built image from a Docker registry
+    image: ticketly/scheduler-service:latest
+    container_name: scheduler-service
+    depends_on:
+      - keycloak
+      - event-seating-localstack
+    environment:
+      # These point to the internal Docker hostnames
+      - AWS_ENDPOINT_URL=http://event-seating-localstack:4566
+      - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
+      - KEYCLOAK_URL=http://keycloak:8080
+      # You must get this value from your Terraform output and set it here
+      # or in a .env file
+      - KEYCLOAK_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
+    networks:
+      - infra-net
+    # This allows the container to talk back to your host machine
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # API Gateway
   api-gateway:

@@ -8,7 +8,7 @@
     "database.password": "postgres",
     "database.dbname": "event_seating",
     "database.server.name": "ticketly-postgres",
-    "table.include.list": "public.events,public.event_sessions,public.session_seating_maps,public.organizations,public.venues,public.categories",
+    "table.include.list": "public.events,public.event_sessions,public.session_seating_maps,public.organizations,public.categories,public.event_cover_photos,public.tiers",
     "topic.prefix": "dbz.ticketly",
     "plugin.name": "pgoutput"
   }
