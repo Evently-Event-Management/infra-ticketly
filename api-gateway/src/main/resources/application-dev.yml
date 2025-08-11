@@ -1,5 +1,5 @@
 server:
-  port: 8089
+  port: 8088
 
 spring:
   application:
@@ -15,8 +15,8 @@ spring:
     gateway:
       server:
         webflux:
-          #          default-filters:
-          #            - TokenRelay
+          default-filters:
+            - TokenRelay
           routes:
             - id: event_seating_service_route
               uri: http://localhost:8081
@@ -31,7 +31,17 @@ spring:
                   - POST
                   - PUT
                   - DELETE
-                  - OPTIONS
-                allowedHeaders: '*'
-                allowCredentials: true
-            add-to-simple-url-handler-mapping: true
+
+# Detailed logging configuration for development
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.netty: DEBUG
+    reactor.netty.http.client: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
