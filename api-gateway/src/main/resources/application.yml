@@ -20,3 +20,12 @@ spring:
               uri: http://host.docker.internal:8081
               predicates:
                 - Path=/api/event-seating/**
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "http://host.docker.internal:8090"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE

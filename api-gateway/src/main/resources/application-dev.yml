@@ -1,5 +1,5 @@
 server:
-  port: 8088
+  port: 8089
 
 spring:
   application:
@@ -15,10 +15,23 @@ spring:
     gateway:
       server:
         webflux:
-#          default-filters:
-#            - TokenRelay
+          #          default-filters:
+          #            - TokenRelay
           routes:
             - id: event_seating_service_route
               uri: http://localhost:8081
               predicates:
                 - Path=/api/event-seating/**
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "http://localhost:8090"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: '*'
+                allowCredentials: true
+            add-to-simple-url-handler-mapping: true
