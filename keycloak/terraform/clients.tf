@@ -79,4 +79,7 @@ resource "keycloak_openid_client" "scheduler_service" {
     standard_flow_enabled      = false
   direct_access_grants_enabled = false
   service_accounts_enabled = true
+
+  
 }
+
