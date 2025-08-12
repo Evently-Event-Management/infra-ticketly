@@ -167,9 +167,7 @@ services:
       - AWS_ENDPOINT_URL=http://event-seating-localstack:4566
       - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_URL=http://keycloak:8080
-      # You must get this value from your Terraform output and set it here
-      # or in a .env file
-      - KEYCLOAK_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
+      - SCHEDULER_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
     networks:
       - infra-net
     # This allows the container to talk back to your host machine

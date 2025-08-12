@@ -43,3 +43,9 @@ EOF
 echo "✅ Successfully updated .env file with client secrets"
 echo "Scheduler Secret: ${SCHEDULER_SECRET}"
 echo "API Gateway Secret: ${API_GATEWAY_SECRET}"
+
+
+# Re run the service to apply changes
+echo "Restarting services to apply changes..."
+docker-compose down
+docker-compose up -d
