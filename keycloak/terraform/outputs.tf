@@ -48,3 +48,8 @@ output "scheduler_service_client_secret" {
   value     = keycloak_openid_client.scheduler_service.client_secret
   sensitive = true
 }
+
+output "event_projection_service_client_secret" {
+  value     = keycloak_openid_client.event_projection_service.client_secret
+  sensitive = true
+}

@@ -1,0 +1,32 @@
+{
+  "exp": 1754896016,
+  "iat": 1754895716,
+  "jti": "onrtrt:2d0108ee-6aed-74c6-16a6-d6247b3a18db",
+  "iss": "http://localhost:8080/realms/event-ticketing",
+  "aud": "account",
+  "sub": "e0664f04-a5ad-4ab5-ae6d-64d9622e6f85",
+  "typ": "Bearer",
+  "azp": "login-testing",
+  "sid": "47f03ed2-3675-41ea-9cf9-7d65bf2bd405",
+  "realm_access": {
+    "roles": [
+      "default-roles-event-ticketing",
+      "offline_access",
+      "uma_authorization"
+    ]
+  },
+  "resource_access": {
+    "account": {
+      "roles": [
+        "manage-account",
+        "manage-account-links",
+        "view-profile"
+      ]
+    }
+  },
+  "scope": "group_membership",
+  "user_groups": [
+    "/Tiers/FREE",
+    "/Permissions/Users"
+  ]
+}

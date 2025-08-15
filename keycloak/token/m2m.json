@@ -1,0 +1,10 @@
+{
+  "exp": 1755198301,
+  "iat": 1755198001,
+  "jti": "trrtcc:87a6ea56-c06e-d1a9-3596-f8c95c1000a8",
+  "iss": "http://keycloak:8080/realms/event-ticketing",
+  "sub": "2abe652b-061d-4dc3-bd37-06b5814dec0f",
+  "typ": "Bearer",
+  "azp": "scheduler-service-client",
+  "scope": "internal-api"
+}
