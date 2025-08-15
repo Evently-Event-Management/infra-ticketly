@@ -68,7 +68,6 @@ resource "keycloak_group" "tier_enterprise" {
 
 #==================================================================
 # 3. ASSIGN ROLES TO GROUPS
-# This is where the magic happens.
 #==================================================================
 
 # Data sources for the built-in account management roles
