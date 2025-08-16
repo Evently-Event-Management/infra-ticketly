@@ -9,6 +9,11 @@ services:
       POSTGRES_PASSWORD: keycloak123
     volumes:
       - keycloak-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - infra-net
 
@@ -25,12 +30,18 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin123
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HOSTNAME_URL: http://localhost:8080
     ports:
       - "8080:8080"
-    command:
-      - start-dev
+    command: start-dev
     depends_on:
-      - keycloak-db
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && exec 3<&- && exec 3>&-"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
     networks:
       - infra-net
 
@@ -47,6 +58,11 @@ services:
     command: postgres -c wal_level=logical
     volumes:
       - event-seating-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - infra-net
 
@@ -59,8 +75,13 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-        - infra-net
-
+      - infra-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
   # Localstack for AWS Services
   event-seating-localstack:
     image: localstack/localstack:latest
@@ -78,6 +99,11 @@ services:
       - localstack-data:/var/lib/localstack
     networks:
       - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis for caching
   redis:
@@ -89,6 +115,11 @@ services:
       - redis-data:/data
     networks:
       - infra-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Kafka Broker in KRaft mode
   kafka:
@@ -107,16 +138,19 @@ services:
       KAFKA_LISTENERS: 'PLAINTEXT_HOST://0.0.0.0:9092,PLAINTEXT://0.0.0.0:29092,CONTROLLER://kafka:9093'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk' # A pre-generated cluster ID
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
     networks:
       - infra-net
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
 
-    # Kafka UI
+  # Kafka UI for easy topic management and message browsing
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -126,7 +160,8 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     networks:
       - infra-net
 
@@ -137,8 +172,10 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - kafka
-      - event-seating-db
+      kafka:
+        condition: service_healthy
+      event-seating-db:
+        condition: service_healthy
     environment:
       BOOTSTRAP_SERVERS: kafka:29092
       GROUP_ID: 1
@@ -147,13 +184,19 @@ services:
       STATUS_STORAGE_TOPIC: my_connect_statuses
     networks:
       - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   # Debezium connector registration service
   debezium-connector-init:
     image: curlimages/curl:latest
     container_name: debezium-connector-init
     depends_on:
-      - debezium-connect
+      debezium-connect:
+        condition: service_healthy
     volumes:
       - ./debezium:/debezium
     command: >
@@ -166,32 +209,56 @@ services:
     networks:
       - infra-net
 
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8088:8088"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - infra-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Go Scheduler Service
   scheduler-service:
-    # ✅ Corrected: Pull the pre-built image from a Docker registry
     image: ticketly/scheduler-service:latest
     container_name: scheduler-service
     depends_on:
-      - keycloak
-      - event-seating-localstack
+      keycloak:
+        condition: service_healthy
+      event-seating-localstack:
+        condition: service_healthy
     environment:
-      # These point to the internal Docker hostnames
       - AWS_ENDPOINT_URL=http://event-seating-localstack:4566
       - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_URL=http://keycloak:8080
       - SCHEDULER_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
     networks:
       - infra-net
-    # This allows the container to talk back to your host machine
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # API Gateway
-  api-gateway:
-    # This tells Docker to build the image from the Dockerfile
-    build: ./api-gateway 
-    container_name: api-gateway
-    ports:
-      - "8088:8088" # The frontend will talk to this port
+  # Projection Service
+  projection-service:
+    image: projection-service:latest
+    container_name: projection-service
+    depends_on:
+      query-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    environment:
+      - MONGODB_URI=mongodb://query-db:27017/event-seating
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/event-ticketing
+      - COMMAND_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
+      - EVENT_PROJECTION_CLIENT_SECRET=${EVENT_PROJECTION_CLIENT_SECRET}
     networks:
       - infra-net
     extra_hosts:
