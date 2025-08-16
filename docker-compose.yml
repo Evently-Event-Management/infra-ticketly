@@ -30,7 +30,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin123
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_HOSTNAME_URL: http://localhost:8080
+      KC_HOSTNAME: localhost
     ports:
       - "8080:8080"
     command: start-dev
@@ -215,6 +215,10 @@ services:
     container_name: api-gateway
     ports:
       - "8088:8088"
+    environment:
+      - KEYCLOAK_ISSUER_URI=http://localhost:8080/realms/event-ticketing
+      - KEYCLOAK_JWK_SET_URI=http://keycloak:8080/realms/event-ticketing/protocol/openid-connect/certs
+      - EVENT_SEATING_SERVICE_URI=http://host.docker.internal:8081
     depends_on:
       keycloak:
         condition: service_healthy
