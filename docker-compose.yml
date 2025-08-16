@@ -30,7 +30,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin123
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_HOSTNAME: localhost
+      KC_HOSTNAME: auth.ticketly.com
     ports:
       - "8080:8080"
     command: start-dev
@@ -216,8 +216,8 @@ services:
     ports:
       - "8088:8088"
     environment:
-      - KEYCLOAK_ISSUER_URI=http://localhost:8080/realms/event-ticketing
-      - KEYCLOAK_JWK_SET_URI=http://keycloak:8080/realms/event-ticketing/protocol/openid-connect/certs
+      - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
+      - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
       - EVENT_SEATING_SERVICE_URI=http://host.docker.internal:8081
     depends_on:
       keycloak:
@@ -226,6 +226,7 @@ services:
       - infra-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "auth.ticketly.com:host-gateway"
 
   # Go Scheduler Service
   scheduler-service:
@@ -239,7 +240,7 @@ services:
     environment:
       - AWS_ENDPOINT_URL=http://event-seating-localstack:4566
       - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
-      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_URL=http://auth.ticketly.com:8080
       - SCHEDULER_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
     networks:
       - infra-net
@@ -248,7 +249,7 @@ services:
 
   # Projection Service
   projection-service:
-    image: projection-service:latest
+    image: ticketly/projection-service:latest
     container_name: projection-service
     depends_on:
       query-db:
@@ -260,13 +261,14 @@ services:
     environment:
       - MONGODB_URI=mongodb://query-db:27017/event-seating
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/event-ticketing
+      - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
       - COMMAND_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - EVENT_PROJECTION_CLIENT_SECRET=${EVENT_PROJECTION_CLIENT_SECRET}
     networks:
       - infra-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "auth.ticketly.com:host-gateway"
 
 volumes:
   keycloak-postgres-data:
