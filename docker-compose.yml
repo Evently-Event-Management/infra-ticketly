@@ -250,7 +250,7 @@ services:
 
   # Event Query Service
   event-query-service:
-    image: ticketly/projection-service:latest
+    image: ticketly/event-query-service:latest
     container_name: event-query-service
     depends_on:
       query-db:
@@ -271,6 +271,52 @@ services:
       - infra-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "auth.ticketly.com:host-gateway"
+
+  # Event Seating Service
+  event-command-service:
+    image: ticketly/event-command-service:latest
+    container_name: event-command-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+      - DATABASE_URL=jdbc:postgresql://event-seating-db:5432/event_seating
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=postgres
+      - JWT_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
+      - JWT_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AWS_REGION=us-east-1
+      - AWS_S3_BUCKET_NAME=event-seating-uploads
+      - AWS_LOCAL_ENDPOINT=http://event-seating-localstack:4566
+      - AWS_LOCAL_ACCESS_KEY=test
+      - AWS_LOCAL_SECRET_KEY=test
+      - AWS_SQS_QUEUE_ARN=arn:aws:sqs:us-east-1:000000000000:session-on-sale-queue
+      - AWS_SCHEDULER_ROLE_ARN=arn:aws:iam::000000000000:role/EventBridgeSchedulerRole
+      - AWS_SCHEDULER_GROUP_NAME=event-ticketing-schedules
+      - SHOW_SQL=true
+      - LOG_LEVEL_APP=DEBUG
+      - LOG_LEVEL_SECURITY=INFO
+    depends_on:
+      event-seating-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      event-seating-localstack:
+        condition: service_healthy
+    networks:
+      - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/event-seating/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    extra_hosts:
       - "auth.ticketly.com:host-gateway"
 
 volumes:
