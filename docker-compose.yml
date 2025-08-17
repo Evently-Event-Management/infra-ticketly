@@ -251,8 +251,6 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
-      event-seating-localstack:
-        condition: service_healthy
     environment:
       - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_URL=http://auth.ticketly.com:8080
@@ -293,8 +291,6 @@ services:
       redis:
         condition: service_healthy
       keycloak:
-        condition: service_healthy
-      event-seating-localstack:
         condition: service_healthy
     networks:
       - infra-net
@@ -342,7 +338,6 @@ volumes:
   event-seating-postgres-data:
   redis-data:
   kafka-data:
-  localstack-data:
   mongo-data:
   order-service-postgres-data:
   payment-service-db-data:
