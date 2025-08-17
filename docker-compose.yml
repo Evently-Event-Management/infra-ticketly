@@ -262,6 +262,7 @@ services:
       - infra-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "auth.ticketly.com:host-gateway"
 
   # Event Seating Service
   event-command-service:
