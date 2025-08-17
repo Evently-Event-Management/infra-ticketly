@@ -248,10 +248,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # Projection Service
-  projection-service:
+  # Event Query Service
+  event-query-service:
     image: ticketly/projection-service:latest
-    container_name: projection-service
+    container_name: event-query-service
     depends_on:
       query-db:
         condition: service_healthy
