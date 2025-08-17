@@ -53,3 +53,14 @@ output "event_projection_service_client_secret" {
   value     = keycloak_openid_client.event_projection_service.client_secret
   sensitive = true
 }
+
+
+output "ticket_service_client_secret" {
+  value     = keycloak_openid_client.ticket_service.client_secret
+  sensitive = true
+}
+
+output "payment_service_client_secret" {
+  value     = keycloak_openid_client.payment_service.client_secret
+  sensitive = true
+}

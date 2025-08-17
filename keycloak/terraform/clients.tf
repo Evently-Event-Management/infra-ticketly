@@ -96,3 +96,26 @@ resource "keycloak_openid_client" "event_projection_service" {
   direct_access_grants_enabled = false
   service_accounts_enabled = true
 }
+
+resource "keycloak_openid_client" "ticket_service" {
+  realm_id               = keycloak_realm.event_ticketing.id
+  client_id              = "ticket-service-client"
+  name                   = "Ticket Service"
+  enabled                = true
+  access_type            = "CONFIDENTIAL"
+  standard_flow_enabled      = false
+  direct_access_grants_enabled = false
+  service_accounts_enabled = true
+}
+
+resource "keycloak_openid_client" "payment_service" {
+  realm_id               = keycloak_realm.event_ticketing.id
+  client_id              = "payment-service-client"
+  name                   = "Payment Service"
+  enabled                = true
+  access_type            = "CONFIDENTIAL"
+  standard_flow_enabled      = false
+  direct_access_grants_enabled = false
+  service_accounts_enabled = true
+  
+}
