@@ -81,29 +81,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  
-  # Localstack for AWS Services
-  event-seating-localstack:
-    image: localstack/localstack:latest
-    container_name: event-seating-localstack
-    environment:
-      - DEBUG=1
-      - SERVICES=s3,sqs,scheduler,iam
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      - PERSISTENCE=1
-    ports:
-      - '4566:4566'
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./scripts/localstack:/etc/localstack/init/ready.d"
-      - localstack-data:/var/lib/localstack
-    networks:
-      - infra-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Redis for caching
   redis:
@@ -239,10 +216,12 @@ services:
       event-seating-localstack:
         condition: service_healthy
     environment:
-      - AWS_ENDPOINT_URL=http://event-seating-localstack:4566
       - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_URL=http://auth.ticketly.com:8080
       - SCHEDULER_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
+      - SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/964191654724/session-on-sale-queue
+    volumes:
+      - ~/.aws:/root/.aws:ro
     networks:
       - infra-net
     extra_hosts:
@@ -264,16 +243,12 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - AWS_REGION=us-east-1
-      - AWS_S3_BUCKET_NAME=event-seating-uploads
-      - AWS_LOCAL_ENDPOINT=http://event-seating-localstack:4566
-      - AWS_LOCAL_ACCESS_KEY=test
-      - AWS_LOCAL_SECRET_KEY=test
-      - AWS_SQS_QUEUE_ARN=arn:aws:sqs:us-east-1:000000000000:session-on-sale-queue
-      - AWS_SCHEDULER_ROLE_ARN=arn:aws:iam::000000000000:role/EventBridgeSchedulerRole
+      - AWS_SQS_QUEUE_ARN=arn:aws:sqs:us-east-1:964191654724:session-on-sale-queue
+      - AWS_SCHEDULER_ROLE_ARN=arn:aws:iam::964191654724:role/EventBridgeSchedulerSqsRole
       - AWS_SCHEDULER_GROUP_NAME=event-ticketing-schedules
-      - SHOW_SQL=true
+      - SHOW_SQL=false
       - LOG_LEVEL_APP=DEBUG
-      - LOG_LEVEL_SECURITY=INFO
+      - LOG_LEVEL_SECURITY=WARN
     depends_on:
       event-seating-db:
         condition: service_healthy
@@ -285,6 +260,8 @@ services:
         condition: service_healthy
     networks:
       - infra-net
+    volumes:
+      - ~/.aws:/root/.aws:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/api/event-seating/actuator/health"]
       interval: 30s
