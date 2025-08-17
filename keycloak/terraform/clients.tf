@@ -24,6 +24,11 @@ resource "keycloak_openid_client" "login_testing" {
   direct_access_grants_enabled     = true
   standard_flow_enabled           = true
   implicit_flow_enabled           = false
+
+  web_origins = [
+    "http://localhost:8082",
+    "http://localhost:8083"
+    ]
   
   valid_redirect_uris = [
     "http://localhost:3000/*",

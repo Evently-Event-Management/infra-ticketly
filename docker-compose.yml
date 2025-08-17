@@ -219,6 +219,7 @@ services:
       - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
       - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
       - EVENT_SEATING_SERVICE_URI=http://host.docker.internal:8081
+      - EVENT_QUERY_SERVICE_URI=http://host.docker.internal:8082
     depends_on:
       keycloak:
         condition: service_healthy
@@ -264,6 +265,8 @@ services:
       - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
       - COMMAND_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - EVENT_PROJECTION_CLIENT_SECRET=${EVENT_PROJECTION_CLIENT_SECRET}
+      - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
+      - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
     networks:
       - infra-net
     extra_hosts:
