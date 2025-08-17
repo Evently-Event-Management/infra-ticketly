@@ -20,15 +20,10 @@ spring:
               uri: ${EVENT_SEATING_SERVICE_URI:http://localhost:8081}
               predicates:
                 - Path=/api/event-seating/**
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOrigins: "http://localhost:8090"
-                allowedMethods:
-                  - GET
-                  - POST
-                  - PUT
-                  - DELETE
+            - id: event_query_service_route
+              uri: ${EVENT_QUERY_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/event-query/**
 
 # Detailed logging configuration for development
 logging:

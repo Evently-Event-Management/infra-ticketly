@@ -37,7 +37,8 @@ resource "keycloak_openid_client_default_scopes" "login_testing_default_scopes" 
   default_scopes = [
     "roles",
     "basic",
-    keycloak_openid_client_scope.group_membership_scope.name
+    keycloak_openid_client_scope.group_membership_scope.name,
+    keycloak_openid_client_scope.internal_api_scope.name
   ]
 }
 
