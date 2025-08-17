@@ -95,3 +95,22 @@ resource "keycloak_openid_client_default_scopes" "event_projection_service_defau
     keycloak_openid_client_scope.internal_api_scope.name
   ]
 }
+
+
+resource "keycloak_openid_client_default_scopes" "payment_service_default_scopes" {
+  realm_id  = keycloak_realm.event_ticketing.id
+  client_id = keycloak_openid_client.payment_service.id
+
+  default_scopes = [
+    keycloak_openid_client_scope.internal_api_scope.name
+  ]
+}
+
+resource "keycloak_openid_client_default_scopes" "ticket_service_default_scopes" {
+  realm_id  = keycloak_realm.event_ticketing.id
+  client_id = keycloak_openid_client.ticket_service.id
+
+  default_scopes = [
+    keycloak_openid_client_scope.internal_api_scope.name
+  ]
+}

@@ -66,6 +66,42 @@ services:
     networks:
       - infra-net
 
+  order-service-db:
+    image: postgres:15
+    container_name: order_service_db
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: secretpass
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - order-service-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      interval: 5s
+      retries: 5
+
+  payment-service-db:
+    image: mysql:8.0
+    container_name: payment_service_db
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: payment_gateway
+      MYSQL_USER: payment_user
+      MYSQL_PASSWORD: payment_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - payment-service-db-data:/var/lib/mysql
+      - ./scripts/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ppassword"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: --default-authentication-plugin=mysql_native_password
+
   # MongoDB for Query Service
   query-db:
     image: mongo:latest
@@ -220,6 +256,8 @@ services:
       - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
       - EVENT_SEATING_SERVICE_URI=http://host.docker.internal:8081
       - EVENT_QUERY_SERVICE_URI=http://host.docker.internal:8082
+      - TICKET_SERVICE_URI=http://host.docker.internal:8084
+      - PAYMENT_SERVICE_URI=http://host.docker.internal:8085
     depends_on:
       keycloak:
         condition: service_healthy
@@ -329,6 +367,8 @@ volumes:
   kafka-data:
   localstack-data:
   mongo-data:
+  order-service-postgres-data:
+  payment-service-db-data:
 
 networks:
   infra-net:

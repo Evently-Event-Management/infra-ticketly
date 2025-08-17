@@ -24,6 +24,14 @@ spring:
               uri: ${EVENT_QUERY_SERVICE_URI:http://localhost:8082}
               predicates:
                 - Path=/api/event-query/**
+            - id: ticket_service_route
+              uri: ${TICKET_SERVICE_URI:http://localhost:8084}
+              predicates:
+                - Path=/api/ticket/**
+            - id: payment_service_route
+              uri: ${PAYMENT_SERVICE_URI:http://localhost:8085}
+              predicates:
+                - Path=/api/payment/**
 
 # Detailed logging configuration for development
 logging:
