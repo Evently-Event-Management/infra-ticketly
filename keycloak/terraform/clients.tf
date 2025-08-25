@@ -4,12 +4,31 @@ resource "keycloak_openid_client" "events_service" {
   client_id = "events-service"
   name      = "Events Microservice"
   enabled   = true
-  
-  access_type                      = "BEARER-ONLY"
-  service_accounts_enabled         = false
+
+  access_type                      = "CONFIDENTIAL"
+  service_accounts_enabled         = true
   direct_access_grants_enabled     = false
   standard_flow_enabled           = false
   implicit_flow_enabled           = false
+}
+
+# Role assign
+data "keycloak_openid_client" "realm_management" {
+  realm_id  = keycloak_realm.event_ticketing.id
+  client_id = "realm-management"
+}
+
+data "keycloak_role" "events_service_manage_users" {
+  realm_id  = keycloak_realm.event_ticketing.id
+  client_id = data.keycloak_openid_client.realm_management.id
+  name      = "manage-users"
+}
+
+resource "keycloak_openid_client_service_account_role" "events_service_manage_users" {
+  realm_id                = keycloak_realm.event_ticketing.id
+  service_account_user_id = keycloak_openid_client.events_service.service_account_user_id
+  client_id               = data.keycloak_openid_client.realm_management.id
+  role                    = data.keycloak_role.events_service_manage_users.name
 }
 
 # Login Testing Client - Public client for testing purposes

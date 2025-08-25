@@ -64,3 +64,7 @@ output "payment_service_client_secret" {
   value     = keycloak_openid_client.payment_service.client_secret
   sensitive = true
 }
+output "events_service_client_secret" {
+  value     = keycloak_openid_client.events_service.client_secret
+  sensitive = true
+}
