@@ -53,7 +53,7 @@ resource "keycloak_user_groups" "regular_user_groups" {
   group_ids = [
     # This user gets base permissions from the Users group
     keycloak_group.users.id,
-    # This user is on the FREE tier
-    keycloak_group.tier_free.id
+    # This user is on the PRO tier
+    keycloak_group.tier_pro.id
   ]
 }

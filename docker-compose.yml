@@ -233,7 +233,7 @@ services:
       - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
       - EVENT_SEATING_SERVICE_URI=http://host.docker.internal:8081
       - EVENT_QUERY_SERVICE_URI=http://host.docker.internal:8082
-      - TICKET_SERVICE_URI=http://host.docker.internal:8084
+      - ORDER_SERVICE_URI=http://host.docker.internal:8084
       - PAYMENT_SERVICE_URI=http://host.docker.internal:8085
     depends_on:
       keycloak:
