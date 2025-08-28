@@ -50,3 +50,23 @@ resource "keycloak_realm" "event_ticketing" {
     }
   }
 }
+
+
+resource "keycloak_oidc_identity_provider" "google" {
+  # Link to the realm created in your other file
+  realm                = keycloak_realm.event_ticketing.id
+  alias                = "google"
+  display_name         = "Google"
+  enabled              = false
+  client_id            = var.google_oauth_client_id
+  client_secret        = var.google_oauth_client_secret
+  authorization_url    = "https://accounts.google.com/o/oauth2/auth"
+  token_url            = "https://oauth2.googleapis.com/token"
+  user_info_url        = "https://www.googleapis.com/oauth2/v3/userinfo"
+  default_scopes       = "openid profile email"
+  sync_mode            = "IMPORT"
+  jwks_url             = "https://www.googleapis.com/oauth2/v3/certs"
+  gui_order            = "1"
+  hide_on_login_page   = false
+  first_broker_login_flow_alias = "first broker login"
+}

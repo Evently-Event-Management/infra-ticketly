@@ -84,3 +84,15 @@ variable "keycloak_url" {
   type        = string
   default     = "http://localhost:8080"
 }
+
+variable "google_oauth_client_id" {
+  type        = string
+  description = "The Client ID for the Google OAuth 2.0 application."
+  sensitive   = true
+}
+
+variable "google_oauth_client_secret" {
+  type        = string
+  description = "The Client Secret for the Google OAuth 2.0 application."
+  sensitive   = true
+}
