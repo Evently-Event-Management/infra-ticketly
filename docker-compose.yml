@@ -291,6 +291,7 @@ services:
       - LOG_LEVEL_APP=DEBUG
       - LOG_LEVEL_SECURITY=WARN
       - KEYCLOAK_CLIENT_SECRET=${EVENTS_SERVICE_CLIENT_SECRET}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     depends_on:
       event-seating-db:
         condition: service_healthy
