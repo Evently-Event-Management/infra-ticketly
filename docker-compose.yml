@@ -34,6 +34,8 @@ services:
     ports:
       - "8080:8080"
     command: start-dev
+    volumes:
+      - ./themes/shadcn-theme:/opt/keycloak/themes/shadcn-theme
     depends_on:
       keycloak-db:
         condition: service_healthy
