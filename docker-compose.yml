@@ -83,6 +83,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
       interval: 5s
       retries: 5
+    networks:
+      - infra-net
 
   payment-service-db:
     image: mysql:8.0
@@ -353,7 +355,7 @@ services:
       KEYCLOAK_URL: http://auth.ticketly.com:8080
       KEYCLOAK_REALM: event-ticketing
       SEAT_SERVICE_URL: http://event-query-service:8082/api/event-query
-      QR_SECRET_KEY: some_secret_key
+      QR_SECRET_KEY: 4RJUEJDURgKarhbwx3fjKA8Fy/KoFwpAmOWAGwiWU9A=
       TICKET_CLIENT_SECRET: ${TICKET_CLIENT_SECRET}
       TICKET_CLIENT_ID: ticket-service-client
     depends_on:
@@ -361,6 +363,10 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+    networks:
+      - infra-net
+    extra_hosts:
+      - "auth.ticketly.com:host-gateway"
 
 volumes:
   keycloak-postgres-data:
