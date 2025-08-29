@@ -1,0 +1,219 @@
+/* themes/shadcn-theme/login/resources/css/styles.css */
+
+/* Import modern font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ------------------------- */
+/* --- Light Theme Vars --- */
+/* ------------------------- */
+:root {
+    --radius: 0.65rem;
+    --background: oklch(0.98 0.002 285);
+    --foreground: oklch(0.141 0.005 285.823);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.141 0.005 285.823);
+    --primary: oklch(0.606 0.25 292.717);
+    --primary-foreground: oklch(0.969 0.016 293.756);
+    --muted-foreground: oklch(0.552 0.016 285.938);
+    --border: oklch(0.92 0.004 286.32);
+    --input: oklch(0.92 0.004 286.32);
+    --ring: oklch(0.606 0.25 292.717 / 50%);
+    --destructive: oklch(0.577 0.245 27.325);
+}
+
+/* ------------------------- */
+/* --- Dark Theme Vars ---- */
+/* ------------------------- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: oklch(0.10 0.005 285.823);
+        --foreground: oklch(0.985 0 0);
+        --card: oklch(0.15 0.006 285.885);
+        --card-foreground: oklch(0.985 0 0);
+        --primary: oklch(0.541 0.281 293.009);
+        --primary-foreground: oklch(0.969 0.016 293.756);
+        --muted-foreground: oklch(0.705 0.015 286.067);
+        --border: oklch(1 0 0 / 10%);
+        --input: oklch(1 0 0 / 15%);
+        --ring: oklch(0.541 0.281 293.009 / 50%);
+        --destructive: oklch(0.704 0.191 22.216);
+    }
+}
+
+
+/* ------------------------- */
+/* --- Keycloak Overrides -- */
+/* ------------------------- */
+
+/* Page Layout & Background */
+.login-pf-page {
+    background-color: var(--background);
+    background-image: radial-gradient(circle at 25% 25%, oklch(from var(--background) l c h / 5%), transparent 40%),
+                      radial-gradient(circle at 75% 75%, oklch(from var(--primary) l c h / 5%), transparent 40%);
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Main Content Wrapper */
+#kc-content-wrapper {
+    max-width: 400px;
+    width: 100%;
+}
+
+/* Login Card */
+.card-pf {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    padding: 2.5rem;
+}
+
+/* Header & Title */
+#kc-header-wrapper {
+    color: var(--foreground);
+    text-shadow: none;
+    font-size: 1.5rem; /* 24px */
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    text-align: center;
+    margin-bottom: 0.5rem; /* Reduced margin */
+}
+
+/* Add descriptive subtitle */
+#kc-header-wrapper::after {
+    content: 'Enter your credentials to access your account';
+    display: block;
+    font-size: 0.875rem; /* 14px */
+    font-weight: 400;
+    color: var(--muted-foreground);
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+
+/* Hide the default Keycloak title */
+#kc-page-title {
+    display: none;
+}
+
+/* Form Labels */
+label, .control-label {
+    color: var(--foreground);
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Input Fields */
+.form-control {
+    background-color: var(--background);
+    color: var(--foreground);
+    border: 1px solid var(--input);
+    border-radius: calc(var(--radius) - 2px);
+    transition: all 150ms ease-in-out;
+    height: 40px;
+    padding: 0.5rem 0.75rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--ring);
+    outline: none;
+}
+
+/* Spacing between form groups */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+/* Primary Button (Login) */
+#kc-login, .btn-primary {
+    background-color: var(--primary) !important;
+    color: var(--primary-foreground) !important;
+    border: none;
+    border-radius: calc(var(--radius) - 2px);
+    font-weight: 500;
+    width: 100%;
+    height: 40px;
+    transition: all 150ms ease-in-out;
+    margin-top: 0.5rem;
+}
+
+#kc-login:hover, .btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+/* Links (e.g., "Forgot Password?", "Register") */
+#kc-registration, #kc-form-options a {
+    color: var(--primary);
+    font-size: 0.875rem;
+}
+
+#kc-registration a, #kc-form-options a:hover {
+    color: var(--ring);
+    text-decoration: underline;
+}
+
+/* Center the "New user?" text */
+#kc-registration {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+/* Remove default Keycloak logo */
+#kc-logo-text {
+    background-image: none !important;
+    height: auto;
+    width: auto;
+    text-indent: 0;
+}
+
+/* Error Messages */
+.alert-error {
+    background-color: oklch(from var(--destructive) l c h / 20%);
+    color: var(--destructive);
+    border: 1px solid oklch(from var(--destructive) l c h / 30%);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* --- Social Login Buttons --- */
+#kc-social-providers ul {
+    padding: 0;
+    margin: 1.5rem 0 0 0;
+}
+
+#kc-social-providers li {
+    list-style: none;
+    margin-bottom: 0.75rem;
+}
+
+#kc-social-providers a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--foreground);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 150ms ease-in-out;
+}
+
+#kc-social-providers a:hover {
+    background-color: oklch(from var(--border) l c h / 40%);
+    border-color: var(--primary);
+}
+
+#kc-social-providers .kc-social-icon {
+    margin-right: 0.75rem;
+}

@@ -34,6 +34,8 @@ services:
     ports:
       - "8080:8080"
     command: start-dev
+    volumes:
+      - ./themes/shadcn-theme:/opt/keycloak/themes/shadcn-theme
     depends_on:
       keycloak-db:
         condition: service_healthy
@@ -81,6 +83,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
       interval: 5s
       retries: 5
+    networks:
+      - infra-net
 
   payment-service-db:
     image: mysql:8.0
@@ -91,7 +95,7 @@ services:
       MYSQL_USER: payment_user
       MYSQL_PASSWORD: payment_pass
     ports:
-      - "3306:3306"
+      - "13306:3306"
     volumes:
       - payment-service-db-data:/var/lib/mysql
       - ./scripts/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -289,6 +293,7 @@ services:
       - LOG_LEVEL_APP=DEBUG
       - LOG_LEVEL_SECURITY=WARN
       - KEYCLOAK_CLIENT_SECRET=${EVENTS_SERVICE_CLIENT_SECRET}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     depends_on:
       event-seating-db:
         condition: service_healthy
@@ -335,6 +340,32 @@ services:
       - infra-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "auth.ticketly.com:host-gateway"
+
+  order-service:
+    image: ticketly/order-service:latest
+    container_name: order-service
+    ports:
+      - "8084:8084"
+    environment:
+      POSTGRES_DSN: postgres://appuser:secretpass@order-service-db:5432/appdb?sslmode=disable
+      REDIS_ADDR: redis:6379
+      KAFKA_ADDR: kafka:9092
+      OIDC_ISSUER: http://auth.ticketly.com:8080/realms/event-ticketing
+      KEYCLOAK_URL: http://auth.ticketly.com:8080
+      KEYCLOAK_REALM: event-ticketing
+      SEAT_SERVICE_URL: http://event-query-service:8082/api/event-query
+      QR_SECRET_KEY: 4RJUEJDURgKarhbwx3fjKA8Fy/KoFwpAmOWAGwiWU9A=
+      TICKET_CLIENT_SECRET: ${TICKET_CLIENT_SECRET}
+      TICKET_CLIENT_ID: ticket-service-client
+    depends_on:
+      order-service-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - infra-net
+    extra_hosts:
       - "auth.ticketly.com:host-gateway"
 
 volumes:
