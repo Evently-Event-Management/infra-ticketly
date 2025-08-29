@@ -340,6 +340,28 @@ services:
       - "host.docker.internal:host-gateway"
       - "auth.ticketly.com:host-gateway"
 
+  order-service:
+    image: ticketly/order-service:latest
+    container_name: order-service
+    ports:
+      - "8084:8084"
+    environment:
+      POSTGRES_DSN: postgres://appuser:secretpass@order-service-db:5432/appdb?sslmode=disable
+      REDIS_ADDR: redis:6379
+      KAFKA_ADDR: kafka:9092
+      OIDC_ISSUER: http://auth.ticketly.com:8080/realms/event-ticketing
+      KEYCLOAK_URL: http://auth.ticketly.com:8080
+      KEYCLOAK_REALM: event-ticketing
+      SEAT_SERVICE_URL: http://event-query-service:8082/api/event-query
+      QR_SECRET_KEY: some_secret_key
+      TICKET_CLIENT_SECRET: ${TICKET_CLIENT_SECRET}
+      TICKET_CLIENT_ID: ticket-service-client
+    depends_on:
+      order-service-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+
 volumes:
   keycloak-postgres-data:
   event-seating-postgres-data:
