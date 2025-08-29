@@ -93,7 +93,7 @@ services:
       MYSQL_USER: payment_user
       MYSQL_PASSWORD: payment_pass
     ports:
-      - "3306:3306"
+      - "13306:3306"
     volumes:
       - payment-service-db-data:/var/lib/mysql
       - ./scripts/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
