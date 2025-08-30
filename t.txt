@@ -1,0 +1,102 @@
+.
+|-- README.md
+|-- api-gateway
+|   |-- Dockerfile
+|   |-- HELP.md
+|   |-- mvnw
+|   |-- mvnw.cmd
+|   |-- pom.xml
+|   |-- src
+|   |   |-- main
+|   |   |   |-- java
+|   |   |   |   `-- com
+|   |   |   |       `-- ticketly
+|   |   |   |           `-- apigateway
+|   |   |   |               |-- ApiGatewayApplication.java
+|   |   |   |               `-- config
+|   |   |   |                   `-- SecurityConfig.java
+|   |   |   `-- resources
+|   |   |       `-- application.yml
+|   |   `-- test
+|   |       `-- java
+|   |           `-- com
+|   |               `-- ticketly
+|   |                   `-- apigateway
+|   |                       `-- ApiGatewayApplicationTests.java
+|   `-- target
+|       |-- classes
+|       |   |-- application.yml
+|       |   `-- com
+|       |       `-- ticketly
+|       |           `-- apigateway
+|       |               |-- ApiGatewayApplication.class
+|       |               `-- config
+|       |                   `-- SecurityConfig.class
+|       |-- generated-sources
+|       |   `-- annotations
+|       `-- test-classes
+|           `-- com
+|               `-- ticketly
+|                   `-- apigateway
+|                       `-- ApiGatewayApplicationTests.class
+|-- aws
+|   |-- backend.tf
+|   |-- ec2.tf
+|   |-- eventbridge.tf
+|   |-- gateway.tf
+|   |-- iam.tf
+|   |-- network.tf
+|   |-- outputs.tf
+|   |-- provider.tf
+|   |-- rds.tf
+|   |-- s3.tf
+|   |-- security.tf
+|   `-- sqs.tf
+|-- config
+|   `-- gateway
+|       `-- application.yml
+|-- dbz.json
+|-- debezium
+|   `-- debezium.json
+|-- docker-compose-prod.yml
+|-- docker-compose.yml
+|-- keycloak
+|   |-- realm-config
+|   |   `-- event-ticketing-realm.json
+|   |-- terraform
+|   |   |-- clients.tf
+|   |   |-- main.tf
+|   |   |-- outputs.tf
+|   |   |-- realm.tf
+|   |   |-- role.tf
+|   |   |-- scopes.tf
+|   |   |-- terraform.tfstate
+|   |   |-- terraform.tfvars
+|   |   |-- users.tf
+|   |   `-- variables.tf
+|   `-- token
+|       |-- admin.json
+|       |-- m2m.json
+|       `-- user.json
+|-- scripts
+|   |-- extract-secrets.sh
+|   |-- localstack
+|   |   |-- init-aws.sh
+|   |   |-- scheduler-role-policy.json
+|   |   `-- scheduler-sqs-policy.json
+|   |-- monitor-sqs-live.sh
+|   |-- mysql-init.sql
+|   |-- send-kafka-event.sh
+|   `-- test-scheduler.sh
+|-- t.txt
+`-- themes
+    `-- shadcn-theme
+        `-- login
+            |-- resources
+            |   |-- css
+            |   |   `-- styles.css
+            |   `-- img
+            |       `-- background.jpg
+            `-- theme.properties
+
+42 directories, 57 files
