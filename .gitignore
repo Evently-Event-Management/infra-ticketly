@@ -1,2 +1,32 @@
 .vscode/
 .env
+
+# Local Terraform directories
+**/.terraform/*
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Terraform variable files that may contain secrets
+*.tfvars
+
+# Crash logs
+crash.log
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration
+.terraformrc
+terraform.rc
+
+# Ignore Keycloak tokens
+keycloak/token/*.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
