@@ -8,8 +8,8 @@ resource "aws_db_instance" "ticketly_db" {
   engine     = "postgres"
   engine_version = "17"
   instance_class = "db.t3.micro"
-  username  = "ticketly"
-  password  = "ticketly123"
+  username  = var.rds_user
+  password  = var.rds_password
   allocated_storage = 20
   db_subnet_group_name = aws_db_subnet_group.ticketly.name
   vpc_security_group_ids = [aws_security_group.database.id]

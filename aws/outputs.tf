@@ -15,6 +15,10 @@ output "ec2_ip" {
   value = aws_instance.ticketly-infra.public_ip
 }
 
+output "s3_bucket_name" {
+  value = aws_s3_bucket.ticketly_assets.id
+}
+
 output "sqs_session_on_sale_url" {
   value = aws_sqs_queue.session_on_sale.url
 }
