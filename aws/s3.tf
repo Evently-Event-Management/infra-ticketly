@@ -14,7 +14,6 @@ resource "random_id" "bucket_suffix" {
 # S3 bucket public access block - keep blocked for security
 resource "aws_s3_bucket_public_access_block" "assets_block" {
   bucket = aws_s3_bucket.ticketly_assets.id
-
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
