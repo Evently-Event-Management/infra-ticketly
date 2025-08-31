@@ -13,26 +13,22 @@ services:
       KC_DB_USERNAME: ${KC_DB_USERNAME}
       KC_DB_PASSWORD: ${KC_DB_PASSWORD}
       
-      # Admin Configuration (from .env)
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      
-      # Hostname Configuration
+    # Admin Configuration (migrate to new vars, map from existing .env)
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+          
+      # Hostname v2 + Proxy Configuration (behind HTTPS-terminating NGINX)
       KC_HOSTNAME: auth.dpiyumal.me
-      KC_HOSTNAME_STRICT: "true"
-      KC_HOSTNAME_STRICT_HTTPS: "true"
-      
-      # Proxy Configuration
-      KC_PROXY: edge
-      KC_PROXY_ADDRESS_FORWARDING: "true"
+      KC_HOSTNAME_URL: https://auth.dpiyumal.me
+      KC_HOSTNAME_ADMIN_URL: https://auth.dpiyumal.me
+      KC_PROXY_HEADERS: xforwarded
 
       # Performance and Security
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_DEBUG: "false"
-      
+          
       # Production optimizations
       KC_CACHE: ispn
-      KC_CACHE_STACK: tcp
 
       # Health check 
       KC_HEALTH_ENABLED: "true"
@@ -42,7 +38,6 @@ services:
 
     ports:
       - "8080:8080"
-    
     command: start
 
 networks:
