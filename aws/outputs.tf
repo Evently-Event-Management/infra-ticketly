@@ -12,7 +12,7 @@ output "ticketly_db_endpoint" {
 }
 
 output "ec2_ip" {
-  value = aws_instance.ticketly_ec2.public_ip
+  value = aws_instance.ticketly-infra.public_ip
 }
 
 output "sqs_session_on_sale_url" {
