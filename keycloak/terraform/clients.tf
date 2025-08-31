@@ -67,7 +67,7 @@ resource "keycloak_openid_client" "frontend_app" {
   standard_flow_enabled        = true
   pkce_code_challenge_method   = "S256"
   implicit_flow_enabled        = false
-  direct_access_grants_enabled = false 
+  direct_access_grants_enabled = false
 
   valid_redirect_uris = [
     "http://localhost:8090/*",

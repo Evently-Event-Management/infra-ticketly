@@ -14,3 +14,15 @@ provider "keycloak" {
   url       = var.keycloak_url
   realm     = "master"
 }
+
+
+terraform { 
+  cloud { 
+    
+    organization = "ticketly-org" 
+
+    workspaces { 
+      name = "ticketly-keycloak" 
+    } 
+  } 
+}
