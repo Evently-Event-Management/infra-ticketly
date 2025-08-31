@@ -34,7 +34,13 @@ resource "aws_route_table" "private" {
   
   # No internet route needed for now
   # If later services need internet access, you can add a NAT Gateway
-  
+
+  # igw access for development
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
   tags = {
     Name = "ticketly-private-rt"
   }
