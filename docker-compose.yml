@@ -211,7 +211,6 @@ services:
     environment:
       - MONGODB_URI=mongodb://query-db:27017/event-seating
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
       - COMMAND_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - EVENT_PROJECTION_CLIENT_SECRET=${EVENT_PROJECTION_CLIENT_SECRET}
       - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
