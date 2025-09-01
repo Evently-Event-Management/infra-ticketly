@@ -1,82 +1,71 @@
 #!/bin/bash
 
-# Script to extract Keycloak client secrets from Terraform and update .env file
+echo "Extracting secrets from Terraform..."
 
-echo "Extracting Keycloak client secrets from Terraform..."
+# Get project root and define .env file path
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ENV_FILE="${PROJECT_ROOT}/.env"
 
-# Navigate to terraform directory
-cd keycloak/terraform
+echo "Writing secrets to: ${ENV_FILE}"
 
-# Check if terraform state exists
-if [ ! -f "terraform.tfstate" ]; then
-    echo "Error: terraform.tfstate not found. Make sure you've run 'terraform apply' first."
-    exit 1
+# Overwrite .env file with a header
+echo "# Terraform Outputs - Generated: $(date)" > "${ENV_FILE}"
+
+# --- A single, simplified function ---
+extract_tf_output() {
+  local dir=$1
+  local output_name=$2
+  local env_var_name=$3
+
+  pushd "$dir" >/dev/null
+  echo "Extracting: $env_var_name"
+
+  value=$(terraform output -raw "$output_name" 2>/dev/null)
+  if [ $? -eq 0 ] && [ -n "$value" ]; then
+    echo "$env_var_name=$value" >> "${ENV_FILE}"
+  else
+    echo "-> ❌ WARNING: Could not extract '$output_name' from '$dir'."
+  fi
+  popd >/dev/null
+}
+
+# --- Extract all raw values ---
+
+echo -e "\n# Keycloak Client Secrets" >> "${ENV_FILE}"
+KEYCLOAK_DIR="${PROJECT_ROOT}/keycloak/terraform"
+extract_tf_output "${KEYCLOAK_DIR}" "scheduler_service_client_secret" "SCHEDULER_CLIENT_SECRET"
+extract_tf_output "${KEYCLOAK_DIR}" "event_projection_service_client_secret" "EVENT_PROJECTION_CLIENT_SECRET"
+extract_tf_output "${KEYCLOAK_DIR}" "ticket_service_client_secret" "TICKET_CLIENT_SECRET"
+extract_tf_output "${KEYCLOAK_DIR}" "events_service_client_secret" "EVENTS_SERVICE_CLIENT_SECRET"
+
+echo -e "\n# AWS Resources" >> "${ENV_FILE}"
+AWS_DIR="${PROJECT_ROOT}/aws"
+extract_tf_output "${AWS_DIR}" "s3_bucket_name" "AWS_S3_BUCKET_NAME"
+extract_tf_output "${AWS_DIR}" "sqs_session_on_sale_arn" "AWS_SQS_SESSION_ON_SALE_ARN"
+extract_tf_output "${AWS_DIR}" "sqs_session_closed_arn" "AWS_SQS_SESSION_CLOSED_ARN"
+extract_tf_output "${AWS_DIR}" "scheduler_role_arn" "AWS_SCHEDULER_ROLE_ARN"
+extract_tf_output "${AWS_DIR}" "scheduler_group_name" "AWS_SCHEDULER_GROUP_NAME"
+
+echo -e "\n# AWS Credentials" >> "${ENV_FILE}"
+extract_tf_output "${AWS_DIR}" "ticketly_dev_user_access_key" "AWS_ACCESS_KEY_ID"
+extract_tf_output "${AWS_DIR}" "ticketly_dev_user_secret_key" "AWS_SECRET_ACCESS_KEY"
+
+echo -e "\n# RDS Database Components" >> "${ENV_FILE}"
+extract_tf_output "${AWS_DIR}" "ticketly_db_endpoint" "RDS_ENDPOINT"
+extract_tf_output "${AWS_DIR}" "ticketly_db_user" "DATABASE_USERNAME"
+extract_tf_output "${AWS_DIR}" "ticketly_db_password" "DATABASE_PASSWORD"
+
+echo "✅ Secrets extraction complete."
+
+# --- Prompt for Docker Compose restart (no changes here) ---
+echo ""
+read -p "Do you want to restart Docker Compose services to apply changes? (y/n) " -r restart_choice
+if [[ "$restart_choice" =~ ^[Yy]$ ]]; then
+    echo "Restarting Docker Compose services..."
+    cd "${PROJECT_ROOT}"
+    docker-compose down && docker-compose up -d
+    echo "✅ Docker Compose services restarted."
+else
+    echo "Skipping restart."
 fi
-
-# Extract secrets
-SCHEDULER_SECRET=$(terraform output -raw scheduler_service_client_secret 2>/dev/null)
-API_GATEWAY_SECRET=$(terraform output -raw api_gateway_client_secret 2>/dev/null)
-EVENT_PROJECTION_SECRET=$(terraform output -raw event_projection_service_client_secret 2>/dev/null)
-TICKET_SECRET=$(terraform output -raw ticket_service_client_secret 2>/dev/null)
-PAYMENT_SECRET=$(terraform output -raw payment_service_client_secret 2>/dev/null)
-EVENTS_SERVICE_SECRET=$(terraform output -raw events_service_client_secret 2>/dev/null)
-
-if [ -z "$SCHEDULER_SECRET" ]; then
-    echo "Error: Could not extract scheduler_service_client_secret from Terraform output"
-    exit 1
-fi
-
-if [ -z "$API_GATEWAY_SECRET" ]; then
-    echo "Error: Could not extract api_gateway_client_secret from Terraform output"
-    exit 1
-fi
-
-if [ -z "$EVENT_PROJECTION_SECRET" ]; then
-    echo "Error: Could not extract event_projection_service_client_secret from Terraform output"
-    exit 1
-fi
-
-if [ -z "$TICKET_SECRET" ]; then
-    echo "Error: Could not extract ticket_service_client_secret from Terraform output"
-    exit 1
-fi
-if [ -z "$EVENTS_SERVICE_SECRET" ]; then
-    echo "Error: Could not extract events_service_client_secret from Terraform output"
-    exit 1
-fi
-
-if [ -z "$PAYMENT_SECRET" ]; then
-    echo "Error: Could not extract payment_service_client_secret from Terraform output"
-    exit 1
-fi
-
-# Navigate back to root
-cd ../..
-
-# Update .env file
-echo "Updating .env file with extracted secrets..."
-
-# Create or update .env file
-cat > .env << EOF
-# Keycloak Client Secrets (Auto-generated from Terraform)
-EVENTS_SERVICE_CLIENT_SECRET=${EVENTS_SERVICE_SECRET}
-SCHEDULER_CLIENT_SECRET=${SCHEDULER_SECRET}
-API_GATEWAY_CLIENT_SECRET=${API_GATEWAY_SECRET}
-EVENT_PROJECTION_CLIENT_SECRET=${EVENT_PROJECTION_SECRET}
-TICKET_CLIENT_SECRET=${TICKET_SECRET}
-PAYMENT_CLIENT_SECRET=${PAYMENT_SECRET}
-EOF
-
-echo "✅ Successfully updated .env file with client secrets"
-echo "Events Service Secret: ${EVENTS_SERVICE_SECRET}"
-echo "Scheduler Secret: ${SCHEDULER_SECRET}"
-echo "API Gateway Secret: ${API_GATEWAY_SECRET}"
-echo "Event Projection Secret: ${EVENT_PROJECTION_SECRET}"
-echo "Ticket Service Secret: ${TICKET_SECRET}"
-echo "Payment Service Secret: ${PAYMENT_SECRET}"
-
-
-# Re run the service to apply changes
-echo "Restarting services to apply changes..."
-docker-compose down
-docker-compose up -d

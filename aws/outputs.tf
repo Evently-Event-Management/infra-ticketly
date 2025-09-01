@@ -11,6 +11,15 @@ output "ticketly_db_endpoint" {
   value = aws_db_instance.ticketly_db.endpoint
 }
 
+output "ticketly_db_user" {
+  value = aws_db_instance.ticketly_db.username
+}
+
+output "ticketly_db_password" {
+  value     = aws_db_instance.ticketly_db.password
+  sensitive = true
+}
+
 output "ec2_ip" {
   value = aws_instance.ticketly-infra.public_ip
 }
@@ -34,3 +43,12 @@ output "sqs_session_closed_url" {
 output "sqs_session_closed_arn" {
   value = aws_sqs_queue.session_closed.arn
 }
+
+output "scheduler_role_arn" {
+  value = aws_iam_role.eventbridge_scheduler_role.arn
+}
+
+output "scheduler_group_name" {
+  value = aws_scheduler_schedule_group.ticketly.name
+}
+
