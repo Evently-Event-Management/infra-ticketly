@@ -79,8 +79,12 @@ resource "aws_iam_policy" "ticketly_eventbridge_schedule_policy" {
     Statement = [
       {
         Effect = "Allow",
-        Action = "scheduler:CreateSchedule",
-        Resource = "${aws_scheduler_schedule_group.ticketly.arn}/*"
+        Action = [
+        "scheduler:CreateSchedule",
+				"scheduler:UpdateSchedule",
+				"scheduler:DeleteSchedule"
+        ]
+        Resource = "${replace(aws_scheduler_schedule_group.ticketly.arn, "schedule-group", "schedule")}/*"
       },
       {
         Effect = "Allow",
