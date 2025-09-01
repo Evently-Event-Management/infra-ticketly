@@ -1,0 +1,10 @@
+---
+- name: Configure PostgreSQL Schemas
+  hosts: rds_instances
+  gather_facts: no
+  vars_files:
+    - group_vars/rds_postgres.yml
+    - group_vars/vault.yml
+
+  roles:
+    - role: postgresql_setup

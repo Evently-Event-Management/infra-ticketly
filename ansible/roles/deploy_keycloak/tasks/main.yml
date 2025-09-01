@@ -1,0 +1,109 @@
+- name: 1. Install prerequisite packages
+  become: true
+  ansible.builtin.apt:
+    name: ['ca-certificates', 'curl', 'nginx', 'certbot', 'python3-certbot-nginx']
+    state: present
+    update_cache: true
+
+- name: 2. Add Docker's official GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+    force: true
+
+- name: 3. Add Docker repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: 4. Install Docker Engine and Compose
+  become: true
+  ansible.builtin.apt:
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-buildx-plugin', 'docker-compose-plugin']
+    state: present
+    update_cache: true
+
+- name: 5. Add user to the docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
+
+- name: 6. Create deployment directory on server
+  ansible.builtin.file:
+    path: /home/ubuntu/keycloak
+    state: directory
+    mode: '0755'
+
+- name: 7. Copy Keycloak .env file from template
+  ansible.builtin.template:
+    src: keycloak.env.j2
+    dest: /home/ubuntu/keycloak/.env
+    mode: '0640'
+
+- name: 8. Copy docker-compose.yml file
+  ansible.builtin.copy:
+    src: docker-compose.yml
+    dest: /home/ubuntu/keycloak/docker-compose.yml
+    mode: '0644'
+
+- name: 9. Check if REAL SSL certificate already exists
+  become: true
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ keycloak_domain }}/fullchain.pem"
+  register: cert_file_status
+
+- name: 10. Create a self-signed "dummy" certificate if no real one exists
+  become: true
+  block:
+    - name: Ensure dummy certificate parent directory exists
+      ansible.builtin.file:
+        path: "/etc/letsencrypt/live/{{ keycloak_domain }}"
+        state: directory
+    - name: Create a private key for the dummy cert
+      community.crypto.openssl_privatekey:
+        path: "/etc/letsencrypt/live/{{ keycloak_domain }}/privkey.pem"
+    - name: Create the self-signed dummy cert
+      community.crypto.x509_certificate:
+        path: "/etc/letsencrypt/live/{{ keycloak_domain }}/fullchain.pem"
+        privatekey_path: "/etc/letsencrypt/live/{{ keycloak_domain }}/privkey.pem"
+        provider: selfsigned
+  when: not cert_file_status.stat.exists
+
+- name: 11. Always ensure Nginx is configured from the final template
+  become: true
+  block:
+    - name: Ensure webroot directory exists for Certbot
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+    - name: Copy the final Nginx config from template
+      ansible.builtin.template:
+        src: nginx.keycloak.conf.j2
+        dest: /etc/nginx/sites-available/keycloak
+      # Pass the variable to the template
+      vars:
+        cert_file_status: "{{ cert_file_status }}"
+      notify: Reload nginx
+    - name: Enable the new Nginx site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/keycloak
+        dest: /etc/nginx/sites-enabled/keycloak
+        state: link
+      notify: Reload nginx
+
+- name: 12. Obtain REAL SSL certificate from Let's Encrypt
+  become: true
+  ansible.builtin.command: >
+    certbot --nginx -d {{ keycloak_domain }} --non-interactive --agree-tos -m your-email@example.com
+  when: not cert_file_status.stat.exists
+
+- name: 13. Start Keycloak service with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: /home/ubuntu/keycloak
+    state: present
+    pull: always

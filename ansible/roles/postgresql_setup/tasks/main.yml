@@ -1,0 +1,13 @@
+- name: Ensure PostgreSQL schemas exist
+  community.postgresql.postgresql_schema:
+    login_host: "{{ ansible_host }}"
+    login_user: "{{ rds_postgres_user }}"
+    login_password: "{{ rds_postgres_password }}"
+    login_port: "{{ postgres_port }}"
+    login_db: "{{ postgres_db_name }}"
+    name: "{{ item }}"
+    owner: "{{ rds_postgres_user }}"
+    state: present
+  loop: "{{ postgres_schemas }}"
+  become: no
+  delegate_to: localhost

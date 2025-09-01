@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.1
+    container_name: keycloak-prod
+    env_file:
+      - .env
+    environment:
+      # Database Configuration (from .env)
+      KC_DB: ${KC_DB}
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      
+    # Admin Configuration (migrate to new vars, map from existing .env)
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+          
+      # Hostname v2 + Proxy Configuration (behind HTTPS-terminating NGINX)
+      KC_HOSTNAME: auth.dpiyumal.me
+      KC_HOSTNAME_URL: https://auth.dpiyumal.me
+      KC_HOSTNAME_ADMIN_URL: https://auth.dpiyumal.me
+      KC_PROXY_HEADERS: xforwarded
+
+      # Performance and Security
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_DEBUG: "false"
+          
+      # Production optimizations
+      KC_CACHE: ispn
+
+      # Health check 
+      KC_HEALTH_ENABLED: "true"
+
+      # Memory
+      JAVA_OPTS_APPEND: "-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=256m"
+
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    command: start
+
+networks:
+  default:
+    driver: bridge
