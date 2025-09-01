@@ -1,0 +1,9 @@
+postgres_port: 5432
+postgres_db_name: "postgres"
+
+# List of ALL schemas to create for your services
+postgres_schemas:
+  - keycloak
+  - event_service
+  - order_service
+  - payment_service
