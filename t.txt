@@ -45,24 +45,32 @@
 |   |-- eventbridge.tf
 |   |-- gateway.tf
 |   |-- iam.tf
+|   |-- keypair.tf
 |   |-- network.tf
 |   |-- outputs.tf
 |   |-- provider.tf
 |   |-- rds.tf
 |   |-- s3.tf
 |   |-- security.tf
-|   `-- sqs.tf
+|   |-- sns.tf
+|   |-- sqs.tf
+|   |-- terraform.tfvars
+|   `-- variables.tf
 |-- config
 |   `-- gateway
 |       `-- application.yml
 |-- dbz.json
 |-- debezium
 |   `-- debezium.json
-|-- docker-compose-prod.yml
 |-- docker-compose.yml
 |-- keycloak
+|   |-- docker-compose.yml
+|   |-- nginx
+|   |   `-- keycloak
 |   |-- realm-config
 |   |   `-- event-ticketing-realm.json
+|   |-- sql
+|   |   `-- init.sql
 |   |-- terraform
 |   |   |-- clients.tf
 |   |   |-- main.tf
@@ -71,6 +79,7 @@
 |   |   |-- role.tf
 |   |   |-- scopes.tf
 |   |   |-- terraform.tfstate
+|   |   |-- terraform.tfstate.backup
 |   |   |-- terraform.tfvars
 |   |   |-- users.tf
 |   |   `-- variables.tf
@@ -89,6 +98,7 @@
 |   |-- send-kafka-event.sh
 |   `-- test-scheduler.sh
 |-- t.txt
+|-- terraform.tfstate
 `-- themes
     `-- shadcn-theme
         `-- login
@@ -99,4 +109,4 @@
             |       `-- background.jpg
             `-- theme.properties
 
-42 directories, 57 files
+44 directories, 65 files
