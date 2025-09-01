@@ -1,8 +1,4 @@
 services:
-  # Use environment variables from .env file
-  env_file:
-    - .env
-  
   # MongoDB for Query Service
   query-db:
     image: mongo:latest
@@ -88,8 +84,6 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-      event-seating-db:
-        condition: service_healthy
     environment:
       BOOTSTRAP_SERVERS: kafka:29092
       GROUP_ID: 1
@@ -104,21 +98,23 @@ services:
       timeout: 5s
       retries: 10
 
-  # Debezium connector registration service
+  # Debezium connector registration service 
   debezium-connector-init:
-    image: curlimages/curl:latest
+    image: alpine:latest # Use a more capable image
     container_name: debezium-connector-init
+    env_file:
+      - .env # Pass environment variables from your .env file
     depends_on:
       debezium-connect:
         condition: service_healthy
     volumes:
       - ./debezium:/debezium
+      - ./scripts/init-debezium.sh:/scripts/init-debezium.sh # Mount the new script
     command: >
       sh -c "
-        echo 'Waiting for Debezium Connect to start...' &&
-        sleep 30 &&
-        curl -X POST -H 'Content-Type: application/json' --data @/debezium/debezium.json http://debezium-connect:8083/connectors &&
-        echo 'Connector registration complete!'
+        echo 'Installing required tools...';
+        apk add --no-cache curl gettext;
+        /scripts/init-debezium.sh;
       "
     networks:
       - infra-net
@@ -136,9 +132,6 @@ services:
       - EVENT_QUERY_SERVICE_URI=http://host.docker.internal:8082
       - ORDER_SERVICE_URI=http://host.docker.internal:8084
       - PAYMENT_SERVICE_URI=http://host.docker.internal:8085
-    depends_on:
-      keycloak:
-        condition: service_healthy
     networks:
       - infra-net
     extra_hosts:
@@ -148,9 +141,6 @@ services:
   scheduler-service:
     image: ticketly/scheduler-service:latest
     container_name: scheduler-service
-    depends_on:
-      keycloak:
-        condition: service_healthy
     environment:
       - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_URL=https://auth.dpiyumal.me
@@ -163,7 +153,6 @@ services:
       - infra-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
-      - "auth.ticketly.com:host-gateway"
 
   # Event Seating Service
   event-command-service:
@@ -173,7 +162,7 @@ services:
       - "8081:8081"
     environment:
       - SERVER_PORT=8081
-      - DATABASE_URL=jdbc:postgresql://${RDS_ENDPOINT}/postgres?currentSchema=event_service
+      - DATABASE_URL=jdbc:postgresql://${RDS_ENDPOINT}/event_service
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - JWT_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
@@ -192,11 +181,7 @@ services:
       - KEYCLOAK_CLIENT_SECRET=${EVENTS_SERVICE_CLIENT_SECRET}
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     depends_on:
-      event-seating-db:
-        condition: service_healthy
       redis:
-        condition: service_healthy
-      keycloak:
         condition: service_healthy
     networks:
       - infra-net
@@ -222,8 +207,6 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      keycloak:
-        condition: service_healthy
     environment:
       - MONGODB_URI=mongodb://query-db:27017/event-seating
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
@@ -233,11 +216,11 @@ services:
       - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
       - KAFKA_GROUP_ID=event-query-service
+      - AWS_S3_PUBLIC_URL=https://${AWS_S3_BUCKET_NAME}.s3.ap-south-1.amazonaws.com
     networks:
       - infra-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
-      - "auth.ticketly.com:host-gateway"
 
   order-service:
     image: ticketly/order-service:latest
@@ -245,7 +228,7 @@ services:
     ports:
       - "8084:8084"
     environment:
-      - POSTGRES_DSN=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${RDS_ENDPOINT}/postgres?options=--search_path%3Dorder_service&sslmode=disable
+      - POSTGRES_DSN=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${RDS_ENDPOINT}/order_service?sslmode=disable
       - REDIS_ADDR=redis:6379
       - KAFKA_ADDR=kafka:9092
       - OIDC_ISSUER=https://auth.dpiyumal.me/realms/event-ticketing
@@ -255,24 +238,13 @@ services:
       - QR_SECRET_KEY=4RJUEJDURgKarhbwx3fjKA8Fy/KoFwpAmOWAGwiWU9A=
       - TICKET_CLIENT_SECRET=${TICKET_CLIENT_SECRET}
       - TICKET_CLIENT_ID=ticket-service-client
-    depends_on:
-      order-service-db:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
     networks:
       - infra-net
-    extra_hosts:
-      - "auth.ticketly.com:host-gateway"
 
 volumes:
-  keycloak-postgres-data:
-  event-seating-postgres-data:
   redis-data:
   kafka-data:
   mongo-data:
-  order-service-postgres-data:
-  payment-service-db-data:
 
 networks:
   infra-net:

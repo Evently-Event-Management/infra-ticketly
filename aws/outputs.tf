@@ -11,6 +11,14 @@ output "ticketly_db_endpoint" {
   value = aws_db_instance.ticketly_db.endpoint
 }
 
+output "ticketly_db_address" {
+  value = aws_db_instance.ticketly_db.address
+}
+
+output "ticketly_db_port" {
+  value = aws_db_instance.ticketly_db.port
+}
+
 output "ticketly_db_user" {
   value = aws_db_instance.ticketly_db.username
 }

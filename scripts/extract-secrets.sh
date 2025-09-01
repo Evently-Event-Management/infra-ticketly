@@ -55,6 +55,8 @@ echo -e "\n# RDS Database Components" >> "${ENV_FILE}"
 extract_tf_output "${AWS_DIR}" "ticketly_db_endpoint" "RDS_ENDPOINT"
 extract_tf_output "${AWS_DIR}" "ticketly_db_user" "DATABASE_USERNAME"
 extract_tf_output "${AWS_DIR}" "ticketly_db_password" "DATABASE_PASSWORD"
+extract_tf_output "${AWS_DIR}" "ticketly_db_address" "DATABASE_ADDRESS"
+extract_tf_output "${AWS_DIR}" "ticketly_db_port" "DATABASE_PORT"
 
 echo "✅ Secrets extraction complete."
 
