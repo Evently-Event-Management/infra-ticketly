@@ -1,9 +1,10 @@
 ---
 - name: Deploy Keycloak to EC2 Server
   hosts: keycloak_server
-  gather_facts: false # Keep this false to prevent gathering facts too early
+  gather_facts: false
   vars_files:
     - group_vars/vault.yml
+    - group_vars/keycloak_server.yml
 
   pre_tasks:
     - name: Bootstrap | Update apt cache

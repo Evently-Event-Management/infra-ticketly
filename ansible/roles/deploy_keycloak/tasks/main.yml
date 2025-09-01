@@ -51,41 +51,58 @@
     dest: /home/ubuntu/keycloak/docker-compose.yml
     mode: '0644'
 
-- name: 9. Check if SSL certificate already exists
+- name: 9. Check if REAL SSL certificate already exists
+  become: true
   ansible.builtin.stat:
-    path: /etc/letsencrypt/live/auth.dpiyumal.me/fullchain.pem
+    path: "/etc/letsencrypt/live/{{ keycloak_domain }}/fullchain.pem"
   register: cert_file_status
 
-- name: 10. Configure Nginx for the first time (if certificate does not exist)
+- name: 10. Create a self-signed "dummy" certificate if no real one exists
+  become: true
   block:
-    - name: Copy initial nginx config from template
-      become: true
+    - name: Ensure dummy certificate parent directory exists
+      ansible.builtin.file:
+        path: "/etc/letsencrypt/live/{{ keycloak_domain }}"
+        state: directory
+    - name: Create a private key for the dummy cert
+      community.crypto.openssl_privatekey:
+        path: "/etc/letsencrypt/live/{{ keycloak_domain }}/privkey.pem"
+    - name: Create the self-signed dummy cert
+      community.crypto.x509_certificate:
+        path: "/etc/letsencrypt/live/{{ keycloak_domain }}/fullchain.pem"
+        privatekey_path: "/etc/letsencrypt/live/{{ keycloak_domain }}/privkey.pem"
+        provider: selfsigned
+  when: not cert_file_status.stat.exists
+
+- name: 11. Always ensure Nginx is configured from the final template
+  become: true
+  block:
+    - name: Ensure webroot directory exists for Certbot
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+    - name: Copy the final Nginx config from template
       ansible.builtin.template:
         src: nginx.keycloak.conf.j2
         dest: /etc/nginx/sites-available/keycloak
-
+      # Pass the variable to the template
+      vars:
+        cert_file_status: "{{ cert_file_status }}"
+      notify: Reload nginx
     - name: Enable the new Nginx site
-      become: true
       ansible.builtin.file:
         src: /etc/nginx/sites-available/keycloak
         dest: /etc/nginx/sites-enabled/keycloak
         state: link
+      notify: Reload nginx
 
-    - name: Remove default Nginx site
-      become: true
-      ansible.builtin.file:
-        path: /etc/nginx/sites-enabled/default
-        state: absent
-  when: not cert_file_status.stat.exists # This condition controls the whole block
-
-- name: 11. Obtain SSL certificate and configure Nginx with Certbot
+- name: 12. Obtain REAL SSL certificate from Let's Encrypt
   become: true
   ansible.builtin.command: >
-    certbot --nginx -d auth.dpiyumal.me --non-interactive --agree-tos -m your-email@example.com
-  args:
-    creates: /etc/letsencrypt/live/auth.dpiyumal.me/fullchain.pem
+    certbot --nginx -d {{ keycloak_domain }} --non-interactive --agree-tos -m your-email@example.com
+  when: not cert_file_status.stat.exists
 
-- name: 12. Start Keycloak service with Docker Compose
+- name: 13. Start Keycloak service with Docker Compose
   community.docker.docker_compose_v2:
     project_src: /home/ubuntu/keycloak
     state: present

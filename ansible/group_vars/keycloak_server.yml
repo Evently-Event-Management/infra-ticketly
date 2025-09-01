@@ -1,0 +1,2 @@
+keycloak_domain: auth.dpiyumal.me
+keycloak_db_url: "jdbc:postgresql://ticketly-db.cp0qikwog82w.ap-south-1.rds.amazonaws.com:5432/postgres?currentSchema=keycloak"
