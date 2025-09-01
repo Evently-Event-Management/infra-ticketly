@@ -1,8 +1,23 @@
 ---
 - name: Deploy Keycloak to EC2 Server
   hosts: keycloak_server
+  gather_facts: false # Keep this false to prevent gathering facts too early
   vars_files:
     - group_vars/vault.yml
+
+  pre_tasks:
+    - name: Bootstrap | Update apt cache
+      become: true
+      ansible.builtin.raw: apt-get update
+      changed_when: false
+
+    - name: Bootstrap | Install python3-six for Ansible module compatibility
+      become: true
+      ansible.builtin.raw: apt-get install -y python3-six
+      changed_when: false
+
+    - name: Bootstrap | Re-gather facts to recognize new packages
+      ansible.builtin.setup:
 
   roles:
     - role: deploy_keycloak

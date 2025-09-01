@@ -1,24 +1,15 @@
 server {
     listen 80;
     server_name auth.dpiyumal.me;
-    return 301 https://$server_name$request_uri;
-}
 
-server {
-    listen 443 ssl http2;
-    server_name auth.dpiyumal.me;
+    # This location block is for Certbot's validation process.
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
 
-    # SSL configuration (managed by certbot)
-    # ssl_certificate /etc/letsencrypt/live/auth.dpiyumal.me/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/auth.dpiyumal.me/privkey.pem;
-    
-    # Security headers
-    # add_header X-Frame-Options "SAMEORIGIN" always;
-    # add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-
-    # Proxy settings
+    # All other requests will be proxied to Keycloak.
+    # Certbot will see this and automatically create a new, secure
+    # server block for HTTPS and set up the proper redirects.
     location / {
         proxy_pass http://localhost:8080;
         proxy_set_header Host $host;
@@ -27,15 +18,14 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Port $server_port;
-        
+
         # WebSocket support
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+
+        # Add your security headers here
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "no-referrer-when-downgrade" always;
     }
 }

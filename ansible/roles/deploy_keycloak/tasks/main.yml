@@ -1,4 +1,3 @@
----
 - name: 1. Install prerequisite packages
   become: true
   ansible.builtin.apt:
@@ -52,36 +51,41 @@
     dest: /home/ubuntu/keycloak/docker-compose.yml
     mode: '0644'
 
-- name: 9. Copy nginx config from template
-  become: true
-  ansible.builtin.template:
-    src: nginx.keycloak.conf.j2
-    dest: /etc/nginx/sites-available/keycloak
-  notify: Reload nginx # This will trigger the handler
+- name: 9. Check if SSL certificate already exists
+  ansible.builtin.stat:
+    path: /etc/letsencrypt/live/auth.dpiyumal.me/fullchain.pem
+  register: cert_file_status
 
-- name: 10. Enable the new Nginx site
-  become: true
-  ansible.builtin.file:
-    src: /etc/nginx/sites-available/keycloak
-    dest: /etc/nginx/sites-enabled/keycloak
-    state: link
-  notify: Reload nginx
+- name: 10. Configure Nginx for the first time (if certificate does not exist)
+  block:
+    - name: Copy initial nginx config from template
+      become: true
+      ansible.builtin.template:
+        src: nginx.keycloak.conf.j2
+        dest: /etc/nginx/sites-available/keycloak
 
-- name: 11. Remove default Nginx site
-  become: true
-  ansible.builtin.file:
-    path: /etc/nginx/sites-enabled/default
-    state: absent
-  notify: Reload nginx
+    - name: Enable the new Nginx site
+      become: true
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/keycloak
+        dest: /etc/nginx/sites-enabled/keycloak
+        state: link
 
-- name: 12. Obtain SSL certificate with Certbot (non-interactive)
+    - name: Remove default Nginx site
+      become: true
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+  when: not cert_file_status.stat.exists # This condition controls the whole block
+
+- name: 11. Obtain SSL certificate and configure Nginx with Certbot
   become: true
   ansible.builtin.command: >
-    certbot --nginx -d auth.dpiyumal.me --non-interactive --agree-tos -m w.piyumal2319@gmail.com
+    certbot --nginx -d auth.dpiyumal.me --non-interactive --agree-tos -m your-email@example.com
   args:
     creates: /etc/letsencrypt/live/auth.dpiyumal.me/fullchain.pem
 
-- name: 13. Start Keycloak service with Docker Compose
+- name: 12. Start Keycloak service with Docker Compose
   community.docker.docker_compose_v2:
     project_src: /home/ubuntu/keycloak
     state: present
