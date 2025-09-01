@@ -1,0 +1,88 @@
+---
+- name: 1. Install prerequisite packages
+  become: true
+  ansible.builtin.apt:
+    name: ['ca-certificates', 'curl', 'nginx', 'certbot', 'python3-certbot-nginx']
+    state: present
+    update_cache: true
+
+- name: 2. Add Docker's official GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+    force: true
+
+- name: 3. Add Docker repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: 4. Install Docker Engine and Compose
+  become: true
+  ansible.builtin.apt:
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-buildx-plugin', 'docker-compose-plugin']
+    state: present
+    update_cache: true
+
+- name: 5. Add user to the docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
+
+- name: 6. Create deployment directory on server
+  ansible.builtin.file:
+    path: /home/ubuntu/keycloak
+    state: directory
+    mode: '0755'
+
+- name: 7. Copy Keycloak .env file from template
+  ansible.builtin.template:
+    src: keycloak.env.j2
+    dest: /home/ubuntu/keycloak/.env
+    mode: '0640'
+
+- name: 8. Copy docker-compose.yml file
+  ansible.builtin.copy:
+    src: docker-compose.yml
+    dest: /home/ubuntu/keycloak/docker-compose.yml
+    mode: '0644'
+
+- name: 9. Copy nginx config from template
+  become: true
+  ansible.builtin.template:
+    src: nginx.keycloak.conf.j2
+    dest: /etc/nginx/sites-available/keycloak
+  notify: Reload nginx # This will trigger the handler
+
+- name: 10. Enable the new Nginx site
+  become: true
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/keycloak
+    dest: /etc/nginx/sites-enabled/keycloak
+    state: link
+  notify: Reload nginx
+
+- name: 11. Remove default Nginx site
+  become: true
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: 12. Obtain SSL certificate with Certbot (non-interactive)
+  become: true
+  ansible.builtin.command: >
+    certbot --nginx -d auth.dpiyumal.me --non-interactive --agree-tos -m your-email@example.com
+  args:
+    creates: /etc/letsencrypt/live/auth.dpiyumal.me/fullchain.pem
+
+- name: 13. Start Keycloak service with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: /home/ubuntu/keycloak
+    state: present
+    pull: always

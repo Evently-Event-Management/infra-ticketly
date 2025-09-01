@@ -1,0 +1,8 @@
+---
+- name: Deploy Keycloak to EC2 Server
+  hosts: keycloak_server
+  vars_files:
+    - group_vars/vault.yml
+
+  roles:
+    - role: deploy_keycloak
