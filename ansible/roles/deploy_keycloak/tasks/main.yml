@@ -77,7 +77,7 @@
 - name: 12. Obtain SSL certificate with Certbot (non-interactive)
   become: true
   ansible.builtin.command: >
-    certbot --nginx -d auth.dpiyumal.me --non-interactive --agree-tos -m your-email@example.com
+    certbot --nginx -d auth.dpiyumal.me --non-interactive --agree-tos -m w.piyumal2319@gmail.com
   args:
     creates: /etc/letsencrypt/live/auth.dpiyumal.me/fullchain.pem
 
