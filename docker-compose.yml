@@ -145,9 +145,10 @@ services:
       - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_URL=https://auth.dpiyumal.me
       - SCHEDULER_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
-      - AWS_SQS_SESSION_ON_SALE_QUEUE_ARN=${AWS_SQS_SESSION_ON_SALE_URL:-https://sqs.us-east-1.amazonaws.com/964191654724/session-on-sale-queue}
-      - AWS_SQS_SESSION_CLOSED_QUEUE_ARN=${AWS_SQS_SESSION_CLOSED_URL:-https://sqs.us-east-1.amazonaws.com/964191654724/session-closed-queue}
-    volumes:  
+      - AWS_SQS_SESSION_ON_SALE_URL=${AWS_SQS_SESSION_ON_SALE_URL}
+      - AWS_SQS_SESSION_CLOSED_URL=${AWS_SQS_SESSION_CLOSED_URL}
+      - AWS_REGION=${AWS_REGION:-ap-south-1}
+    volumes:
       - ~/.aws:/root/.aws:ro
     networks:
       - infra-net
@@ -170,11 +171,11 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - AWS_REGION=${AWS_REGION:-ap-south-1}
-      - AWS_SQS_SESSION_ON_SALE_QUEUE_ARN=${AWS_SQS_SESSION_ON_SALE_ARN:-arn:aws:sqs:ap-south-1:964191654724:session-on-sale-queue}
-      - AWS_SQS_SESSION_CLOSED_QUEUE_ARN=${AWS_SQS_SESSION_CLOSED_ARN:-arn:aws:sqs:ap-south-1:964191654724:session-closed-queue}
-      - AWS_SCHEDULER_ROLE_ARN=${AWS_SCHEDULER_ROLE_ARN:-arn:aws:iam::964191654724:role/EventBridgeSchedulerSqsRole}
-      - AWS_SCHEDULER_GROUP_NAME=${AWS_SCHEDULER_GROUP_NAME:-event-ticketing-schedules}
-      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-ticketly-assets-d6e8f880}
+      - AWS_SQS_SESSION_ON_SALE_QUEUE_ARN=${AWS_SQS_SESSION_ON_SALE_ARN}
+      - AWS_SQS_SESSION_CLOSED_QUEUE_ARN=${AWS_SQS_SESSION_CLOSED_ARN}
+      - AWS_SCHEDULER_ROLE_ARN=${AWS_SCHEDULER_ROLE_ARN}
+      - AWS_SCHEDULER_GROUP_NAME=${AWS_SCHEDULER_GROUP_NAME}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
       - SHOW_SQL=false
       - LOG_LEVEL_APP=DEBUG
       - LOG_LEVEL_SECURITY=WARN
@@ -216,7 +217,7 @@ services:
       - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
       - KAFKA_GROUP_ID=event-query-service
-      - AWS_S3_PUBLIC_URL=https://${AWS_S3_BUCKET_NAME}.s3.ap-south-1.amazonaws.com
+      - AWS_S3_PUBLIC_URL=https://${AWS_S3_BUCKET_NAME}.s3.ap-
     networks:
       - infra-net
     extra_hosts:

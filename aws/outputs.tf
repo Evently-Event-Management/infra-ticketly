@@ -1,3 +1,7 @@
+output "aws_region" {
+  value = var.aws_region
+}
+
 output "ticketly_dev_user_access_key" {
   value = aws_iam_access_key.ticketly_dev_user_key.id
 }

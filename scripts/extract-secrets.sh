@@ -41,9 +41,12 @@ extract_tf_output "${KEYCLOAK_DIR}" "events_service_client_secret" "EVENTS_SERVI
 
 echo -e "\n# AWS Resources" >> "${ENV_FILE}"
 AWS_DIR="${PROJECT_ROOT}/aws"
+extract_tf_output "${AWS_DIR}" "aws_region" "AWS_REGION"
 extract_tf_output "${AWS_DIR}" "s3_bucket_name" "AWS_S3_BUCKET_NAME"
 extract_tf_output "${AWS_DIR}" "sqs_session_on_sale_arn" "AWS_SQS_SESSION_ON_SALE_ARN"
+extract_tf_output "${AWS_DIR}" "sqs_session_on_sale_url" "AWS_SQS_SESSION_ON_SALE_URL"
 extract_tf_output "${AWS_DIR}" "sqs_session_closed_arn" "AWS_SQS_SESSION_CLOSED_ARN"
+extract_tf_output "${AWS_DIR}" "sqs_session_closed_url" "AWS_SQS_SESSION_CLOSED_URL"
 extract_tf_output "${AWS_DIR}" "scheduler_role_arn" "AWS_SCHEDULER_ROLE_ARN"
 extract_tf_output "${AWS_DIR}" "scheduler_group_name" "AWS_SCHEDULER_GROUP_NAME"
 
