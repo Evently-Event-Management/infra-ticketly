@@ -33,6 +33,43 @@
     groups: docker
     append: true
 
+- name: 6a. Check if swap file exists
+  become: true
+  ansible.builtin.stat:
+    path: /swapfile
+  register: swap_file_check
+
+- name: 6b. Create 1GB swap file if it doesn't exist
+  become: true
+  ansible.builtin.command: dd if=/dev/zero of=/swapfile bs=1M count=1024
+  when: not swap_file_check.stat.exists
+
+- name: 6c. Set swap file permissions
+  become: true
+  ansible.builtin.file:
+    path: /swapfile
+    mode: '0600'
+  when: not swap_file_check.stat.exists
+
+- name: 6d. Set up swap area
+  become: true
+  ansible.builtin.command: mkswap /swapfile
+  when: not swap_file_check.stat.exists
+
+- name: 6e. Enable swap
+  become: true
+  ansible.builtin.command: swapon /swapfile
+  when: not swap_file_check.stat.exists
+  ignore_errors: true
+
+- name: 6f. Add swap to fstab for persistence across reboots
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    line: '/swapfile none swap sw 0 0'
+    state: present
+  when: not swap_file_check.stat.exists
+
 - name: 6. Create deployment directory on server
   ansible.builtin.file:
     path: /home/ubuntu/keycloak
