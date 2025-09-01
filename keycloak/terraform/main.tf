@@ -15,7 +15,6 @@ provider "keycloak" {
   realm     = "master"
 }
 
-
 terraform { 
   cloud { 
     
