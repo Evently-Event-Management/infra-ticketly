@@ -74,12 +74,16 @@ resource "keycloak_openid_client" "frontend_app" {
 
   valid_redirect_uris = [
     "http://localhost:8090/*",
-    "https://localhost:8090/*"
+    "https://localhost:8090/*",
+    "http://ticketly.test:8090/*",
+    "https://ticketly.test:8090/*"
   ]
 
   web_origins = [
     "http://localhost:8090",
-    "https://localhost:8090"
+    "https://localhost:8090",
+    "http://ticketly.test:8090",
+    "https://ticketly.test:8090"
   ]
 }
 
