@@ -32,7 +32,7 @@ resource "keycloak_realm" "event_ticketing" {
   security_defenses {
     headers {
       x_frame_options                     = "DENY"
-      content_security_policy             = "frame-src 'self'; frame-ancestors 'self' http://localhost:8090 https://localhost:8090; object-src 'none';"
+      content_security_policy             = "frame-src 'self'; frame-ancestors 'self' http://localhost:8090 https://localhost:8090 http://ticketly.test:8090 https://ticketly.test:8090; object-src 'none';"
       content_security_policy_report_only = ""
       x_content_type_options              = "nosniff"
       x_robots_tag                        = "none"
@@ -57,7 +57,7 @@ resource "keycloak_oidc_identity_provider" "google" {
   realm                = keycloak_realm.event_ticketing.id
   alias                = "google"
   display_name         = "Google"
-  enabled              = false
+  enabled              = true
   client_id            = var.google_oauth_client_id
   client_secret        = var.google_oauth_client_secret
   authorization_url    = "https://accounts.google.com/o/oauth2/auth"
