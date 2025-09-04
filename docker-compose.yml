@@ -228,18 +228,20 @@ services:
     ports:
       - "8084:8084"
     environment:
-      - POSTGRES_DSN=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${RDS_ENDPOINT}/order_service?sslmode=disable
+      - POSTGRES_DSN=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${RDS_ENDPOINT}/order_service
       - REDIS_ADDR=redis:6379
-      - KAFKA_ADDR=kafka:9092
+      - KAFKA_ADDR=kafka:29092
       - OIDC_ISSUER=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_URL=https://auth.dpiyumal.me
       - KEYCLOAK_REALM=event-ticketing
-      - SEAT_SERVICE_URL=http://event-query-service:8082/api/event-query
+      - SEAT_SERVICE_URL=http://host.docker.internal:8082/api/event-query
       - QR_SECRET_KEY=4RJUEJDURgKarhbwx3fjKA8Fy/KoFwpAmOWAGwiWU9A=
       - TICKET_CLIENT_SECRET=${TICKET_CLIENT_SECRET}
       - TICKET_CLIENT_ID=ticket-service-client
     networks:
       - infra-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   redis-data:
