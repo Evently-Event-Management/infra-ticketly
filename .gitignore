@@ -32,3 +32,6 @@ keycloak/token/*.json
 # OS generated files
 .DS_Store
 Thumbs.db
+
+#Credentials
+credentials/

@@ -181,6 +181,7 @@ services:
       - LOG_LEVEL_SECURITY=WARN
       - KEYCLOAK_CLIENT_SECRET=${EVENTS_SERVICE_CLIENT_SECRET}
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - GOOGLE_APPLICATION_CREDENTIALS=/config/gcp-credentials.json
     depends_on:
       redis:
         condition: service_healthy
@@ -188,14 +189,13 @@ services:
       - infra-net
     volumes:
       - ~/.aws:/root/.aws:ro
+      - ./credentials/gcp-credentials.json:/config/gcp-credentials.json:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/api/event-seating/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 40s
-    extra_hosts:
-      - "auth.ticketly.com:host-gateway"
 
 # Event Query Service
   event-query-service:
