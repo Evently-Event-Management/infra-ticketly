@@ -21,7 +21,7 @@ public class SecurityConfig {
     @Bean
     public CorsWebFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:8090", "http://ticketly.test:8090", "http://www.localhost:8090"));
+        config.setAllowedOrigins(Arrays.asList("http://localhost:8090", "http://ticketly.test:8090", "http://www.localhost:8090", "https://ticketly.dpiyumal.me"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Collections.singletonList("*"));
         config.setAllowCredentials(true);

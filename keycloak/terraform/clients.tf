@@ -78,7 +78,8 @@ resource "keycloak_openid_client" "frontend_app" {
     "http://www.localhost:8090/*",
     "https://www.localhost:8090/*",
     "http://ticketly.test:8090/*",
-    "https://ticketly.test:8090/*"
+    "https://ticketly.test:8090/*",
+    "https://ticketly.dpiyumal.me/*"
   ]
 
   web_origins = [
@@ -87,7 +88,8 @@ resource "keycloak_openid_client" "frontend_app" {
     "http://www.localhost:8090",
     "https://www.localhost:8090",
     "http://ticketly.test:8090",
-    "https://ticketly.test:8090"
+    "https://ticketly.test:8090",
+    "https://ticketly.dpiyumal.me"
   ]
 }
 
