@@ -1,5 +1,7 @@
 resource "aws_s3_bucket" "ticketly_assets" {
   bucket = "ticketly-assets-${random_id.bucket_suffix.hex}"
+
+  force_destroy = true
   
   tags = {
     Name = "TicketlyAssets"
