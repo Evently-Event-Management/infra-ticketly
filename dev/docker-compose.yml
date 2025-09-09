@@ -174,7 +174,7 @@ services:
 
     # API Gateway
   api-gateway:
-    build: ./api-gateway
+    image: ticketly/api-gateway:latest
     container_name: api-gateway
     ports:
       - "8088:8088"
