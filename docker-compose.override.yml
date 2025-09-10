@@ -75,10 +75,18 @@ services:
       KC_HEALTH_ENABLED: "true"
     ports:
       - "8080:8080"
+      - "8092:9000"
     command: start-dev
     depends_on:
       ticketly-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && exec 3<&- && exec 3>&-"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
     networks:
       - infra-net
 
@@ -116,6 +124,7 @@ services:
       - DATABASE_PASSWORD=ticketly
       - JWT_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
       - JWT_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
+      - KEYCLOAK_AUTH_SERVER_URL=http://auth.ticketly.com:8080
     depends_on:
       ticketly-db:
         condition: service_healthy
@@ -131,6 +140,9 @@ services:
       - COMMAND_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
       - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
+    depends_on:
+      keycloak:
+        condition: service_healthy
     extra_hosts:
       - "auth.ticketly.com:host-gateway"
       - "host.docker.internal:host-gateway"
@@ -140,12 +152,14 @@ services:
     ports:
       - "8084:8084"
     environment:
-      - POSTGRES_DSN=postgres://ticketly:ticketly@ticketly-db:5432/order_service
+      - POSTGRES_DSN=postgres://ticketly:ticketly@ticketly-db:5432/order_service?sslmode=disable
       - OIDC_ISSUER=http://auth.ticketly.com:8080/realms/event-ticketing
       - KEYCLOAK_URL=http://auth.ticketly.com:8080
       - SEAT_SERVICE_URL=http://host.docker.internal:8082/api/event-query
     depends_on:
       ticketly-db:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     extra_hosts:
       - "auth.ticketly.com:host-gateway"

@@ -193,7 +193,7 @@ services:
       - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
       - KAFKA_GROUP_ID=event-query-service
-      - AWS_S3_PUBLIC_URL=https://${AWS_S3_BUCKET_NAME}.s3.ap-south-1.amazonaws.com
+      - AWS_S3_PUBLIC_URL=https://${AWS_S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com
     networks:
       - infra-net
     extra_hosts:
