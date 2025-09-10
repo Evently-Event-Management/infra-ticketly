@@ -3,8 +3,6 @@ services:
   query-db:
     image: mongo:latest
     container_name: query-mongodb
-    ports:
-      - "27017:27017"
     volumes:
       - mongo-data:/data/db
     networks:
@@ -19,8 +17,6 @@ services:
   redis:
     image: redis:latest
     container_name: event-seating-redis
-    ports:
-      - "6379:6379"
     volumes:
       - redis-data:/data
     networks:
@@ -35,8 +31,6 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka
-    ports:
-      - "9092:9092"
     volumes:
       - kafka-data:/var/lib/kafka/data
     environment:
@@ -79,8 +73,6 @@ services:
   debezium-connect:
     image: debezium/connect:2.5
     container_name: debezium-connect
-    ports:
-      - "8083:8083"
     depends_on:
       kafka:
         condition: service_healthy
@@ -100,19 +92,18 @@ services:
 
   # Debezium connector registration service 
   debezium-connector-init:
-    image: alpine:latest # Use a more capable image
+    image: alpine:latest
     container_name: debezium-connector-init
     env_file:
-      - .env # Pass environment variables from your .env file
+      - .env
     depends_on:
       debezium-connect:
         condition: service_healthy
     volumes:
       - ./debezium:/debezium
-      - ./scripts/init-debezium.sh:/scripts/init-debezium.sh # Mount the new script
+      - ./scripts/init-debezium.sh:/scripts/init-debezium.sh
     command: >
       sh -c "
-        echo 'Installing required tools...';
         apk add --no-cache curl gettext;
         /scripts/init-debezium.sh;
       "
@@ -128,21 +119,19 @@ services:
     environment:
       - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
-      - EVENT_SEATING_SERVICE_URI=http://host.docker.internal:8081
-      - EVENT_QUERY_SERVICE_URI=http://host.docker.internal:8082
-      - ORDER_SERVICE_URI=http://host.docker.internal:8084
-      - PAYMENT_SERVICE_URI=http://host.docker.internal:8085
+      - EVENT_SEATING_SERVICE_URI=http://event-command-service:8081
+      - EVENT_QUERY_SERVICE_URI=http://event-query-service:8082
+      - ORDER_SERVICE_URI=http://order-service:8084
+      - PAYMENT_SERVICE_URI=http://payment-service:8085
     networks:
       - infra-net
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   # Go Scheduler Service
   scheduler-service:
     image: ticketly/scheduler-service:latest
     container_name: scheduler-service
     environment:
-      - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
+      - EVENT_SERVICE_URL=http://event-command-service:8081/api/event-seating
       - KEYCLOAK_URL=https://auth.dpiyumal.me
       - SCHEDULER_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
       - AWS_SQS_SESSION_ON_SALE_URL=${AWS_SQS_SESSION_ON_SALE_URL}
@@ -152,15 +141,11 @@ services:
       - ~/.aws:/root/.aws:ro
     networks:
       - infra-net
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   # Event Seating Service
   event-command-service:
     image: ticketly/event-command-service:latest
     container_name: event-command-service
-    ports:
-      - "8081:8081"
     environment:
       - SERVER_PORT=8081
       - DATABASE_URL=jdbc:postgresql://${RDS_ENDPOINT}/event_service
@@ -197,12 +182,10 @@ services:
       retries: 5
       start_period: 40s
 
-# Event Query Service
+  # Event Query Service
   event-query-service:
     image: ticketly/event-query-service:latest
     container_name: event-query-service
-    ports:
-      - "8082:8082"
     depends_on:
       query-db:
         condition: service_healthy
@@ -211,7 +194,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://query-db:27017/event-seating
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - COMMAND_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
+      - COMMAND_SERVICE_URL=http://event-command-service:8081/api/event-seating
       - EVENT_PROJECTION_CLIENT_SECRET=${EVENT_PROJECTION_CLIENT_SECRET}
       - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
@@ -222,11 +205,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  # Order Service
   order-service:
     image: ticketly/order-service:latest
     container_name: order-service
-    ports:
-      - "8084:8084"
     environment:
       - POSTGRES_DSN=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${RDS_ENDPOINT}/order_service
       - REDIS_ADDR=redis:6379
@@ -234,14 +216,12 @@ services:
       - OIDC_ISSUER=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_URL=https://auth.dpiyumal.me
       - KEYCLOAK_REALM=event-ticketing
-      - SEAT_SERVICE_URL=http://host.docker.internal:8082/api/event-query
+      - SEAT_SERVICE_URL=http://event-query-service:8082/api/event-query
       - QR_SECRET_KEY=4RJUEJDURgKarhbwx3fjKA8Fy/KoFwpAmOWAGwiWU9A=
       - TICKET_CLIENT_SECRET=${TICKET_CLIENT_SECRET}
       - TICKET_CLIENT_ID=ticket-service-client
     networks:
       - infra-net
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
 volumes:
   redis-data:
