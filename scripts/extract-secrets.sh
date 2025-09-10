@@ -51,8 +51,8 @@ extract_tf_output "${AWS_DIR}" "scheduler_role_arn" "AWS_SCHEDULER_ROLE_ARN"
 extract_tf_output "${AWS_DIR}" "scheduler_group_name" "AWS_SCHEDULER_GROUP_NAME"
 
 echo -e "\n# AWS Credentials" >> "${ENV_FILE}"
-extract_tf_output "${AWS_DIR}" "ticketly_dev_user_access_key" "AWS_ACCESS_KEY_ID"
-extract_tf_output "${AWS_DIR}" "ticketly_dev_user_secret_key" "AWS_SECRET_ACCESS_KEY"
+extract_tf_output "${AWS_DIR}" "service_user_access_key" "AWS_ACCESS_KEY_ID"
+extract_tf_output "${AWS_DIR}" "service_user_secret_key" "AWS_SECRET_ACCESS_KEY"
 
 echo -e "\n# RDS Database Components" >> "${ENV_FILE}"
 extract_tf_output "${AWS_DIR}" "ticketly_db_endpoint" "RDS_ENDPOINT"
