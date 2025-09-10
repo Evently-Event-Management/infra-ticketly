@@ -23,20 +23,15 @@
 │   │           └── main.yml
 │   └── setup_databases.yml
 ├── aws
-│   ├── backend.tf
-│   ├── ec2.tf
-│   ├── eventbridge.tf
-│   ├── gateway.tf
+│   ├── compute.tf
+│   ├── database.tf
 │   ├── iam.tf
-│   ├── keypair.tf
+│   ├── main.tf
+│   ├── messaging.tf
 │   ├── network.tf
 │   ├── outputs.tf
-│   ├── provider.tf
-│   ├── rds.tf
 │   ├── s3.tf
-│   ├── security.tf
-│   ├── sns.tf
-│   ├── sqs.tf
+│   ├── storage.tf
 │   └── variables.tf
 ├── config
 │   └── gateway
@@ -45,22 +40,13 @@
 ├── debezium
 │   └── debezium.json
 ├── dev
-│   ├── aws
-│   │   ├── eventbridge.tf
-│   │   ├── iam.tf
-│   │   ├── outputs.tf
-│   │   ├── provider.tf
-│   │   ├── s3.tf
-│   │   ├── sns.tf
-│   │   ├── sqs.tf
-│   │   └── variables.tf
 │   ├── docker-compose.yml
 │   └── scripts
 │       ├── extract-secrets.sh
 │       ├── init-dbs.sh
 │       └── init-debezium.sh
 ├── docker-compose.yml
-├── keycloak
+├── keycloak"e backspace"
 │   ├── nginx
 │   │   └── keycloak
 │   ├── realm-config
@@ -101,4 +87,4 @@
 │           └── theme.properties
 └── t.txt
 
-32 directories, 70 files
+31 directories, 57 files
