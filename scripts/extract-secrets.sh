@@ -1,65 +1,91 @@
 #!/bin/bash
 
-echo "Extracting secrets from Terraform..."
+echo "🚀 Extracting secrets from Terraform..."
 
-# Get project root and define .env file path
+# --- Setup: Get project root and define .env file path ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env"
 
 echo "Writing secrets to: ${ENV_FILE}"
-
 # Overwrite .env file with a header
 echo "# Terraform Outputs - Generated: $(date)" > "${ENV_FILE}"
 
-# --- A single, simplified function ---
-extract_tf_output() {
+# --- The Improved Function ---
+# This function takes a directory and a multi-line string of mappings.
+# It runs `terraform output -json` ONCE, then uses `jq` to parse all values.
+extract_outputs_from_json() {
   local dir=$1
-  local output_name=$2
-  local env_var_name=$3
+  local mappings=$2
+  local header=$3
 
+  echo -e "\n${header}" >> "${ENV_FILE}"
   pushd "$dir" >/dev/null
-  echo "Extracting: $env_var_name"
 
-  value=$(terraform output -raw "$output_name" 2>/dev/null)
-  if [ $? -eq 0 ] && [ -n "$value" ]; then
-    echo "$env_var_name=$value" >> "${ENV_FILE}"
-  else
-    echo "-> ❌ WARNING: Could not extract '$output_name' from '$dir'."
+  echo "Processing outputs from directory: ${dir}"
+  
+  # Fetch ALL outputs from the directory in one go
+  json_output=$(terraform output -json)
+  if [ $? -ne 0 ]; then
+    echo "-> ❌ ERROR: Failed to get Terraform outputs from '${dir}'. Halting."
+    popd >/dev/null
+    return 1
   fi
+
+  # Loop through each mapping (e.g., "scheduler_service_client_secret:SCHEDULER_CLIENT_SECRET")
+  while IFS= read -r line; do
+    if [ -z "$line" ]; then continue; fi
+
+    tf_output_name=$(echo "$line" | cut -d: -f1)
+    env_var_name=$(echo "$line" | cut -d: -f2)
+
+    # Use jq to safely parse the value from the JSON output.
+    # The '-r' flag gets the raw string without quotes.
+    # The '--arg' flag safely passes the key to jq.
+    # The '// empty' part makes jq output nothing if the key is null or doesn't exist.
+    value=$(echo "$json_output" | jq -r --arg key "$tf_output_name" '.[$key].value // empty')
+
+    if [ -n "$value" ]; then
+      echo "$env_var_name=$value" >> "${ENV_FILE}"
+      echo "  -> ✅ Extracted: $env_var_name"
+    else
+      echo "  -> ⚠️  WARNING: Could not extract '$tf_output_name' from '$dir' (output may not exist in this workspace)."
+    fi
+  done <<< "$mappings"
+
   popd >/dev/null
 }
 
-# --- Extract all raw values ---
+# --- Define Mappings ---
+# Format: <terraform_output_name>:<env_variable_name>
+KEYCLOAK_MAPPINGS="
+scheduler_service_client_secret:SCHEDULER_CLIENT_SECRET
+event_projection_service_client_secret:EVENT_PROJECTION_CLIENT_SECRET
+ticket_service_client_secret:TICKET_CLIENT_SECRET
+events_service_client_secret:EVENTS_SERVICE_CLIENT_SECRET
+"
 
-echo -e "\n# Keycloak Client Secrets" >> "${ENV_FILE}"
-KEYCLOAK_DIR="${PROJECT_ROOT}/keycloak/terraform"
-extract_tf_output "${KEYCLOAK_DIR}" "scheduler_service_client_secret" "SCHEDULER_CLIENT_SECRET"
-extract_tf_output "${KEYCLOAK_DIR}" "event_projection_service_client_secret" "EVENT_PROJECTION_CLIENT_SECRET"
-extract_tf_output "${KEYCLOAK_DIR}" "ticket_service_client_secret" "TICKET_CLIENT_SECRET"
-extract_tf_output "${KEYCLOAK_DIR}" "events_service_client_secret" "EVENTS_SERVICE_CLIENT_SECRET"
+AWS_MAPPINGS="
+aws_region:AWS_REGION
+s3_bucket_name:AWS_S3_BUCKET_NAME
+sqs_session_on_sale_arn:AWS_SQS_SESSION_ON_SALE_ARN
+sqs_session_on_sale_url:AWS_SQS_SESSION_ON_SALE_URL
+sqs_session_closed_arn:AWS_SQS_SESSION_CLOSED_ARN
+sqs_session_closed_url:AWS_SQS_SESSION_CLOSED_URL
+scheduler_role_arn:AWS_SCHEDULER_ROLE_ARN
+scheduler_group_name:AWS_SCHEDULER_GROUP_NAME
+service_user_access_key:AWS_ACCESS_KEY_ID
+service_user_secret_key:AWS_SECRET_ACCESS_KEY
+ticketly_db_endpoint:RDS_ENDPOINT
+ticketly_db_user:DATABASE_USERNAME
+ticketly_db_password:DATABASE_PASSWORD
+ticketly_db_address:DATABASE_ADDRESS
+ticketly_db_port:DATABASE_PORT
+"
 
-echo -e "\n# AWS Resources" >> "${ENV_FILE}"
-AWS_DIR="${PROJECT_ROOT}/aws"
-extract_tf_output "${AWS_DIR}" "aws_region" "AWS_REGION"
-extract_tf_output "${AWS_DIR}" "s3_bucket_name" "AWS_S3_BUCKET_NAME"
-extract_tf_output "${AWS_DIR}" "sqs_session_on_sale_arn" "AWS_SQS_SESSION_ON_SALE_ARN"
-extract_tf_output "${AWS_DIR}" "sqs_session_on_sale_url" "AWS_SQS_SESSION_ON_SALE_URL"
-extract_tf_output "${AWS_DIR}" "sqs_session_closed_arn" "AWS_SQS_SESSION_CLOSED_ARN"
-extract_tf_output "${AWS_DIR}" "sqs_session_closed_url" "AWS_SQS_SESSION_CLOSED_URL"
-extract_tf_output "${AWS_DIR}" "scheduler_role_arn" "AWS_SCHEDULER_ROLE_ARN"
-extract_tf_output "${AWS_DIR}" "scheduler_group_name" "AWS_SCHEDULER_GROUP_NAME"
-
-echo -e "\n# AWS Credentials" >> "${ENV_FILE}"
-extract_tf_output "${AWS_DIR}" "service_user_access_key" "AWS_ACCESS_KEY_ID"
-extract_tf_output "${AWS_DIR}" "service_user_secret_key" "AWS_SECRET_ACCESS_KEY"
-
-echo -e "\n# RDS Database Components" >> "${ENV_FILE}"
-extract_tf_output "${AWS_DIR}" "ticketly_db_endpoint" "RDS_ENDPOINT"
-extract_tf_output "${AWS_DIR}" "ticketly_db_user" "DATABASE_USERNAME"
-extract_tf_output "${AWS_DIR}" "ticketly_db_password" "DATABASE_PASSWORD"
-extract_tf_output "${AWS_DIR}" "ticketly_db_address" "DATABASE_ADDRESS"
-extract_tf_output "${AWS_DIR}" "ticketly_db_port" "DATABASE_PORT"
+# --- Run Extraction ---
+extract_outputs_from_json "${PROJECT_ROOT}/keycloak/terraform" "$KEYCLOAK_MAPPINGS" "# Keycloak Client Secrets"
+extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources & Credentials"
 
 echo "✅ Secrets extraction complete."
 

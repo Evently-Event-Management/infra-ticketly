@@ -42,7 +42,7 @@ services:
 
   # Add Keycloak for local authentication
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0.4
+    image: quay.io/keycloak/keycloak:26.3.1
     container_name: keycloak
     environment:
       KC_DB: postgres
@@ -50,12 +50,18 @@ services:
       KC_DB_URL_DATABASE: keycloak
       KC_DB_USERNAME: ticketly
       KC_DB_PASSWORD: ticketly
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+
+
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
+
+      
       KC_HOSTNAME: auth.ticketly.com
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
+
+      KC_HEALTH_ENABLED: "true"
     ports:
       - "8080:8080"
     command: start-dev
