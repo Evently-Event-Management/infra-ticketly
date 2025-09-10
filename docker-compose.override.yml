@@ -120,9 +120,6 @@ services:
       - COMMAND_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
       - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
-    depends_on:
-      event-command-service:
-        condition: service_healthy
     extra_hosts:
       - "auth.ticketly.com:host-gateway"
       - "host.docker.internal:host-gateway"
@@ -138,8 +135,6 @@ services:
       - SEAT_SERVICE_URL=http://host.docker.internal:8082/api/event-query
     depends_on:
       ticketly-db:
-        condition: service_healthy
-      event-query-service:
         condition: service_healthy
     extra_hosts:
       - "auth.ticketly.com:host-gateway"
