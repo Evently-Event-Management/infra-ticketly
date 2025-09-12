@@ -99,6 +99,9 @@ services:
       - EVENT_QUERY_SERVICE_URI=http://host.docker.internal:8082
       - ORDER_SERVICE_URI=http://host.docker.internal:8084
       - PAYMENT_SERVICE_URI=http://host.docker.internal:8085
+    depends_on:
+      keycloak:
+        condition: service_healthy
     extra_hosts:
       - "auth.ticketly.com:host-gateway"
       - "host.docker.internal:host-gateway"
@@ -127,6 +130,8 @@ services:
       - KEYCLOAK_AUTH_SERVER_URL=http://auth.ticketly.com:8080
     depends_on:
       ticketly-db:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     extra_hosts:
       - "auth.ticketly.com:host-gateway"

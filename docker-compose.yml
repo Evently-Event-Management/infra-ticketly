@@ -123,6 +123,13 @@ services:
       - EVENT_QUERY_SERVICE_URI=http://event-query-service:8082
       - ORDER_SERVICE_URI=http://order-service:8084
       - PAYMENT_SERVICE_URI=http://payment-service:8085
+      - LOG_LEVEL_ROOT=INFO
+      - LOG_LEVEL_SPRING_CLOUD_GATEWAY=INFO
+      - LOG_LEVEL_SPRING_HTTP_SERVER_REACTIVE=WARN
+      - LOG_LEVEL_SPRING_WEB_REACTIVE=WARN
+      - LOG_LEVEL_REACTOR_NETTY=WARN
+      - LOG_LEVEL_REACTOR_NETTY_HTTP_CLIENT=WARN
+      - LOG_LEVEL_SPRING_SECURITY=WARN
     networks:
       - infra-net
 
@@ -167,6 +174,9 @@ services:
       - KEYCLOAK_CLIENT_SECRET=${EVENTS_SERVICE_CLIENT_SECRET}
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - GOOGLE_APPLICATION_CREDENTIALS=/config/gcp-credentials.json
+      - LOG_LEVEL_ROOT=INFO
+      - COM_TICKETLY_LOG_LEVEL=INFO
+      - SPRING_SECURITY_LOG_LEVEL=WARN
     depends_on:
       redis:
         condition: service_healthy
@@ -194,6 +204,10 @@ services:
       - KEYCLOAK_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
       - KAFKA_GROUP_ID=event-query-service
       - AWS_S3_PUBLIC_URL=https://${AWS_S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com
+      - ROOT_LOG_LEVEL=INFO
+      - COM_TICKETLY_LOG_LEVEL=INFO
+      - SPRING_SECURITY_LOG_LEVEL=WARN
+      - MONGODB_LOG_LEVEL=WARN
     networks:
       - infra-net
     extra_hosts:
