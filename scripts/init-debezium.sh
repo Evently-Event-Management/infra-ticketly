@@ -5,12 +5,6 @@ set -e
 echo "Waiting for Debezium Connect to start..."
 sleep 30
 
-# --- NEW: Parse the RDS_ENDPOINT variable ---
-# This removes the port (e.g., ":5432") from the end of the string
-export RDS_HOSTNAME=${RDS_ENDPOINT%:*}
-
-echo "Using RDS Hostname: ${RDS_HOSTNAME}"
-
 # Define the path for the final config file
 CONFIG_FILE="/debezium/debezium-final.json"
 

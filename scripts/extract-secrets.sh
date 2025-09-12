@@ -7,9 +7,32 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env"
 
+# --- Detect OS and set Docker socket path ---
+echo "Detecting operating system..."
+OS_NAME=$(uname -s)
+DOCKER_SOCKET_PATH=""
+
+if [[ "$OS_NAME" == "Linux" ]]; then
+    # For native Linux and Windows users with WSL 2, this is the correct path.
+    echo "-> Detected Linux / WSL 2"
+    DOCKER_SOCKET_PATH="/var/run/docker.sock"
+elif [[ "$OS_NAME" == "Darwin" ]]; then
+    # For macOS
+    echo "-> Detected macOS"
+    DOCKER_SOCKET_PATH="/var/run/docker.sock"
+elif [[ "$OS_NAME" == *"MINGW64_NT"* || "$OS_NAME" == *"MSYS_NT"* ]]; then
+    # For Windows users using Git Bash without WSL 2
+    echo "-> Detected Windows (non-WSL 2)"
+    DOCKER_SOCKET_PATH="//./pipe/docker_engine"
+else
+    echo "-> Could not determine OS, defaulting to Linux socket path."
+    DOCKER_SOCKET_PATH="/var/run/docker.sock"
+fi
+
 echo "Writing secrets to: ${ENV_FILE}"
 # Overwrite .env file with a header
 echo "# Terraform Outputs - Generated: $(date)" > "${ENV_FILE}"
+echo "DOCKER_SOCKET_PATH=${DOCKER_SOCKET_PATH}" >> "${ENV_FILE}"
 
 # --- The Improved Function ---
 # This function takes a directory and a multi-line string of mappings.
@@ -95,7 +118,7 @@ read -p "Do you want to restart Docker Compose services to apply changes? (y/n) 
 if [[ "$restart_choice" =~ ^[Yy]$ ]]; then
     echo "Restarting Docker Compose services..."
     cd "${PROJECT_ROOT}"
-    docker-compose down && docker-compose up -d
+    docker compose down && docker compose up -d
     echo "✅ Docker Compose services restarted."
 else
     echo "Skipping restart."
