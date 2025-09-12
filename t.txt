@@ -30,34 +30,36 @@
 │   ├── messaging.tf
 │   ├── network.tf
 │   ├── outputs.tf
-│   ├── s3.tf
 │   ├── storage.tf
 │   └── variables.tf
 ├── config
 │   └── gateway
 │       └── application.yml
+├── credentials
+│   └── gcp-credentials.json
 ├── dbz.json
 ├── debezium
+│   ├── debezium-final.json
 │   └── debezium.json
-├── dev
-│   ├── docker-compose.yml
-│   └── scripts
-│       ├── extract-secrets.sh
-│       ├── init-dbs.sh
-│       └── init-debezium.sh
+├── docker-compose.override.yml
 ├── docker-compose.yml
-├── keycloak"e backspace"
+├── keycloak
 │   ├── nginx
 │   │   └── keycloak
 │   ├── realm-config
 │   │   └── event-ticketing-realm.json
 │   ├── terraform
+│   │   ├── backend.dev.hcl
+│   │   ├── backend.prod.hcl
 │   │   ├── clients.tf
 │   │   ├── main.tf
 │   │   ├── outputs.tf
 │   │   ├── realm.tf
 │   │   ├── role.tf
 │   │   ├── scopes.tf
+│   │   ├── terraform.tfstate
+│   │   ├── terraform.tfstate.backup
+│   │   ├── terraform.tfvars
 │   │   ├── users.tf
 │   │   └── variables.tf
 │   └── token
@@ -67,6 +69,7 @@
 ├── README.md
 ├── scripts
 │   ├── extract-secrets.sh
+│   ├── init-dbs.sh
 │   ├── init-debezium.sh
 │   ├── localstack
 │   │   ├── init-aws.sh
@@ -87,4 +90,4 @@
 │           └── theme.properties
 └── t.txt
 
-31 directories, 57 files
+30 directories, 61 files
