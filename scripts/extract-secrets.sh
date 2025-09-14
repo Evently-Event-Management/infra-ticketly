@@ -118,7 +118,7 @@ read -p "Do you want to restart Docker Compose services to apply changes? (y/n) 
 if [[ "$restart_choice" =~ ^[Yy]$ ]]; then
     echo "Restarting Docker Compose services..."
     cd "${PROJECT_ROOT}"
-    docker compose down && docker compose up -d
+    docker-compose down && docker-compose up -d
     echo "✅ Docker Compose services restarted."
 else
     echo "Skipping restart."
