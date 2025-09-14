@@ -65,6 +65,11 @@ Windows and Linux use different line endings, which can break shell scripts.
   - **If you are on Windows, you MUST use Git Bash or another MINGW-based terminal.**
   - Before running any other scripts, you may need to convert them to Unix-style line endings. If you encounter script errors, run `dos2unix` on the script files. **Do not open the scripts in a Windows-native editor like Notepad**, as it may change the line endings back.
 
+  ```bash
+  cd scripts/
+  dos2unix extract-secrets.sh init-dbs.sh init-debezium.sh monitor-sqs-live.sh send-kafka-event.sh test-scheduler.sh
+  ```
+
 ### 6\. Provision AWS Infrastructure
 
 This step uses Terraform to create the necessary AWS resources (SQS, S3, etc.) in your personal AWS account.

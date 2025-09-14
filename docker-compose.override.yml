@@ -19,18 +19,7 @@ services:
     ports:
       - "8083:8083"
 
-  # Override Debezium connector initialization to use dev configuration
-  debezium-connector-init:
-    environment:
-      - DATABASE_ADDRESS=ticketly-db
-      - DATABASE_PORT=5432
-      - DATABASE_USERNAME=ticketly
-      - DATABASE_PASSWORD=ticketly
-    depends_on:
-      - debezium-connect
-      - ticketly-db
-
-  # Add local PostgreSQL Database for development
+    # Add local PostgreSQL Database for development
   ticketly-db:
     image: postgres:16
     container_name: ticketly-postgres-db
@@ -50,6 +39,17 @@ services:
       retries: 5
     networks:
       - infra-net
+
+  # Override Debezium connector initialization to use dev configuration
+  debezium-connector-init:
+    environment:
+      - DATABASE_ADDRESS=ticketly-db
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=ticketly
+      - DATABASE_PASSWORD=ticketly
+    depends_on:
+      - debezium-connect
+      - ticketly-db
 
   # Add Keycloak for local authentication
   keycloak:
