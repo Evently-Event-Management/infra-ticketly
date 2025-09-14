@@ -1,6 +1,7 @@
 resource "aws_s3_bucket" "ticketly_assets" {
   bucket = "ticketly-assets-${terraform.workspace}-${random_id.bucket_suffix.hex}"
   tags = { Name = "TicketlyAssets-${terraform.workspace}" }
+  force_destroy = true
 }
 
 resource "random_id" "bucket_suffix" {
