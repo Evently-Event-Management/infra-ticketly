@@ -1,9 +1,9 @@
-resource "aws_iam_user" "ticketly_dev_user" {
-  name = "ticketly-dev-user"
+resource "aws_iam_user" "ticketly_service_user" {
+  name = "ticketly-service-user-${terraform.workspace}"
 }
 
-resource "aws_iam_access_key" "ticketly_dev_user_key" {
-  user = aws_iam_user.ticketly_dev_user.name
+resource "aws_iam_access_key" "ticketly_service_user_key" {
+  user = aws_iam_user.ticketly_service_user.name
 }
 
 # S3 Policy
@@ -31,10 +31,10 @@ resource "aws_iam_policy" "ticketly_s3_policy" {
 }
 
 resource "aws_iam_user_policy_attachment" "ticketly_s3_attach" {
-  user       = aws_iam_user.ticketly_dev_user.name
+  user       = aws_iam_user.ticketly_service_user.name
   policy_arn = aws_iam_policy.ticketly_s3_policy.arn
-  
-  depends_on = [aws_iam_policy.ticketly_s3_policy, aws_iam_user.ticketly_dev_user]
+
+  depends_on = [aws_iam_policy.ticketly_s3_policy, aws_iam_user.ticketly_service_user]
 }
 
 # SQS Consumer Policy
@@ -63,10 +63,10 @@ resource "aws_iam_policy" "ticketly_sqs_consumer_policy" {
 }
 
 resource "aws_iam_user_policy_attachment" "ticketly_sqs_attach" {
-  user       = aws_iam_user.ticketly_dev_user.name
+  user       = aws_iam_user.ticketly_service_user.name
   policy_arn = aws_iam_policy.ticketly_sqs_consumer_policy.arn
-  
-  depends_on = [aws_iam_policy.ticketly_sqs_consumer_policy, aws_iam_user.ticketly_dev_user]
+
+  depends_on = [aws_iam_policy.ticketly_sqs_consumer_policy, aws_iam_user.ticketly_service_user]
 }
 
 # EventBridge Schedule policy
@@ -98,10 +98,10 @@ resource "aws_iam_policy" "ticketly_eventbridge_schedule_policy" {
 }
 
 resource "aws_iam_user_policy_attachment" "ticketly_eventbridge_schedule_attach" {
-  user       = aws_iam_user.ticketly_dev_user.name
+  user       = aws_iam_user.ticketly_service_user.name
   policy_arn = aws_iam_policy.ticketly_eventbridge_schedule_policy.arn
-  
-  depends_on = [aws_iam_policy.ticketly_eventbridge_schedule_policy, aws_iam_user.ticketly_dev_user]
+
+  depends_on = [aws_iam_policy.ticketly_eventbridge_schedule_policy, aws_iam_user.ticketly_service_user]
 }
 
 # EventBridge Scheduler Role - Trust relationship

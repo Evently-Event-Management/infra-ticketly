@@ -1,21 +1,24 @@
-variable "public_key_content" {
-  description = "Public key content for the EC2 key pair"
+variable "aws_region" {
+  description = "The AWS region to deploy resources in."
   type        = string
+  default     = "ap-south-1"
+}
+
+variable "public_key_content" {
+  description = "Public key content for the EC2 key pair (used in prod only)."
+  type        = string
+  default     = "" # Can be empty for dev workspaces
 }
 
 variable "rds_user" {
-  description = "The username for the RDS database"
+  description = "The username for the RDS database (used in prod only)."
   type        = string
+  default     = "" # Can be empty for dev workspaces
 }
 
 variable "rds_password" {
-  description = "The password for the RDS database"
+  description = "The password for the RDS database (used in prod only)."
   type        = string
   sensitive   = true
-}
-
-variable "aws_region" {
-  description = "The AWS region to deploy resources in"
-  type        = string
-  default     = "ap-south-1"
+  default     = "" # Can be empty for dev workspaces
 }

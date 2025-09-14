@@ -1,0 +1,170 @@
+# Development overrides for docker-compose.yml
+# This file automatically gets used when you run docker-compose up
+
+services:
+  # Add port mappings for development
+  query-db:
+    ports:
+      - "27017:27017"
+      
+  redis:
+    ports:
+      - "6379:6379"
+      
+  kafka:
+    ports:
+      - "9092:9092"
+      
+  debezium-connect:
+    ports:
+      - "8083:8083"
+
+    # Add local PostgreSQL Database for development
+  ticketly-db:
+    image: postgres:16
+    container_name: ticketly-postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ticketly
+      POSTGRES_PASSWORD: ticketly
+    command: postgres -c wal_level=logical
+    volumes:
+      - ticketly-postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-dbs.sh:/docker-entrypoint-initdb.d/init-dbs.sh
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ticketly" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - infra-net
+
+  # Override Debezium connector initialization to use dev configuration
+  debezium-connector-init:
+    environment:
+      - DATABASE_ADDRESS=ticketly-db
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=ticketly
+      - DATABASE_PASSWORD=ticketly
+    depends_on:
+      - debezium-connect
+      - ticketly-db
+
+  # Add Keycloak for local authentication
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.1
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: ticketly-db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: ticketly
+      KC_DB_PASSWORD: ticketly
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
+      KC_HOSTNAME: auth.ticketly.com
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8080:8080"
+      - "8092:9000"
+    command: start-dev
+    depends_on:
+      ticketly-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && exec 3<&- && exec 3>&-"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+    networks:
+      - infra-net
+
+  # Override API Gateway environment for local Keycloak
+  api-gateway:
+    environment:
+      - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
+      - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
+      - EVENT_SEATING_SERVICE_URI=http://host.docker.internal:8081
+      - EVENT_QUERY_SERVICE_URI=http://host.docker.internal:8082
+      - ORDER_SERVICE_URI=http://host.docker.internal:8084
+      - PAYMENT_SERVICE_URI=http://host.docker.internal:8085
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    extra_hosts:
+      - "auth.ticketly.com:host-gateway"
+      - "host.docker.internal:host-gateway"
+
+  # Override Scheduler Service environment for local Keycloak
+  scheduler-service:
+    environment:
+      - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
+      - KEYCLOAK_URL=http://auth.ticketly.com:8080
+    depends_on:
+      - event-command-service
+    extra_hosts:
+      - "auth.ticketly.com:host-gateway"
+      - "host.docker.internal:host-gateway"
+
+  # Override Event Command Service environment for local database
+  event-command-service:
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=jdbc:postgresql://ticketly-db:5432/event_service
+      - DATABASE_USERNAME=ticketly
+      - DATABASE_PASSWORD=ticketly
+      - JWT_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
+      - JWT_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
+      - KEYCLOAK_AUTH_SERVER_URL=http://auth.ticketly.com:8080
+    depends_on:
+      ticketly-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    extra_hosts:
+      - "auth.ticketly.com:host-gateway"
+      - "host.docker.internal:host-gateway"
+
+  # Override Event Query Service environment for local Keycloak
+  event-query-service:
+    ports:
+      - "8082:8082"
+    environment:
+      - COMMAND_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
+      - KEYCLOAK_ISSUER_URI=http://auth.ticketly.com:8080/realms/event-ticketing
+      - KEYCLOAK_JWK_SET_URI=http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/certs
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    extra_hosts:
+      - "auth.ticketly.com:host-gateway"  
+      - "host.docker.internal:host-gateway"
+
+  # Override Order Service environment for local database
+  order-service:
+    ports:
+      - "8084:8084"
+    environment:
+      - POSTGRES_DSN=postgres://ticketly:ticketly@ticketly-db:5432/order_service?sslmode=disable
+      - OIDC_ISSUER=http://auth.ticketly.com:8080/realms/event-ticketing
+      - KEYCLOAK_URL=http://auth.ticketly.com:8080
+      - SEAT_SERVICE_URL=http://host.docker.internal:8082/api/event-query
+    depends_on:
+      ticketly-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    extra_hosts:
+      - "auth.ticketly.com:host-gateway"
+      - "host.docker.internal:host-gateway"
+
+# Add volume for local PostgreSQL data
+volumes:
+  ticketly-postgres-data:

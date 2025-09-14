@@ -1,7 +1,6 @@
 .vscode/
 .env
 
-.env.*
 
 # Local Terraform directories
 **/.terraform/*
@@ -12,6 +11,9 @@
 
 # Terraform variable files that may contain secrets
 *.tfvars
+
+# terraform lock
+.terraform.lock.hcl
 
 # Crash logs
 crash.log

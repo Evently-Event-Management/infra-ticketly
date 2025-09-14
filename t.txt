@@ -1,82 +1,64 @@
 .
-├── README.md
 ├── ansible
 │   ├── ansible.cfg
+│   ├── deploy_keycloak.yml
 │   ├── group_vars
-│   │   ├── rds_postgres.yml
-│   │   └── vault.yml
+│   │   ├── keycloak_server.yml
+│   │   └── rds_postgres.yml
 │   ├── inventory
 │   │   └── hosts.ini
 │   ├── roles
+│   │   ├── deploy_keycloak
+│   │   │   ├── files
+│   │   │   │   └── docker-compose.yml
+│   │   │   ├── handlers
+│   │   │   │   └── main.yml
+│   │   │   ├── tasks
+│   │   │   │   └── main.yml
+│   │   │   └── templates
+│   │   │       ├── keycloak.env.j2
+│   │   │       └── nginx.keycloak.conf.j2
 │   │   └── postgresql_setup
 │   │       └── tasks
 │   │           └── main.yml
 │   └── setup_databases.yml
-├── api-gateway
-│   ├── Dockerfile
-│   ├── mvnw
-│   ├── mvnw.cmd
-│   ├── pom.xml
-│   ├── src
-│   │   ├── main
-│   │   │   ├── java
-│   │   │   │   └── com
-│   │   │   │       └── ticketly
-│   │   │   │           └── apigateway
-│   │   │   │               ├── ApiGatewayApplication.java
-│   │   │   │               └── config
-│   │   │   │                   └── SecurityConfig.java
-│   │   │   └── resources
-│   │   │       └── application.yml
-│   │   └── test
-│   │       └── java
-│   │           └── com
-│   │               └── ticketly
-│   │                   └── apigateway
-│   │                       └── ApiGatewayApplicationTests.java
-│   └── target
-│       ├── classes
-│       │   └── application.yml
-│       └── test-classes
 ├── aws
-│   ├── backend.tf
-│   ├── ec2.tf
-│   ├── eventbridge.tf
-│   ├── gateway.tf
+│   ├── compute.tf
+│   ├── database.tf
 │   ├── iam.tf
-│   ├── keypair.tf
+│   ├── main.tf
+│   ├── messaging.tf
 │   ├── network.tf
 │   ├── outputs.tf
-│   ├── provider.tf
-│   ├── rds.tf
-│   ├── s3.tf
-│   ├── security.tf
-│   ├── sns.tf
-│   ├── sqs.tf
-│   ├── terraform.tfvars
+│   ├── storage.tf
 │   └── variables.tf
 ├── config
 │   └── gateway
 │       └── application.yml
+├── credentials
+│   └── gcp-credentials.json
 ├── dbz.json
 ├── debezium
+│   ├── debezium-final.json
 │   └── debezium.json
+├── docker-compose.override.yml
 ├── docker-compose.yml
 ├── keycloak
-│   ├── docker-compose.yml
 │   ├── nginx
 │   │   └── keycloak
 │   ├── realm-config
 │   │   └── event-ticketing-realm.json
-│   ├── sql
-│   │   └── init.sql
 │   ├── terraform
+│   │   ├── backend.dev.hcl
+│   │   ├── backend.prod.hcl
 │   │   ├── clients.tf
 │   │   ├── main.tf
 │   │   ├── outputs.tf
 │   │   ├── realm.tf
 │   │   ├── role.tf
 │   │   ├── scopes.tf
+│   │   ├── terraform.tfstate
+│   │   ├── terraform.tfstate.backup
 │   │   ├── terraform.tfvars
 │   │   ├── users.tf
 │   │   └── variables.tf
@@ -84,8 +66,11 @@
 │       ├── admin.json
 │       ├── m2m.json
 │       └── user.json
+├── README.md
 ├── scripts
 │   ├── extract-secrets.sh
+│   ├── init-dbs.sh
+│   ├── init-debezium.sh
 │   ├── localstack
 │   │   ├── init-aws.sh
 │   │   ├── scheduler-role-policy.json
@@ -94,15 +79,15 @@
 │   ├── mysql-init.sql
 │   ├── send-kafka-event.sh
 │   └── test-scheduler.sh
-├── t.txt
-└── themes
-    └── shadcn-theme
-        └── login
-            ├── resources
-            │   ├── css
-            │   │   └── styles.css
-            │   └── img
-            │       └── background.jpg
-            └── theme.properties
+├── themes
+│   └── shadcn-theme
+│       └── login
+│           ├── resources
+│           │   ├── css
+│           │   │   └── styles.css
+│           │   └── img
+│           │       └── background.jpg
+│           └── theme.properties
+└── t.txt
 
-41 directories, 64 files
+30 directories, 61 files
