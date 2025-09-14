@@ -10,7 +10,7 @@ resource "aws_db_parameter_group" "ticketly_logical_replication" {
   count = local.is_prod ? 1 : 0
 
   name   = "ticketly-logical-replication"
-  family = "postgres17"
+  family = "postgres16"
 
   parameter {
     name  = "rds.logical_replication"
@@ -23,7 +23,7 @@ resource "aws_db_instance" "ticketly_db" {
 
   identifier           = "ticketly-db"
   engine               = "postgres"
-  engine_version       = "16.3" # Use a specific minor version available in RDS
+  engine_version       = "16.3"
   instance_class       = "db.t3.micro"
   username             = var.rds_user
   password             = var.rds_password
