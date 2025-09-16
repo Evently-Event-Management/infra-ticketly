@@ -79,6 +79,7 @@ This step uses Terraform to create the necessary AWS resources (SQS, S3, etc.) i
 2.  **Create Your Developer Workspace**: This creates an isolated state for your infrastructure in Terraform Cloud. **Replace `<your-name>` with your name (e.g., `dev-piyumal`).**
 
     ```bash
+    terraform init
     terraform workspace new dev-<your-name>
     ```
 
@@ -95,7 +96,6 @@ This step uses Terraform to create the necessary AWS resources (SQS, S3, etc.) i
 4.  **Initialize and Apply**:
 
     ```bash
-    terraform init
     terraform apply
     ```
 
@@ -109,7 +109,7 @@ Next, we'll provision our local Keycloak container with the necessary realms, cl
 
     ```bash
     # From the project root
-    docker-compose up -d keycloak ticketly-db
+    docker compose up -d keycloak ticketly-db
     ```
 
 2.  **Initialize and Apply Keycloak Config**:
