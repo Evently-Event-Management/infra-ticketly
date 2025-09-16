@@ -4,16 +4,21 @@ Welcome to the Ticketly project\! This guide will walk you through setting up yo
 
 ## Prerequisites
 
-Before you begin, please ensure you have the following tools installed and configured on your system.
+Before you begin, please ensure you have the following tools installed and configured on your system:
 
-  - [ ] **Git**: For cloning the repository.
-  - [ ] **Docker & Docker Compose**: To run the application services. [Install Docker Desktop](https://www.docker.com/products/docker-desktop/).
-  - [ ] **Terraform CLI**: To provision cloud and local infrastructure. [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli).
-  - [ ] **AWS CLI**: For interacting with AWS. [Install AWS CLI](https://aws.amazon.com/cli/).
-  - [ ] **An AWS Account**: Each developer needs their own AWS account with an IAM user that has **administrative** permissions.
-  - [ ] **A Terraform Cloud Account**: You will need a user token to access the project's organization.
+- [ ] **Git**: For cloning the repository.  
+- [ ] **Docker & Docker Compose**: To run the application services. Install **Docker Desktop**.  
+- [ ] **Terraform CLI**: To provision cloud and local infrastructure. Install **Terraform**.  
+- [ ] **AWS CLI**: For interacting with AWS. Install **AWS CLI**.  
+- [ ] **jq**: A command-line JSON processor used by our scripts.  
+  - **macOS**: `brew install jq`  
+  - **Linux (Debian/Ubuntu)**: `sudo apt-get install jq`  
+  - **Linux (Fedora)**: `sudo dnf install jq`  
+  - **Windows (Chocolatey)**: `choco install jq`  
+- [ ] **An AWS Account**: Each developer needs their own AWS account with an IAM user that has administrative permissions.  
+- [ ] **A Terraform Cloud Account**: You will need a user token to access the project's organization.  
 
------
+---
 
 ## ⚙️ One-Time Setup
 
