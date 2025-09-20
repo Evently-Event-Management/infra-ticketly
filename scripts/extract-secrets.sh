@@ -112,14 +112,14 @@ extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources
 
 echo "✅ Secrets extraction complete."
 
-# --- Prompt for Docker Compose restart (no changes here) ---
-echo ""
-read -p "Do you want to restart Docker Compose services to apply changes? (y/n) " -r restart_choice
-if [[ "$restart_choice" =~ ^[Yy]$ ]]; then
-    echo "Restarting Docker Compose services..."
-    cd "${PROJECT_ROOT}"
-    docker compose down && docker compose up -d
-    echo "✅ Docker Compose services restarted."
-else
-    echo "Skipping restart."
-fi
+# # --- Prompt for Docker Compose restart (no changes here) ---
+# echo ""
+# read -p "Do you want to restart Docker Compose services to apply changes? (y/n) " -r restart_choice
+# if [[ "$restart_choice" =~ ^[Yy]$ ]]; then
+#     echo "Restarting Docker Compose services..."
+#     cd "${PROJECT_ROOT}"
+#     docker compose down && docker compose up -d
+#     echo "✅ Docker Compose services restarted."
+# else
+#     echo "Skipping restart."
+# fi
