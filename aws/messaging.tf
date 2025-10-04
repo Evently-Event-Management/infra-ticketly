@@ -1,15 +1,7 @@
-resource "aws_sqs_queue" "session_on_sale" {
-  name = "session-on-sale-queue-${terraform.workspace}"
+resource "aws_sqs_queue" "session_scheduling" {
+  name = "session-scheduling-queue-${terraform.workspace}"
   tags = {
-    Name        = "ticketly-session-on-sale"
-    Environment = terraform.workspace
-  }
-}
-
-resource "aws_sqs_queue" "session_closed" {
-  name = "session-closed-queue-${terraform.workspace}"
-  tags = {
-    Name        = "ticketly-session-closed"
+    Name        = "ticketly-session-scheduling"
     Environment = terraform.workspace
   }
 }

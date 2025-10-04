@@ -7,24 +7,14 @@ output "s3_bucket_name" {
   value       = aws_s3_bucket.ticketly_assets.id
 }
 
-output "sqs_session_on_sale_url" {
-  description = "The URL of the SQS queue for 'session on sale' events."
-  value       = aws_sqs_queue.session_on_sale.url
+output "sqs_session_scheduling_url" {
+  description = "The URL of the SQS queue for 'session scheduling' events."
+  value       = aws_sqs_queue.session_scheduling.url
 }
 
-output "sqs_session_on_sale_arn" {
-  description = "The ARN of the SQS queue for 'session on sale' events."
-  value       = aws_sqs_queue.session_on_sale.arn
-}
-
-output "sqs_session_closed_url" {
-  description = "The URL of the SQS queue for 'session closed' events."
-  value       = aws_sqs_queue.session_closed.url
-}
-
-output "sqs_session_closed_arn" {
-  description = "The ARN of the SQS queue for 'session closed' events."
-  value       = aws_sqs_queue.session_closed.arn
+output "sqs_session_scheduling_arn" {
+  description = "The ARN of the SQS queue for 'session scheduling' events."
+  value       = aws_sqs_queue.session_scheduling.arn
 }
 
 output "scheduler_role_arn" {
