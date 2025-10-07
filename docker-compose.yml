@@ -223,7 +223,8 @@ services:
       - OIDC_ISSUER=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_URL=https://auth.dpiyumal.me
       - KEYCLOAK_REALM=event-ticketing
-      - SEAT_SERVICE_URL=http://event-query-service:8082/api/event-query
+      - EVENT_SEATING_SERVICE_URL=http://event-command-service:8082/api/event-seating
+      - EVENT_QUERY_SERVICE_URL=http://event-query-service:8082/api/event-query
       - QR_SECRET_KEY=4RJUEJDURgKarhbwx3fjKA8Fy/KoFwpAmOWAGwiWU9A=
       - TICKET_CLIENT_SECRET=${TICKET_CLIENT_SECRET}
       - TICKET_CLIENT_ID=ticket-service-client
