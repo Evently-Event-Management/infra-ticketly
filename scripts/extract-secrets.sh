@@ -35,12 +35,6 @@ echo "Writing secrets to: ${ENV_FILE}"
 echo "# Terraform Outputs - Generated: $(date)" > "${ENV_FILE}"
 echo "DOCKER_SOCKET_PATH=${DOCKER_SOCKET_PATH}" >> "${ENV_FILE}"
 
-# Check if .env.local exists and append its content
-if [ -f "${ENV_LOCAL_FILE}" ]; then
-    echo "-> ℹ️ Found .env.local file, appending its contents..."
-    cat "${ENV_LOCAL_FILE}" | grep -v '^#' | grep -v '^$' >> "${ENV_FILE}"
-fi
-
 # --- The Improved Function ---
 # This function takes a directory and a multi-line string of mappings.
 # It runs `terraform output -json` ONCE, then uses `jq` to parse all values.
@@ -156,18 +150,29 @@ extract_ga_credentials() {
   else
     echo "  -> ⚠️ WARNING: GCP credentials file not found at ${credentials_file}"
   fi
-  
-  # Check if GA_PROPERTY_ID is not already in the .env file (from .env.local)
-  if ! grep -q "^GA_PROPERTY_ID=" "${ENV_FILE}"; then
-    echo "  -> ⚠️ WARNING: GA_PROPERTY_ID not found in .env.local or extracted from credentials"
-    echo "     Please add GA_PROPERTY_ID=503402642 to your .env.local file"
-  fi
 }
 
 # --- Run Extraction ---
 extract_outputs_from_json "${PROJECT_ROOT}/keycloak/terraform" "$KEYCLOAK_MAPPINGS" "# Keycloak Client Secrets"
 extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources & Credentials"
 extract_ga_credentials
+
+# Append .env.local content at the end, overriding any previous values
+if [ -f "${ENV_LOCAL_FILE}" ]; then
+    echo -e "\n# Local Environment Variables (from .env.local)" >> "${ENV_FILE}"
+    echo "-> ℹ️ Appending .env.local contents (these will override any previous values)..."
+    
+    # Read .env.local and append all non-commented, non-empty lines
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Skip comments and empty lines
+        if [[ ! "$line" =~ ^[[:space:]]*# && -n "$line" && "$line" == *"="* ]]; then
+            # Extract the key part (before the first =)
+            key=$(echo "$line" | cut -d= -f1)
+            echo "$line" >> "${ENV_FILE}"
+            echo "  -> ✅ Added from .env.local: $key"
+        fi
+    done < "${ENV_LOCAL_FILE}"
+fi
 
 echo "✅ Secrets extraction complete."
 
