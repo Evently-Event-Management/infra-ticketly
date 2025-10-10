@@ -13,3 +13,11 @@ resource "aws_scheduler_schedule_group" "ticketly" {
     Environment = terraform.workspace
   }
 }
+
+resource "aws_sqs_queue" "trending_job" {
+  name = "trending-job-queue-${terraform.workspace}"
+  tags = {
+    Name        = "ticketly-trending-job"
+    Environment = terraform.workspace
+  }
+}

@@ -194,6 +194,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    env_file:
+    - ./event-query-service.env
     environment:
       - MONGODB_URI=mongodb://query-db:27017/event-seating
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
@@ -207,6 +209,11 @@ services:
       - COM_TICKETLY_LOG_LEVEL=INFO
       - SPRING_SECURITY_LOG_LEVEL=WARN
       - MONGODB_LOG_LEVEL=WARN
+      - GA_PROPERTY_ID=${GA_PROPERTY_ID}
+      - GOOGLE_CLIENT_EMAIL=${GOOGLE_CLIENT_EMAIL}
+      - GOOGLE_PRIVATE_KEY=${GOOGLE_PRIVATE_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_PRIVATE_KEY_ID=${GOOGLE_PRIVATE_KEY_ID}
     networks:
       - infra-net
     extra_hosts:

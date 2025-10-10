@@ -104,8 +104,7 @@ services:
   # Override Scheduler Service environment for local Keycloak
   scheduler-service:
     environment:
-      - EVENT_QUERY_SERVICE_URL=http://host.docker.internal:8082/api/event-query
-      - EVENT_SEATING_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
+      - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - KEYCLOAK_URL=http://auth.ticketly.com:8080
     depends_on:
       - event-command-service
@@ -156,7 +155,8 @@ services:
       - POSTGRES_DSN=postgres://ticketly:ticketly@ticketly-db:5432/order_service?sslmode=disable
       - OIDC_ISSUER=http://auth.ticketly.com:8080/realms/event-ticketing
       - KEYCLOAK_URL=http://auth.ticketly.com:8080
-      - SEAT_SERVICE_URL=http://host.docker.internal:8082/api/event-query
+      - EVENT_QUERY_SERVICE_URL=http://host.docker.internal:8082/api/event-query
+      - EVENT_SEATING_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
     depends_on:
       ticketly-db:
         condition: service_healthy

@@ -52,13 +52,14 @@ resource "aws_iam_policy" "ticketly_sqs_consumer_policy" {
           "sqs:DeleteMessage"
         ],
         Resource = [
-          aws_sqs_queue.session_scheduling.arn
+          aws_sqs_queue.session_scheduling.arn,
+          aws_sqs_queue.trending_job.arn
         ]
       }
     ]
   })
   
-  depends_on = [aws_sqs_queue.session_scheduling]
+  depends_on = [aws_sqs_queue.session_scheduling, aws_sqs_queue.trending_job]
 }
 
 resource "aws_iam_user_policy_attachment" "ticketly_sqs_attach" {
@@ -132,13 +133,14 @@ resource "aws_iam_policy" "allow_scheduler_to_send_sqs" {
         Effect = "Allow",
         Action = "sqs:SendMessage",
         Resource = [
-          aws_sqs_queue.session_scheduling.arn
+          aws_sqs_queue.session_scheduling.arn,
+          aws_sqs_queue.trending_job.arn
         ]
       }
     ]
   })
 
-  depends_on = [aws_sqs_queue.session_scheduling]
+  depends_on = [aws_sqs_queue.session_scheduling, aws_sqs_queue.trending_job]
 }
 
 resource "aws_iam_role_policy_attachment" "scheduler_attach" {
