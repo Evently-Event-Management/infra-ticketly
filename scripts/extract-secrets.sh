@@ -6,6 +6,7 @@ echo "🚀 Extracting secrets from Terraform..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env"
+ENV_LOCAL_FILE="${PROJECT_ROOT}/.env.local"
 
 # --- Detect OS and set Docker socket path ---
 echo "Detecting operating system..."
@@ -33,6 +34,12 @@ echo "Writing secrets to: ${ENV_FILE}"
 # Overwrite .env file with a header
 echo "# Terraform Outputs - Generated: $(date)" > "${ENV_FILE}"
 echo "DOCKER_SOCKET_PATH=${DOCKER_SOCKET_PATH}" >> "${ENV_FILE}"
+
+# Check if .env.local exists and append its content
+if [ -f "${ENV_LOCAL_FILE}" ]; then
+    echo "-> ℹ️ Found .env.local file, appending its contents..."
+    cat "${ENV_LOCAL_FILE}" | grep -v '^#' | grep -v '^$' >> "${ENV_FILE}"
+fi
 
 # --- The Improved Function ---
 # This function takes a directory and a multi-line string of mappings.
@@ -106,9 +113,61 @@ ticketly_db_address:DATABASE_ADDRESS
 ticketly_db_port:DATABASE_PORT
 "
 
+# --- Extract Google Analytics credentials ---
+extract_ga_credentials() {
+  local credentials_file="${PROJECT_ROOT}/credentials/gcp-credentials.json"
+  local header="# Google Analytics Credentials"
+
+  echo -e "\n${header}" >> "${ENV_FILE}"
+
+  if [ -f "$credentials_file" ]; then
+    echo "Processing Google Analytics credentials from: $credentials_file"
+    
+    # Note: GA_PROPERTY_ID is not extracted from credentials.json
+    # It should be defined in .env.local instead
+    
+    # Extract client_email
+    client_email=$(jq -r '.client_email // empty' "$credentials_file")
+    if [ -n "$client_email" ]; then
+      echo "GOOGLE_CLIENT_EMAIL=\"${client_email}\"" >> "${ENV_FILE}"
+      echo "  -> ✅ Extracted: GOOGLE_CLIENT_EMAIL"
+    fi
+    
+    # Extract private_key (preserving newlines)
+    private_key=$(jq -r '.private_key // empty' "$credentials_file")
+    if [ -n "$private_key" ]; then
+      echo "GOOGLE_PRIVATE_KEY=\"${private_key}\"" >> "${ENV_FILE}"
+      echo "  -> ✅ Extracted: GOOGLE_PRIVATE_KEY"
+    fi
+    
+    # Extract client_id
+    client_id=$(jq -r '.client_id // empty' "$credentials_file")
+    if [ -n "$client_id" ]; then
+      echo "GOOGLE_CLIENT_ID=${client_id}" >> "${ENV_FILE}"
+      echo "  -> ✅ Extracted: GOOGLE_CLIENT_ID"
+    fi
+    
+    # Extract private_key_id
+    private_key_id=$(jq -r '.private_key_id // empty' "$credentials_file")
+    if [ -n "$private_key_id" ]; then
+      echo "GOOGLE_PRIVATE_KEY_ID=${private_key_id}" >> "${ENV_FILE}"
+      echo "  -> ✅ Extracted: GOOGLE_PRIVATE_KEY_ID"
+    fi
+  else
+    echo "  -> ⚠️ WARNING: GCP credentials file not found at ${credentials_file}"
+  fi
+  
+  # Check if GA_PROPERTY_ID is not already in the .env file (from .env.local)
+  if ! grep -q "^GA_PROPERTY_ID=" "${ENV_FILE}"; then
+    echo "  -> ⚠️ WARNING: GA_PROPERTY_ID not found in .env.local or extracted from credentials"
+    echo "     Please add GA_PROPERTY_ID=503402642 to your .env.local file"
+  fi
+}
+
 # --- Run Extraction ---
 extract_outputs_from_json "${PROJECT_ROOT}/keycloak/terraform" "$KEYCLOAK_MAPPINGS" "# Keycloak Client Secrets"
 extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources & Credentials"
+extract_ga_credentials
 
 echo "✅ Secrets extraction complete."
 

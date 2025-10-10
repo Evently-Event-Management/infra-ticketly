@@ -139,6 +139,7 @@ services:
     container_name: scheduler-service
     environment:
       - EVENT_SERVICE_URL=http://event-command-service:8081/api/event-seating
+      - EVENT_QUERY_SERVICE_URL=http://event-query-service:8082/api/event-query
       - KEYCLOAK_URL=https://auth.dpiyumal.me
       - SCHEDULER_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
       - AWS_SQS_SESSION_SCHEDULING_ARN=${AWS_SQS_SESSION_SCHEDULING_ARN}
@@ -196,8 +197,6 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-    env_file:
-      - ./event-query-service.env
     environment:
       - MONGODB_URI=mongodb://query-db:27017/event-seating
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
@@ -237,6 +236,8 @@ services:
       - QR_SECRET_KEY=4RJUEJDURgKarhbwx3fjKA8Fy/KoFwpAmOWAGwiWU9A=
       - TICKET_CLIENT_SECRET=${TICKET_CLIENT_SECRET}
       - TICKET_CLIENT_ID=ticket-service-client
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
     networks:
       - infra-net
 

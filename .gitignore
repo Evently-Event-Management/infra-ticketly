@@ -1,6 +1,6 @@
 .vscode/
 .env
-event-query-service.env
+.env.local
 
 
 # Local Terraform directories
