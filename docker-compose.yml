@@ -238,6 +238,7 @@ services:
       - TICKET_CLIENT_ID=ticket-service-client
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - SEAT_LOCK_TTL_MINUTES=5
     networks:
       - infra-net
 

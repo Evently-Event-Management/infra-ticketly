@@ -153,9 +153,17 @@ extract_ga_credentials() {
 }
 
 # --- Run Extraction ---
-extract_outputs_from_json "${PROJECT_ROOT}/keycloak/terraform" "$KEYCLOAK_MAPPINGS" "# Keycloak Client Secrets"
-extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources & Credentials"
-extract_ga_credentials
+if [[ "$1" == "aws-only" ]]; then
+  # Extract only AWS resources
+  echo "Running in AWS-only mode..."
+  extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources & Credentials"
+  extract_ga_credentials
+else
+  # Extract all resources
+  extract_outputs_from_json "${PROJECT_ROOT}/keycloak/terraform" "$KEYCLOAK_MAPPINGS" "# Keycloak Client Secrets"
+  extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources & Credentials"
+  extract_ga_credentials
+fi
 
 # Append .env.local content at the end, overriding any previous values
 if [ -f "${ENV_LOCAL_FILE}" ]; then
