@@ -119,6 +119,20 @@ resource "keycloak_openid_client" "scheduler_service" {
   service_accounts_enabled = true
 }
 
+
+data "keycloak_role" "scheduler_service_view_users" {
+  realm_id  = keycloak_realm.event_ticketing.id
+  client_id = data.keycloak_openid_client.realm_management.id
+  name      = "view-users"
+}
+
+resource "keycloak_openid_client_service_account_role" "scheduler_service_view_users" {
+  realm_id                = keycloak_realm.event_ticketing.id
+  service_account_user_id = keycloak_openid_client.scheduler_service.service_account_user_id
+  client_id               = data.keycloak_openid_client.realm_management.id
+  role                    = data.keycloak_role.scheduler_service_view_users.name
+}
+
 resource "keycloak_openid_client" "event_projection_service" {
   realm_id               = keycloak_realm.event_ticketing.id
   client_id              = "event-projection-service-client"

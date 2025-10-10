@@ -197,7 +197,7 @@ services:
       kafka:
         condition: service_healthy
     env_file:
-    - ./event-query-service.env
+      - ./event-query-service.env
     environment:
       - MONGODB_URI=mongodb://query-db:27017/event-seating
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
