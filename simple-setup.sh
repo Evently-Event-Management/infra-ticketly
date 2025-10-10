@@ -31,7 +31,7 @@ cd "$PROJECT_ROOT"
 
 # Start Docker Compose services
 echo "Starting services with Docker Compose..."
-docker compose up -d
+docker compose up -d keycloak
 
 # Wait for Keycloak to be ready
 echo "Waiting for Keycloak service to be ready..."
@@ -47,5 +47,9 @@ terraform apply
 echo "Extracting all secrets including Keycloak..."
 cd "$PROJECT_ROOT"
 "$PROJECT_ROOT/scripts/extract-secrets.sh"
+
+# Start all services
+echo "Starting all services with Docker Compose..."
+docker compose up -d
 
 echo "Setup completed successfully!"
