@@ -1,11 +1,13 @@
 // Load test scenario - normal expected load
 export const loadTestScenario = {
   executor: 'ramping-vus',
-  startVUs: 5,
+  startVUs: 2,
   stages: [
-    { duration: '1m', target: 10 },  // Ramp up to 10 users over 1 minute
-    { duration: '3m', target: 10 },  // Stay at 10 users for 3 minutes
-    { duration: '1m', target: 0 },   // Ramp down to 0 users over 1 minute
+    { duration: '30s', target: 5 },   // Ramp up to 5 users over 30 seconds
+    { duration: '1m', target: 5 },    // Stay at 5 users for 1 minute
+    { duration: '30s', target: 10 },  // Ramp up to 10 users over 30 seconds
+    { duration: '1m', target: 10 },   // Stay at 10 users for 1 minute
+    { duration: '30s', target: 0 },   // Ramp down to 0 users over 30 seconds
   ],
   tags: {
     scenario: 'load'

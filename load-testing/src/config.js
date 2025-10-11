@@ -3,7 +3,6 @@ export const config = {
   auth: {
     tokenUrl: 'http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/token',
     clientId: 'login-testing',
-    // Using password flow with existing user credentials
     username: 'user@yopmail.com',
     password: 'user123',
     scope: 'internal-api'

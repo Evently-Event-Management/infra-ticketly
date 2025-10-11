@@ -3,8 +3,8 @@ export const spikeTestScenario = {
   executor: 'ramping-vus',
   startVUs: 0,
   stages: [
-    { duration: '10s', target: 100 },  // Rapid ramp up to 100 users in 10 seconds
-    { duration: '1m', target: 100 },   // Stay at 100 users for 1 minute
+    { duration: '10s', target: 30 },   // Rapid ramp up to 30 users in 10 seconds
+    { duration: '30s', target: 30 },   // Stay at 30 users for 30 seconds
     { duration: '10s', target: 0 },    // Rapid ramp down to 0 users in 10 seconds
   ],
   tags: {

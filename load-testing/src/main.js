@@ -16,6 +16,7 @@ import { stressTestScenario } from './scenarios/stress.js';
 import { soakTestScenario } from './scenarios/soak.js';
 import { spikeTestScenario } from './scenarios/spike.js';
 import { breakpointTestScenario } from './scenarios/breakpoint.js';
+import { debugTestScenario } from './scenarios/debug.js';
 
 // Define metrics
 export const errorRate = new Rate('errors');
@@ -34,7 +35,8 @@ export const options = {
     stress: stressTestScenario,
     soak: soakTestScenario,
     spike: spikeTestScenario,
-    breakpoint: breakpointTestScenario
+    breakpoint: breakpointTestScenario,
+    debug: debugTestScenario
   },
   thresholds: {
     // Set thresholds for key metrics
@@ -62,12 +64,16 @@ export default function(data) {
   // Get auth token from setup
   const authToken = data.authToken;
   
-  if (scenarioName === 'default') {
-    // Run a mixed test of all important endpoints
+  // Log which scenario we're running
+  console.log(`Running ${scenarioName} scenario`);
+  
+  try {
+    // Always run the mixed test flow, regardless of scenario
+    // This ensures we're making actual API calls for all scenarios
     testMixedFlow(authToken);
-  } else {
-    console.log(`Running ${scenarioName} scenario`);
-    // Specific scenarios will be handled by the options config
+  } catch (error) {
+    console.error(`Error in test execution: ${error.message}`);
+    errorRate.add(1);
   }
 }
 
@@ -79,13 +85,19 @@ function testMixedFlow(authToken) {
       'Authorization': `Bearer ${authToken}`,
       'Content-Type': 'application/json',
     },
+    timeout: '10s', // Set a 10-second timeout for all requests
   };
   
   // Test trending events endpoint
   let response = http.get(`${baseUrl}/v1/events/trending?limit=10`, params);
-  check(response, {
+  const trendingSuccess = check(response, {
     'trending events status is 200': (r) => r.status === 200,
-  }) || errorRate.add(1);
+  });
+  
+  if (!trendingSuccess) {
+    console.error(`Trending events failed with status ${response.status}: ${response.body}`);
+    errorRate.add(1);
+  }
   trendingEventsTrend.add(response.timings.duration);
   
   // Get a sample event ID from the trending events (if available)
@@ -103,16 +115,26 @@ function testMixedFlow(authToken) {
   
   // Test event details
   response = http.get(`${baseUrl}/v1/events/${eventId}/basic-info`, params);
-  check(response, {
+  const eventDetailsSuccess = check(response, {
     'event details status is 200': (r) => r.status === 200,
-  }) || errorRate.add(1);
+  });
+  
+  if (!eventDetailsSuccess) {
+    console.error(`Event details failed with status ${response.status}: ${response.body}`);
+    errorRate.add(1);
+  }
   eventDetailsTrend.add(response.timings.duration);
   
   // Test event sessions
   response = http.get(`${baseUrl}/v1/events/${eventId}/sessions?pageable.page=0&pageable.size=10`, params);
-  check(response, {
+  const eventSessionsSuccess = check(response, {
     'event sessions status is 200': (r) => r.status === 200,
-  }) || errorRate.add(1);
+  });
+  
+  if (!eventSessionsSuccess) {
+    console.error(`Event sessions failed with status ${response.status}: ${response.body}`);
+    errorRate.add(1);
+  }
   
   // Get a session ID if available
   let sessionId = config.sampleSessionId; // Default to the sample ID
@@ -129,9 +151,14 @@ function testMixedFlow(authToken) {
   
   // Test session details
   response = http.get(`${baseUrl}/v1/sessions/${sessionId}/basic-info`, params);
-  check(response, {
+  const sessionDetailsSuccess = check(response, {
     'session details status is 200': (r) => r.status === 200,
-  }) || errorRate.add(1);
+  });
+  
+  if (!sessionDetailsSuccess) {
+    console.error(`Session details failed with status ${response.status}: ${response.body}`);
+    errorRate.add(1);
+  }
   sessionDetailsTrend.add(response.timings.duration);
   
   // Test search endpoint with different parameters
@@ -151,11 +178,24 @@ function testMixedFlow(authToken) {
     searchParams.priceMax = 50 + Math.floor(Math.random() * 200);
   }
   
-  const searchUrl = `${baseUrl}/v1/events/search?` + new URLSearchParams(searchParams).toString();
+  // Manually build the query string instead of using URLSearchParams
+  let queryParams = [];
+  for (const key in searchParams) {
+    if (searchParams.hasOwnProperty(key)) {
+      queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(searchParams[key])}`);
+    }
+  }
+  
+  const searchUrl = `${baseUrl}/v1/events/search?${queryParams.join('&')}`;
   response = http.get(searchUrl, params);
-  check(response, {
+  const searchSuccess = check(response, {
     'search events status is 200': (r) => r.status === 200,
-  }) || errorRate.add(1);
+  });
+  
+  if (!searchSuccess) {
+    console.error(`Event search failed with status ${response.status}: ${response.body}`);
+    errorRate.add(1);
+  }
   eventSearchTrend.add(response.timings.duration);
   
   // Random sleep between requests to simulate user behavior (1-3 seconds)

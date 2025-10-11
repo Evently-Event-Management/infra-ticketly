@@ -30,6 +30,8 @@ export function getAuthToken(clientId = config.auth.clientId, clientSecret = con
     scope: config.auth.scope || '',
   };
   
+  console.log(`Authenticating with ${tokenUrl} using client ${clientId} and user ${username}`);
+  
   const response = http.post(tokenUrl, formData, params);
   
   if (response.status !== 200) {
@@ -38,5 +40,13 @@ export function getAuthToken(clientId = config.auth.clientId, clientSecret = con
   }
   
   const tokenResponse = JSON.parse(response.body);
+  console.log(`Successfully obtained token, expires in ${tokenResponse.expires_in} seconds`);
+  
+  // Check if the token looks valid (should be a long string)
+  if (!tokenResponse.access_token || tokenResponse.access_token.length < 20) {
+    console.error(`Received suspicious token: ${tokenResponse.access_token}`);
+    throw new Error('Received invalid token');
+  }
+  
   return tokenResponse.access_token;
 }

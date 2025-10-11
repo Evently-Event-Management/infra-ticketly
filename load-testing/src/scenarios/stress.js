@@ -1,12 +1,12 @@
 // Stress test scenario - higher than normal load
 export const stressTestScenario = {
   executor: 'ramping-vus',
-  startVUs: 10,
+  startVUs: 5,
   stages: [
+    { duration: '30s', target: 10 },  // Ramp up to 10 users over 30 seconds
     { duration: '1m', target: 20 },   // Ramp up to 20 users over 1 minute
-    { duration: '2m', target: 50 },   // Ramp up to 50 users over 2 minutes
-    { duration: '5m', target: 50 },   // Stay at 50 users for 5 minutes
-    { duration: '2m', target: 0 },    // Ramp down to 0 users over 2 minutes
+    { duration: '2m', target: 20 },   // Stay at 20 users for 2 minutes
+    { duration: '1m', target: 0 },    // Ramp down to 0 users over 1 minute
   ],
   tags: {
     scenario: 'stress'

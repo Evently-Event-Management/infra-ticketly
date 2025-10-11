@@ -113,6 +113,40 @@ Test results are saved to the `output` directory in JSON and CSV formats. You ca
 - [Grafana](https://grafana.com/) with the k6 data source
 - [Datadog](https://www.datadoghq.com/) with k6 integration
 
+## Enhanced Testing and Troubleshooting
+
+For detailed error logging and troubleshooting, use the enhanced test script:
+
+```bash
+# Make the script executable
+chmod +x run-enhanced-tests.sh
+
+# Run with debug-level logging
+./run-enhanced-tests.sh --scenario debug --log-level debug
+
+# Run load test with info-level logging
+./run-enhanced-tests.sh --scenario load --log-level info
+```
+
+### Common Issues and Solutions
+
+1. **High Error Rates under Load**:
+   - Reduce concurrent users in test scenarios
+   - Check for API rate limits or connection limits
+   - Ensure the backend services can handle the load
+   - Verify token expiration and refresh mechanisms
+
+2. **Slow Response Times**:
+   - Examine backend database queries and indexing
+   - Check for network latency between services
+   - Consider caching frequently accessed resources
+   - Verify service resource allocation
+
+3. **Authentication Failures**:
+   - Ensure tokens are correctly obtained and used
+   - Check token expiration times and refresh as needed
+   - Verify that Keycloak settings match test configuration
+
 ## Custom Parameters
 
 For more advanced testing, you can override default parameters:
