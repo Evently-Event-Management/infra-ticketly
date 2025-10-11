@@ -1,0 +1,24 @@
+{
+  "name": "ticketly-load-testing",
+  "version": "1.0.0",
+  "description": "Load testing scripts for Ticketly microservices using k6",
+  "scripts": {
+    "format": "prettier --write .",
+    "test:smoke": "k6 run --env SCENARIO=smoke src/main.js",
+    "test:load": "k6 run --env SCENARIO=load src/main.js",
+    "test:stress": "k6 run --env SCENARIO=stress src/main.js",
+    "test:soak": "k6 run --env SCENARIO=soak src/main.js",
+    "test:spike": "k6 run --env SCENARIO=spike src/main.js",
+    "test:breakpoint": "k6 run --env SCENARIO=breakpoint src/main.js",
+    "test:all": "k6 run src/main.js"
+  },
+  "keywords": [
+    "k6",
+    "load-testing",
+    "performance",
+    "ticketly"
+  ],
+  "devDependencies": {
+    "prettier": "^2.8.8"
+  }
+}
