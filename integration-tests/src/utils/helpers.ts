@@ -6,3 +6,5 @@ export const pollUntil = async (check: () => Promise<boolean>, timeout = 20000, 
     }
     throw new Error("Polling for async operation timed out.");
 };
+
+export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
