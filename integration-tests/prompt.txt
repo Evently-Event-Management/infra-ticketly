@@ -72,7 +72,7 @@ A. Testing full CQRS flow
 
 5. then create an event using the organization id and subcategory id
 - - this has request body at integration-tests/requests/event/create-event (POST) (replace organization id and subcategory id with the variables)
-   - request body have the structure multipart/form-data HTTP request
+   - request body have the structure multipart/form-data HTTP request request body is at integration-tests/requests/event/create-event.txt
    no need to send image file
 - - respond would be like this
 {"id":"c3afc345-fb1a-4bde-98c0-ceb32cf622b8","title":"An Example Event","status":"PENDING","organizationId":"00c9322e-6367-409a-bf74-8f57e42c474b","createdAt":null,"updatedAt":null}
