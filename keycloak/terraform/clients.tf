@@ -181,9 +181,7 @@ resource "keycloak_openid_client" "checkin_mobile_app" {
   direct_access_grants_enabled = true
 
   valid_redirect_uris = [
-    # Example custom scheme for a mobile app. Replace with your actual scheme.
     "com.ticketly.checkinapp://callback/*",
-    # Useful for local development and testing
     "http://localhost/*"
   ]
 }
