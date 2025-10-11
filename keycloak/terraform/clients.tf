@@ -166,3 +166,24 @@ resource "keycloak_openid_client" "payment_service" {
   service_accounts_enabled = true
   
 }
+
+
+resource "keycloak_openid_client" "checkin_mobile_app" {
+  realm_id                     = keycloak_realm.event_ticketing.id
+  client_id                    = "check-in-mobile-app"
+  name                         = "Check-in Mobile App"
+  enabled                      = true
+
+  access_type                  = "PUBLIC"
+  standard_flow_enabled        = true
+  pkce_code_challenge_method   = "S256"
+  implicit_flow_enabled        = false
+  direct_access_grants_enabled = false
+
+  valid_redirect_uris = [
+    # Example custom scheme for a mobile app. Replace with your actual scheme.
+    "com.ticketly.checkinapp://callback/*",
+    # Useful for local development and testing
+    "http://localhost/*"
+  ]
+}
