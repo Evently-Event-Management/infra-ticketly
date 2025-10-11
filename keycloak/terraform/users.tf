@@ -30,6 +30,21 @@ resource "keycloak_user" "user" {
   }
 }
 
+resource "keycloak_user" "test_user" {
+  realm_id       = keycloak_realm.event_ticketing.id
+  username       = "test_user@yopmail.com"
+  enabled        = true
+  email          = "test_user@yopmail.com"
+  email_verified = true
+  first_name     = "Test"
+  last_name      = "User"
+
+  initial_password {
+    value     = "test123"
+    temporary = false
+  }
+}
+
 # ✅ Assign the admin user to the "System Admins" group and a tier
 resource "keycloak_user_groups" "admin_user_groups" {
   realm_id = keycloak_realm.event_ticketing.id
