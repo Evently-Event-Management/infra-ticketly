@@ -8,7 +8,8 @@ export const config = {
   password: process.env.PASSWORD || 'test123',
   adminUsername: process.env.ADMIN_USERNAME || 'admin@yopmail.com',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
-  postgresqlAddress: process.env.POSTGRESQL_ADDRESS || 'postgres://ticketly:ticketly@localhost:5432',
+  postgresEventDbUrl: process.env.POSTGRESQL_EVENT_DB_URL || 'postgres://ticketly:ticketly@localhost:5432/event_service',
+  postgresOrderDbUrl: process.env.POSTGRESQL_ORDER_DB_URL || 'postgres://ticketly:ticketly@localhost:5432/order_service',
   mongodbAddress: process.env.MONGODB_ADDRESS || 'mongodb://localhost:27017',
   redisAddress: process.env.REDIS_ADDRESS || 'redis://localhost:6379',
 };

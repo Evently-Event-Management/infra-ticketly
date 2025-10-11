@@ -1,5 +1,23 @@
-import axios from 'axios';
+import axios, { AxiosError, Method } from 'axios';
 import { config } from '../config/environment';
+
+
+function handleAxiosError(error: AxiosError, url: string, method: Method) {
+  if (error.response) {
+    // The request was made and the server responded with a status code
+    // that falls out of the range of 2xx
+    console.error(`Error: ${method.toUpperCase()} ${url} failed with status ${error.response.status}`);
+    console.error('Response Data:', JSON.stringify(error.response.data, null, 2));
+  } else if (error.request) {
+    // The request was made but no response was received
+    console.error(`Error: No response received for ${method.toUpperCase()} ${url}`);
+  } else {
+    // Something happened in setting up the request that triggered an Error
+    console.error('Error:', error.message);
+  }
+  throw error;
+}
+
 
 export async function getKeycloakToken(username: string, password: string): Promise<string> {
   try {
@@ -41,8 +59,7 @@ export async function makeAuthenticatedRequest(
     });
     return response.data;
   } catch (error) {
-    console.error(`Error making ${method.toUpperCase()} request to ${url}:`, error);
-    throw error;
+    handleAxiosError(error as AxiosError, url, method);
   }
 }
 

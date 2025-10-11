@@ -51,9 +51,7 @@ resource "keycloak_user_groups" "admin_user_groups" {
   user_id  = keycloak_user.admin.id
 
   group_ids = [
-    # This user gets all permissions from the System Admins group
     keycloak_group.system_admins.id,
-    # Example: Assign the admin to the PRO tier
     keycloak_group.tier_pro.id
   ]
 }
@@ -66,9 +64,17 @@ resource "keycloak_user_groups" "regular_user_groups" {
   user_id  = keycloak_user.user.id
 
   group_ids = [
-    # This user gets base permissions from the Users group
     keycloak_group.users.id,
-    # This user is on the PRO tier
-    keycloak_group.tier_pro.id
+    keycloak_group.tier_pro.id,
+  ]
+}
+
+resource "keycloak_user_groups" "regular_test_user_groups" {
+  realm_id = keycloak_realm.event_ticketing.id
+  user_id  = keycloak_user.test_user.id
+
+  group_ids = [
+    keycloak_group.users.id,
+    keycloak_group.tier_enterprise.id,
   ]
 }

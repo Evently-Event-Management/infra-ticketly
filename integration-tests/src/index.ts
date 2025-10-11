@@ -13,7 +13,8 @@ async function main() {
     eventQueryServiceUrl: config.eventQueryServiceUrl,
     ticketsOrderServiceUrl: config.ticketsOrderServiceUrl,
     keycloakTokenUrl: config.keycloakTokenUrl,
-    postgresqlAddress: config.postgresqlAddress,
+    postgresEventDbUrl: config.postgresEventDbUrl,
+    postgresOrderDbUrl: config.postgresOrderDbUrl,
     mongodbAddress: config.mongodbAddress,
   });
 

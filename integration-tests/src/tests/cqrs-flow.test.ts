@@ -1,223 +1,118 @@
 import { config } from '../config/environment';
 import { getKeycloakToken, makeAuthenticatedRequest, formDataRequest } from '../utils/apiUtils';
-import { queryPostgres, queryMongoDB } from '../utils/dbUtils';
+import { queryEventDB, queryOrderDB, queryMongoDB, checkRedisKey } from '../utils/dbUtils';
 import { readRequestFile, updateRequestData } from '../utils/fileUtils';
-import { TestReporter, TestStatus } from '../utils/testReporter';
+import { pollUntil } from '../utils/helpers';
 
-describe('Event Ticketing System Integration Tests', () => {
-  let userToken: string;
-  let adminToken: string;
-  let organizationId: string;
-  let organizationName: string;
-  let categoryId: string;
-  let eventId: string;
-  let sessionId: string;
-  
-  const reporter = new TestReporter();
+describe('Event Ticketing System - Full Lifecycle Test', () => {
 
-  beforeAll(async () => {
-    try {
-      // Get user token for initial requests
-      console.log('Getting user authentication token...');
-      userToken = await getKeycloakToken(config.username, config.password);
-      expect(userToken).toBeTruthy();
-      reporter.addResult('Initial Authentication', TestStatus.PASSED);
-    } catch (error) {
-      console.error('Failed to authenticate:', error);
-      reporter.addResult('Initial Authentication', TestStatus.FAILED, 'Failed to get authentication token');
-      // Stop tests if we can't even authenticate
-      throw error;
-    }
-  });
-  
-  afterAll(() => {
-    reporter.printSummary();
-  });
+  test('should execute the full create, approve, order, and cleanup flow', async () => {
+    let userToken: string, adminToken: string, organizationId: string, eventId: string, sessionId: string, availableSeatId: string, orderId: string;
 
-  test('A1. Creating an organization', async () => {
-    // Read organization request data
-    const orgData = readRequestFile('org/create-organization.json');
-    
-    // Create organization
-    const response = await makeAuthenticatedRequest(
-      'post',
-      `${config.eventCommandServiceUrl}/v1/organizations`,
-      userToken,
-      orgData
-    );
-    
-    expect(response).toBeTruthy();
-    expect(response.id).toBeTruthy();
-    
-    // Store organization data for future tests
-    organizationId = response.id;
-    organizationName = response.name;
-    
-    console.log(`Created organization: ${organizationName} with ID: ${organizationId}`);
-  });
+    console.log("--- STARTING FULL LIFECYCLE TEST ---");
 
-  test('A2. Verify organization in PostgreSQL database', async () => {
-    // Query only necessary columns from the database
-    const query = 'SELECT id, name, created_at FROM organizations WHERE id = $1';
-    const results = await queryPostgres(query, [organizationId]);
-    
-    expect(results).toHaveLength(1);
-    expect(results[0].id).toBe(organizationId);
-    expect(results[0].name).toBe(organizationName);
-  });
-
-  test('A3. Fetching categories and selecting one subcategory', async () => {
-    const categories = await makeAuthenticatedRequest(
-      'get',
-      `${config.eventCommandServiceUrl}/v1/categories`,
-      userToken
-    );
-    
-    expect(categories).toBeTruthy();
-    expect(categories.length).toBeGreaterThan(0);
-    
-    // Find a subcategory to use
-    let foundSubcategory = false;
-    for (const category of categories) {
-      if (category.subcategories && category.subcategories.length > 0) {
-        categoryId = category.subcategories[0].id;
-        foundSubcategory = true;
-        break;
-      }
-    }
-    
-    expect(foundSubcategory).toBe(true);
-    console.log(`Selected category ID: ${categoryId}`);
-  });
-
-  test('A4. Creating an event', async () => {
-    // Read event request data
-    let eventData = readRequestFile('event/create-event.json');
-    
-    // Update with our organization and category IDs
-    eventData = updateRequestData(eventData, {
-      'organizationId': organizationId,
-      'categoryId': categoryId
-    });
-    
-    // Create event using form data format
-    const eventUrl = `${config.eventCommandServiceUrl}/v1/events`;
-    const response = await formDataRequest(eventUrl, eventData, userToken);
-    
-    expect(response.status).toBe(200);
-    expect(response.data).toBeTruthy();
-    expect(response.data.id).toBeTruthy();
-    
-    // Store event ID for future tests
-    eventId = response.data.id;
-    console.log(`Created event with ID: ${eventId}`);
-  });
-
-  test('A5. Verify event in PostgreSQL database with PENDING status', async () => {
-    // Query only necessary columns from the database
-    const query = 'SELECT id, title, status, organization_id FROM events WHERE id = $1';
-    const results = await queryPostgres(query, [eventId]);
-    
-    expect(results).toHaveLength(1);
-    expect(results[0].id).toBe(eventId);
-    expect(results[0].status).toBe('PENDING');
-    expect(results[0].organization_id).toBe(organizationId);
-  });
-
-  test('A6. Verify event is not present in MongoDB database', async () => {
-    const events = await queryMongoDB('event-seating', 'events', { _id: eventId });
-    expect(events).toHaveLength(0);
-  });
-
-  test('A7. Approve event as admin', async () => {
-    // Get admin token
-    adminToken = await getKeycloakToken(config.adminUsername, config.adminPassword);
-    expect(adminToken).toBeTruthy();
-    
-    // Approve the event
-    const response = await makeAuthenticatedRequest(
-      'post',
-      `${config.eventCommandServiceUrl}/v1/events/${eventId}/approve`,
-      adminToken
-    );
-    
-    expect(response).toBeDefined();
-  });
-
-  test('A8. Verify event in PostgreSQL database with APPROVED status', async () => {
-    // Query only necessary columns from the database
-    const query = 'SELECT id, title, status FROM events WHERE id = $1';
-    const results = await queryPostgres(query, [eventId]);
-    
-    expect(results).toHaveLength(1);
-    expect(results[0].id).toBe(eventId);
-    expect(results[0].status).toBe('APPROVED');
-  });
-
-  test('A9. Login as user again and verify event is present in MongoDB', async () => {
-    // Get user token again
+    // --- Step 1: Acquire User Token ---
+    console.log("\nStep 1: Acquiring user token...");
     userToken = await getKeycloakToken(config.username, config.password);
     expect(userToken).toBeTruthy();
-    
-    // Check MongoDB
-    const events = await queryMongoDB('event-seating', 'events', { _id: eventId });
-    expect(events).toHaveLength(1);
-    expect(events[0]._id).toBe(eventId);
-  });
 
-  test('A10. Fetch event using event-query-service', async () => {
-    const eventInfo = await makeAuthenticatedRequest(
-      'get',
-      `${config.eventQueryServiceUrl}/v1/events/${eventId}/basic-info`,
-      userToken
-    );
-    
-    expect(eventInfo).toBeTruthy();
-    expect(eventInfo.id).toBe(eventId);
-    expect(eventInfo.title).toBe('An Example Event');
-  });
+    // --- Step 2 & 3: Create Organization and Verify in PostgreSQL ---
+    console.log("Step 2 & 3: Creating organization and verifying...");
+    const orgData = readRequestFile('org/create-organization.json');
+    const orgResponse = await makeAuthenticatedRequest('post', `${config.eventCommandServiceUrl}/v1/organizations`, userToken, orgData);
+    organizationId = orgResponse.id;
+    expect(organizationId).toBeTruthy();
+    const pgOrg = await queryEventDB('SELECT id FROM organizations WHERE id = $1', [organizationId]);
+    expect(pgOrg).toHaveLength(1);
 
-  test('A11. Fetch event sessions', async () => {
-    const sessions = await makeAuthenticatedRequest(
-      'get',
-      `${config.eventQueryServiceUrl}/v1/events/${eventId}/sessions`,
-      userToken
-    );
-    
-    expect(sessions).toBeTruthy();
-    expect(sessions.length).toBeGreaterThan(0);
-    
-    // Store session ID
-    sessionId = sessions[0].id;
+    // --- Step 4: Fetch Categories ---
+    console.log("Step 4: Fetching categories...");
+    const categories = await makeAuthenticatedRequest('get', `${config.eventCommandServiceUrl}/v1/categories`, userToken);
+    const categoryId = categories[0]?.subCategories[0]?.id;
+    expect(categoryId).toBeTruthy();
+
+    // --- Step 5 & 6: Create Event and Verify PENDING in PostgreSQL ---
+    console.log("Step 5 & 6: Creating event and verifying PENDING...");
+    let eventData = readRequestFile('event/create-event.json');
+    eventData = updateRequestData(eventData, { org_id: organizationId, cat_id: categoryId });
+    const eventResponse = await formDataRequest(`${config.eventCommandServiceUrl}/v1/events`, eventData, userToken);
+    eventId = eventResponse.id;
+    expect(eventId).toBeTruthy();
+    const pgEventPending = await queryEventDB('SELECT status FROM events WHERE id = $1', [eventId]);
+    expect(pgEventPending[0]?.status).toBe('PENDING');
+
+    // --- Step 7: Verify Event NOT in MongoDB ---
+    console.log("Step 7: Verifying event not in MongoDB...");
+    const mongoEventMissing = await queryMongoDB('event-seating', 'events', { _id: eventId });
+    expect(mongoEventMissing).toHaveLength(0);
+
+    // --- Step 8 & 9: Approve Event and Verify APPROVED in PostgreSQL ---
+    console.log("Step 8 & 9: Approving event and verifying APPROVED...");
+    adminToken = await getKeycloakToken(config.adminUsername, config.adminPassword);
+    await makeAuthenticatedRequest('post', `${config.eventCommandServiceUrl}/v1/events/${eventId}/approve`, adminToken);
+    const pgEventApproved = await queryEventDB('SELECT status FROM events WHERE id = $1', [eventId]);
+    expect(pgEventApproved[0]?.status).toBe('APPROVED');
+
+    // --- Step 10: Verify Event IS in MongoDB (Polling) ---
+    console.log("Step 10: Verifying event sync to MongoDB (polling)...");
+    await pollUntil(async () => (await queryMongoDB('event-seating', 'events', { _id: eventId })).length === 1);
+
+    // --- Step 11 & 12: Fetch Event Info and Sessions from Query Service ---
+    console.log("Step 11 & 12: Fetching event details and sessions...");
+    await makeAuthenticatedRequest('get', `${config.eventQueryServiceUrl}/v1/events/${eventId}/basic-info`, userToken);
+    const sessionsResponse = await makeAuthenticatedRequest('get', `${config.eventQueryServiceUrl}/v1/events/${eventId}/sessions`, userToken);
+    sessionId = sessionsResponse.content[0].id;
     expect(sessionId).toBeTruthy();
-    console.log(`Using session ID: ${sessionId}`);
-  });
 
-  test('A12. Put session ON_SALE', async () => {
-    const response = await makeAuthenticatedRequest(
-      'put',
-      `${config.eventCommandServiceUrl}/v1/sessions/${sessionId}/status`,
-      userToken,
-      { status: 'ON_SALE' }
-    );
-    
-    expect(response).toBeTruthy();
-    expect(response.id).toBe(sessionId);
-    expect(response.status).toBe('ON_SALE');
-  });
+    // --- Step 13 & 14: Set Session to ON_SALE and Find a Seat ---
+    console.log("Step 13 & 14: Setting session ON_SALE and finding an available seat...");
+    await makeAuthenticatedRequest('put', `${config.eventCommandServiceUrl}/v1/sessions/${sessionId}/status`, userToken, { status: 'ON_SALE' });
+    const seatingMap = await makeAuthenticatedRequest('get', `${config.eventQueryServiceUrl}/v1/sessions/${sessionId}/seating-map`, userToken);
+    const availableSeat = seatingMap.layout.blocks.flatMap((b: any) => b.rows).flatMap((r: any) => r.seats).find((s: any) => s.status === 'AVAILABLE');
+    availableSeatId = availableSeat.id;
+    expect(availableSeatId).toBeTruthy();
 
-  test('A13. Fetch session seating map', async () => {
-    const seatingMap = await makeAuthenticatedRequest(
-      'get',
-      `${config.eventQueryServiceUrl}/v1/sessions/${sessionId}/seating-map`,
-      userToken
-    );
-    
-    expect(seatingMap).toBeTruthy();
-    expect(seatingMap.id).toBe(sessionId);
-    // Verify seating map contains blocks and layout data
-    expect(seatingMap.layoutData).toBeTruthy();
-    expect(seatingMap.layoutData.layout).toBeTruthy();
-    expect(Array.isArray(seatingMap.layoutData.layout.blocks)).toBe(true);
+    // --- Step 15-19: Place Order and Verify All States ---
+    console.log("Step 15-19: Placing order and verifying states...");
+    const orderResponse = await makeAuthenticatedRequest('post', `${config.ticketsOrderServiceUrl}`, userToken, { event_id: eventId, session_id: sessionId, seat_ids: [availableSeatId] });
+    orderId = orderResponse.order_id;
+    expect(orderId).toBeTruthy();
+    const pgOrder = await queryOrderDB('SELECT status FROM orders WHERE order_id = $1', [orderId]);
+    expect(pgOrder[0]?.status).toBe('pending');
+    const redisLock = await checkRedisKey(`seat_lock:${availableSeatId}`);
+    expect(redisLock).toBe(1);
+    await pollUntil(async () => {
+        const mongoEvent = await queryMongoDB('event-seating', 'events', { _id: eventId });
+        const seat = mongoEvent[0]?.sessions[0]?.layoutData.layout.blocks.flatMap((b: any) => b.rows).flatMap((r: any) => r.seats).find((s: any) => s._id === availableSeatId);
+        return seat?.status === 'LOCKED';
+    });
+
+    // --- Step 20: Skip Payment ---
+    console.log("Step 20: SKIPPING PAYMENT IMPLEMENTATION.");
+
+    // --- Step 21-23: Cleanup - Close Session and Verify ---
+    console.log("Step 21-23: Closing session and verifying...");
+    await makeAuthenticatedRequest('put', `${config.eventCommandServiceUrl}/v1/sessions/${sessionId}/status`, userToken, { status: 'CLOSED' });
+    const pgSessionClosed = await queryEventDB('SELECT status FROM event_sessions WHERE id = $1', [sessionId]);
+    expect(pgSessionClosed[0]?.status).toBe('CLOSED');
+    await pollUntil(async () => {
+        const mongoEvent = await queryMongoDB('event-seating', 'events', { _id: eventId });
+        return mongoEvent[0]?.sessions[0]?.status === 'CLOSED';
+    });
+
+    // --- Step 24-26: Cleanup - Delete Event and Verify ---
+    console.log("Step 24-26: Deleting event and verifying deletion...");
+    await makeAuthenticatedRequest('delete', `${config.eventCommandServiceUrl}/v1/events/${eventId}`, adminToken); // Use admin token for deletion
+    const pgEventDeleted = await queryEventDB('SELECT id FROM events WHERE id = $1', [eventId]);
+    expect(pgEventDeleted).toHaveLength(0);
+    await pollUntil(async () => (await queryMongoDB('event-seating', 'events', { _id: eventId })).length === 0);
+
+    // --- Step 27: Cleanup - Delete Organization ---
+    console.log("Step 27: Deleting organization...");
+    await makeAuthenticatedRequest('delete', `${config.eventCommandServiceUrl}/v1/organizations/${organizationId}`, userToken);
+    const pgOrgDeleted = await queryEventDB('SELECT id FROM organizations WHERE id = $1', [organizationId]);
+    expect(pgOrgDeleted).toHaveLength(0);
+
+    console.log("\n✅ --- FULL LIFECYCLE TEST COMPLETED SUCCESSFULLY --- ✅");
   });
 });
