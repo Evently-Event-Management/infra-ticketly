@@ -34,45 +34,71 @@ load-testing/
 ├── output/                 # Test results output (created during test runs)
 │
 ├── package.json            # Project configuration and scripts
-└── run-load-tests.sh       # Shell script to run tests with various options
+├── output/                # Test results and logs
+├── archive/               # Archived older script versions
+└── run-tests.sh           # Integrated script with quick debug mode
 ```
 
 ## Test Scenarios
 
 1. **Smoke Test**: Verifies the system works with minimal load (1 VU, 1 minute)
 2. **Load Test**: Tests normal expected load (10 VUs, 5 minutes)
-3. **Stress Test**: Tests higher than normal load (50 VUs, 10 minutes)
-4. **Soak Test**: Tests moderate load over extended period (20 VUs, 30 minutes)
-5. **Spike Test**: Tests sudden burst of traffic (100 VUs for 1 minute)
-6. **Breakpoint Test**: Finds the system breaking point (increasing load)
+3. **Stress Test**: Tests higher than normal load (up to 20 VUs over 4.5 minutes)
+4. **Soak Test**: Tests moderate load over extended period (up to 20 VUs, 30+ minutes)
+5. **Spike Test**: Tests sudden burst of traffic (up to 30 VUs over 50 seconds)
+6. **Breakpoint Test**: Finds the system breaking point (up to 500 VUs over 20 minutes)
+7. **Debug Test**: Reduced load for troubleshooting (2 VUs for 1 minute)
+8. **Quick Test**: Fast debugging with minimal load (2 VUs for 30 seconds)
 
 ## Running Tests
 
-### Using the Shell Script
+### Using the Integrated Shell Script
 
-The `run-load-tests.sh` script provides a convenient way to run different test scenarios:
+The `run-tests.sh` script provides a comprehensive way to run different test scenarios with HTML reports and quick debug mode:
 
 ```bash
 # Make the script executable
-chmod +x run-load-tests.sh
+chmod +x run-tests.sh
+
+# Run quick debug test
+./run-tests.sh --quick
 
 # Run smoke test in local environment
-./run-load-tests.sh --scenario smoke --env local
+./run-tests.sh --scenario smoke --env local
 
 # Run load test in dev environment
-./run-load-tests.sh --scenario load --env dev
+./run-tests.sh --scenario load --env dev
 
 # Run a stress test in staging
-./run-load-tests.sh -s stress -e staging
+./run-tests.sh -s stress -e staging
+
+# Run with detailed logging
+./run-tests.sh --scenario load --log-level debug
 ```
+
+### Command Line Options for run-tests.sh
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--scenario` | `-s` | Test scenario (smoke, load, stress, soak, spike, breakpoint, debug, quick) | smoke |
+| `--env` | `-e` | Environment (local, dev, staging, prod) | local |
+| `--log-level` | `-l` | Log level (debug, info, warning, error) | warning |
+| `--output` | `-o` | Output format (json, csv) | json |
+| `--vus` | `-v` | Number of virtual users for custom runs | 10 |
+| `--duration` | `-d` | Duration for custom runs | 30s |
+| `--quick` | `-q` | Enable quick debug mode (fast tests with minimal load) | false |
+| `--help` | `-h` | Print help message | |
 
 ### Using npm Scripts
 
-You can also use the npm scripts defined in package.json:
+You can also use the npm scripts defined in package.json (note: these will now use the new run-tests.sh script):
 
 ```bash
 # Install dependencies
 npm install
+
+# Run quick debug test
+npm run test:quick
 
 # Run smoke test
 npm run test:smoke
@@ -82,18 +108,6 @@ npm run test:load
 
 # Run stress test
 npm run test:stress
-
-# Run soak test
-npm run test:soak
-
-# Run spike test
-npm run test:spike
-
-# Run breakpoint test
-npm run test:breakpoint
-
-# Run all scenarios
-npm run test:all
 ```
 
 ## Configuration
@@ -107,7 +121,17 @@ Before running the tests, update the configuration in `src/config.js`:
 
 ## Test Results
 
-Test results are saved to the `output` directory in JSON and CSV formats. You can visualize these results using tools like:
+### Output Files
+
+Test results are saved to the following locations:
+
+- JSON reports: `output/<scenario>_<env>_<timestamp>.json`
+- CSV reports: `output/<scenario>_<env>_<timestamp>.csv`
+- Log files: `output/<scenario>_<env>_<timestamp>.log`
+
+### External Visualization
+
+You can also visualize results using external tools:
 
 - [k6 Cloud](https://k6.io/cloud/)
 - [Grafana](https://grafana.com/) with the k6 data source
@@ -115,17 +139,14 @@ Test results are saved to the `output` directory in JSON and CSV formats. You ca
 
 ## Enhanced Testing and Troubleshooting
 
-For detailed error logging and troubleshooting, use the enhanced test script:
+For detailed error logging and troubleshooting, use the integrated script with debug options:
 
 ```bash
-# Make the script executable
-chmod +x run-enhanced-tests.sh
-
-# Run with debug-level logging
-./run-enhanced-tests.sh --scenario debug --log-level debug
+# Run quick debug test with detailed logging
+./run-tests.sh --quick --log-level debug
 
 # Run load test with info-level logging
-./run-enhanced-tests.sh --scenario load --log-level info
+./run-tests.sh --scenario load --log-level info
 ```
 
 ### Common Issues and Solutions

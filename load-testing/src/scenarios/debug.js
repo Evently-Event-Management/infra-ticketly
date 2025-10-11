@@ -2,7 +2,7 @@
 export const debugTestScenario = {
   executor: 'constant-vus',
   vus: 2,          // Just 2 virtual users
-  duration: '1m',  // Short duration
+  duration: __ENV.QUICK_DEBUG === 'true' ? '30s' : '1m',  // Shorter duration for quick debug mode
   tags: {
     scenario: 'debug'
   }

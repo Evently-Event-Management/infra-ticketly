@@ -29,15 +29,21 @@ export const preOrderValidationTrend = new Trend('pre_order_validation');
 
 // Test scenarios configuration
 export const options = {
-  scenarios: {
-    smoke: smokeTestScenario,
-    load: loadTestScenario,
-    stress: stressTestScenario,
-    soak: soakTestScenario,
-    spike: spikeTestScenario,
-    breakpoint: breakpointTestScenario,
-    debug: debugTestScenario
-  },
+  scenarios: __ENV.ONLY_SCENARIO ? 
+    // If ONLY_SCENARIO is set, only include that scenario
+    { 
+      [__ENV.SCENARIO]: eval(`${__ENV.SCENARIO}TestScenario`) 
+    } 
+    // Otherwise include all scenarios
+    : {
+      smoke: smokeTestScenario,
+      load: loadTestScenario,
+      stress: stressTestScenario,
+      soak: soakTestScenario,
+      spike: spikeTestScenario,
+      breakpoint: breakpointTestScenario,
+      debug: debugTestScenario
+    },
   thresholds: {
     // Set thresholds for key metrics
     'http_req_duration': ['p(95)<1000'], // 95% of requests should be below 1s
