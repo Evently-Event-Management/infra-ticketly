@@ -2,6 +2,35 @@
 
 This project contains integration tests for the event ticketing system, following the CQRS flow.
 
+## What is Tested
+
+The integration tests cover the main event ticketing flow, including:
+
+- Authentication via Keycloak (OAuth2)
+- Organization creation and verification in PostgreSQL
+- Category and subcategory selection
+- Event creation and verification in PostgreSQL and MongoDB
+- Event approval by admin and status propagation
+- Session management and status updates (ON_SALE, CLOSED)
+- Seat map retrieval and seat selection
+- Placing orders for seats and verifying order status in PostgreSQL
+- Ticket verification and seat locking in Redis
+- Seat status updates in MongoDB
+- Event and organization deletion and cleanup
+
+If any step fails, the testing process stops immediately.
+
+## Future Test Plans
+
+Additional integration tests will be added for:
+
+- Seat booking flows
+- Seat check-in processes
+- Event updates and modifications
+- Seat cancellation and refund scenarios
+
+These will help ensure the robustness of the ticketing system for more advanced use cases.
+
 ## Setup
 
 1. Install dependencies:
@@ -81,3 +110,13 @@ The tests follow this sequence:
 11. Fetch event sessions
 12. Put a session ON_SALE
 13. Fetch session seating map
+14. Place an order for an available seat
+15. Verify order in PostgreSQL
+16. Verify ticket and seat lock in Redis
+17. Confirm seat status is LOCKED in MongoDB
+18. (Payment implementation skipped)
+19. Change session status to CLOSED
+20. Verify session status in PostgreSQL and MongoDB
+21. Delete the event and organization, and verify deletion in databases
+
+_Future tests will expand on seat booking, check-in, event update, and cancellation flows._
