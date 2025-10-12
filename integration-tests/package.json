@@ -1,0 +1,31 @@
+{
+  "name": "integration-tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --config=jestconfig.js",
+    "test:cqrs": "jest --config=jestconfig.js src/tests/cqrs-flow.test.ts",
+    "build": "tsc",
+    "start": "npm run build && npm run test:cqrs",
+    "connectivity": "npm run build && node -r ./register-paths.js dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.7.1",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "chalk": "^4.1.2",
+    "mongodb": "^6.20.0",
+    "pg": "^8.16.3",
+    "redis": "^5.8.3"
+  }
+}

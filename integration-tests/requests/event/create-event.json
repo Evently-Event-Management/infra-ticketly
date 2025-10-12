@@ -1,0 +1,127 @@
+{
+    "title": "An Example Event",
+    "description": "This is a sample event description.",
+    "overview": "An overview of the event goes here.",
+    "organizationId": "00c9322e-6367-409a-bf74-8f57e42c474b",
+    "categoryId": "08b80f14-421a-41fb-8c8e-bc74d4bb1b31",
+    "categoryName": "Music Festivals",
+    "tiers": [
+        {
+            "id": "a4638ff3-c965-485e-8835-b081a75e79da",
+            "name": "General Admission",
+            "price": 1000,
+            "color": "#3B82F6"
+        }
+    ],
+    "sessions": [
+        {
+            "id": "1400a2ca-96da-4972-9ac5-0e7f1f7527b5",
+            "startTime": "2025-12-03T13:30:00.000Z",
+            "endTime": "2025-12-03T15:30:00.000Z",
+            "salesStartTime": "2025-10-12T06:30:00.000Z",
+            "sessionType": "PHYSICAL",
+            "venueDetails": {
+                "name": "Grand hall",
+                "address": "Maradana",
+                "latitude": 6.9271,
+                "longitude": 79.8612
+            },
+            "layoutData": {
+                "name": "Untitled Layout",
+                "layout": {
+                    "blocks": [
+                        {
+                            "id": "625b4f29-1a87-4882-a3e9-a69d6637daab",
+                            "name": "New seated grid",
+                            "type": "seated_grid",
+                            "position": {
+                                "x": 86.6666259765625,
+                                "y": 133.33335876464844
+                            },
+                            "rows": [
+                                {
+                                    "id": "5a3f8017-ba77-4f4c-a69b-9f1623067007",
+                                    "label": "A",
+                                    "seats": [
+                                        {
+                                            "id": "f9771195-b776-4784-b7d0-b1f69d2a73af",
+                                            "label": "1A",
+                                            "status": "RESERVED"
+                                        },
+                                        {
+                                            "id": "fdd3c9cb-6293-4f81-8041-60011310cb1f",
+                                            "label": "2A",
+                                            "tierId": "a4638ff3-c965-485e-8835-b081a75e79da",
+                                            "status": "AVAILABLE"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "b91d2b72-4509-4bf3-ae43-294abfce7f6c",
+                                    "label": "B",
+                                    "seats": [
+                                        {
+                                            "id": "3c2a756b-f09f-4bdf-8fb7-e34c7eba8dd0",
+                                            "label": "1B",
+                                            "tierId": "a4638ff3-c965-485e-8835-b081a75e79da",
+                                            "status": "AVAILABLE"
+                                        },
+                                        {
+                                            "id": "e4269b3d-85f3-4ade-b76e-47a5892fa11d",
+                                            "label": "2B",
+                                            "tierId": "a4638ff3-c965-485e-8835-b081a75e79da",
+                                            "status": "AVAILABLE"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "capacity": null,
+                            "width": null,
+                            "height": null,
+                            "seats": []
+                        },
+                        {
+                            "id": "345f3582-eb12-4848-b998-927547a87cfa",
+                            "name": "stage",
+                            "type": "non_sellable",
+                            "position": {
+                                "x": 25,
+                                "y": 25
+                            },
+                            "rows": [],
+                            "capacity": null,
+                            "width": 325,
+                            "height": 80,
+                            "seats": []
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "discounts": [
+        {
+            "id": "c1c6d4e5-eba1-49c0-ae0d-c99cf9500b42",
+            "code": "SAVE10",
+            "maxUsage": null,
+            "currentUsage": 0,
+            "discountedTotal": 0,
+            "active": true,
+            "public": true,
+            "activeFrom": null,
+            "expiresAt": null,
+            "applicableTierIds": [
+                "a4638ff3-c965-485e-8835-b081a75e79da"
+            ],
+            "applicableSessionIds": [
+                "1400a2ca-96da-4972-9ac5-0e7f1f7527b5"
+            ],
+            "parameters": {
+                "type": "PERCENTAGE",
+                "percentage": 10,
+                "minSpend": 10,
+                "maxDiscount": null
+            }
+        }
+    ]
+}

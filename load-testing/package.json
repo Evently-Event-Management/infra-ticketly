@@ -1,0 +1,25 @@
+{
+  "name": "ticketly-load-testing",
+  "version": "1.0.0",
+  "description": "Load testing scripts for Ticketly microservices using k6",
+  "scripts": {
+    "format": "prettier --write .",
+    "test:quick": "./run-tests.sh --quick",
+    "test:smoke": "./run-tests.sh --scenario smoke",
+    "test:load": "./run-tests.sh --scenario load",
+    "test:stress": "./run-tests.sh --scenario stress",
+    "test:soak": "./run-tests.sh --scenario soak",
+    "test:spike": "./run-tests.sh --scenario spike",
+    "test:debug": "./run-tests.sh --scenario debug --log-level debug",
+    "test:breakpoint": "./run-tests.sh --scenario breakpoint"
+  },
+  "keywords": [
+    "k6",
+    "load-testing",
+    "performance",
+    "ticketly"
+  ],
+  "devDependencies": {
+    "prettier": "^2.8.8"
+  }
+}
