@@ -122,7 +122,7 @@ services:
       - EVENT_SEATING_SERVICE_URI=http://event-command-service:8081
       - EVENT_QUERY_SERVICE_URI=http://event-query-service:8082
       - ORDER_SERVICE_URI=http://order-service:8084
-      - PAYMENT_SERVICE_URI=http://payment-service:8085
+      - SCHEDULER_SERVICE_URI=http://scheduler-service:8085
       - LOG_LEVEL_ROOT=INFO
       - LOG_LEVEL_SPRING_CLOUD_GATEWAY=INFO
       - LOG_LEVEL_SPRING_HTTP_SERVER_REACTIVE=WARN
