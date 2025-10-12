@@ -4,6 +4,9 @@ import { Rate } from 'k6/metrics';
 import { sleep } from 'k6';
 import { Trend } from 'k6/metrics';
 
+// Store iteration counters per VU
+let iterationCounters = {};
+
 // Import configuration and data
 import { config } from './config.js';
 import { getAuthToken } from './lib/auth.js';
@@ -70,8 +73,18 @@ export default function(data) {
   // Get auth token from setup
   const authToken = data.authToken;
   
-  // Log which scenario we're running
-  console.log(`Running ${scenarioName} scenario`);
+  // Use the VU ID to track iterations per virtual user
+  const vuId = __VU || 'shared';
+  
+  // Initialize counter for this VU if it doesn't exist
+  if (!iterationCounters[vuId]) {
+    iterationCounters[vuId] = 0;
+    // Only log on first iteration of each VU
+    console.log(`Running ${scenarioName} scenario`);
+  }
+  
+  // Increment the counter
+  iterationCounters[vuId]++;
   
   try {
     // Always run the mixed test flow, regardless of scenario

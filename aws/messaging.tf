@@ -21,3 +21,11 @@ resource "aws_sqs_queue" "trending_job" {
     Environment = terraform.workspace
   }
 }
+
+resource "aws_sqs_queue" "session_reminders" {
+  name = "session-reminders-queue-${terraform.workspace}"
+  tags = {
+    Name        = "ticketly-session-reminders"
+    Environment = terraform.workspace
+  }
+}

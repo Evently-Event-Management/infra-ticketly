@@ -27,6 +27,16 @@ output "sqs_trending_job_arn" {
   value       = aws_sqs_queue.trending_job.arn
 }
 
+output "sqs_session_reminders_url" {
+  description = "The URL of the SQS queue for 'session reminders' events."
+  value       = aws_sqs_queue.session_reminders.url
+}
+
+output "sqs_session_reminders_arn" {
+  description = "The ARN of the SQS queue for 'session reminders' events."
+  value       = aws_sqs_queue.session_reminders.arn
+}
+
 output "scheduler_role_arn" {
   description = "The ARN of the IAM role for the EventBridge Scheduler."
   value       = aws_iam_role.eventbridge_scheduler_role.arn

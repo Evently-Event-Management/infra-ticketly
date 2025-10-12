@@ -141,6 +141,7 @@ services:
       - EVENT_SERVICE_URL=http://event-command-service:8081/api/event-seating
       - EVENT_QUERY_SERVICE_URL=http://event-query-service:8082/api/event-query
       - KEYCLOAK_URL=https://auth.dpiyumal.me
+      - POSTGRES_DSN=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${RDS_ENDPOINT}/scheduler_service
       - SCHEDULER_CLIENT_SECRET=${SCHEDULER_CLIENT_SECRET}
       - AWS_SQS_SESSION_SCHEDULING_ARN=${AWS_SQS_SESSION_SCHEDULING_ARN}
       - AWS_SQS_SESSION_SCHEDULING_URL=${AWS_SQS_SESSION_SCHEDULING_URL}

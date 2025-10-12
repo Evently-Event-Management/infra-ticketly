@@ -10,5 +10,5 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
     CREATE DATABASE keycloak;
     CREATE DATABASE event_service;
     CREATE DATABASE order_service;
-    CREATE DATABASE payment_service;
+    CREATE DATABASE scheduler_service;
 EOSQL
