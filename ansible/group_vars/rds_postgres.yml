@@ -5,4 +5,4 @@ postgres_databases:
   - keycloak
   - event_service
   - order_service
-  - payment_service
+  - scheduler_service
