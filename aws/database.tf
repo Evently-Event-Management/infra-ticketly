@@ -3,7 +3,7 @@ resource "aws_db_subnet_group" "ticketly" {
   count = local.is_prod ? 1 : 0
 
   name       = "ticketly-db-subnets"
-  subnet_ids = aws_subnet.private[*].id
+  subnet_ids = aws_subnet.public[*].id  # Changed from private to public subnets
 
   tags = {
     Name = "ticketly-db-subnet-group"
@@ -38,7 +38,7 @@ resource "aws_db_instance" "ticketly_db" {
   parameter_group_name = aws_db_parameter_group.ticketly_logical_replication[0].name
   vpc_security_group_ids = [aws_security_group.database[0].id]
   db_subnet_group_name = aws_db_subnet_group.ticketly[0].name
-  publicly_accessible  = true
+  publicly_accessible  = true  # Already set to true, which is needed for public access
   skip_final_snapshot  = true
 
   tags = {
