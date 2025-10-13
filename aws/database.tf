@@ -13,10 +13,12 @@ resource "aws_db_parameter_group" "ticketly_logical_replication" {
   family = "postgres16"
 
   parameter {
-    name  = "rds.logical_replication"
-    value = "1"
+    name         = "rds.logical_replication"
+    value        = "1"
+    apply_method = "pending-reboot"
   }
 }
+
 
 resource "aws_db_instance" "ticketly_db" {
   count = local.is_prod ? 1 : 0
