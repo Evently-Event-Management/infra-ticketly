@@ -4,6 +4,11 @@ resource "aws_db_subnet_group" "ticketly" {
 
   name       = "ticketly-db-subnets"
   subnet_ids = aws_subnet.private[*].id
+
+  tags = {
+    Name = "ticketly-db-subnet-group"
+    VPC  = aws_vpc.ticketly_vpc[0].id
+  }
 }
 
 resource "aws_db_parameter_group" "ticketly_logical_replication" {
@@ -32,11 +37,13 @@ resource "aws_db_instance" "ticketly_db" {
   allocated_storage    = 20
   parameter_group_name = aws_db_parameter_group.ticketly_logical_replication[0].name
   vpc_security_group_ids = [aws_security_group.database[0].id]
+  db_subnet_group_name = aws_db_subnet_group.ticketly[0].name
   publicly_accessible  = true
   skip_final_snapshot  = true
 
   tags = {
     Name        = "ticketly-db"
     Environment = "production"
+    VPC         = aws_vpc.ticketly_vpc[0].id
   }
 }
