@@ -111,7 +111,7 @@ describe('Event Ticketing System - Full Lifecycle Test', () => {
 
     // --- Step 15-19: Place Order and Verify All States ---
     logStep('Placing order for seat');
-    const orderResponse = await makeAuthenticatedRequest('post', `${config.ticketsOrderServiceUrl}`, userToken, { event_id: eventId, session_id: sessionId, seat_ids: [availableSeatId] });
+    const orderResponse = await makeAuthenticatedRequest('post', `${config.ticketsOrderServiceUrl}`, userToken, { event_id: eventId, session_id: sessionId, seat_ids: [availableSeatId] , organization_id: organizationId });
     orderId = orderResponse.order_id;
     expect(orderId).toBeTruthy();
     logStepComplete(`Order placed successfully (ID: ${orderId})`);
