@@ -3,7 +3,7 @@ resource "aws_db_subnet_group" "ticketly" {
   count = local.is_prod ? 1 : 0
 
   name       = "ticketly-db-subnets"
-  subnet_ids = aws_subnet.public[*].id  # Changed from private to public subnets
+  subnet_ids = aws_subnet.private[*].id  # Changed from public to private subnets
 
   tags = {
     Name = "ticketly-db-subnet-group"

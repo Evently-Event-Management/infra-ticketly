@@ -57,6 +57,30 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public[0].id
 }
 
+
+
+# Route table for private subnets (for now with IGW)
+resource "aws_route_table" "private" {
+  count = local.is_prod ? 1 : 0
+
+  vpc_id = aws_vpc.ticketly_vpc[0].id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw[0].id
+  }
+
+  tags = { Name = "ticketly-private-rt-${terraform.workspace}" }
+}
+
+# Associate private subnets with private route table
+resource "aws_route_table_association" "private" {
+  count          = local.is_prod ? 3 : 0
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private[0].id
+}
+
+
 resource "aws_security_group" "public" {
   count = local.is_prod ? 1 : 0
 
@@ -78,6 +102,25 @@ resource "aws_security_group" "public" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "Application ports"
   }
+
+    # HTTP access from anywhere
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP access"
+  }
+
+  # HTTPS access from anywhere
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS access"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
