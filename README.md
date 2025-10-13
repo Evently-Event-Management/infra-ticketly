@@ -191,4 +191,114 @@ Your local development environment is now running\! Here are the main endpoints:
   * **Stop All Services**: `docker-compose down`.
   * **Stop and Remove Volumes** (for a clean slate): `docker-compose down -v`.
 
+-----
+
+## 🌎 Production Environment Setup
+
+Follow these steps to set up and deploy the production infrastructure on AWS.
+
+### 1. Generate SSH Key for EC2 Instance
+
+Before applying the production Terraform configuration, you need to generate an SSH key pair:
+
+```bash
+# Navigate to the aws directory
+cd aws/
+
+# Generate a new SSH key pair without passphrase
+ssh-keygen -t rsa -b 2048 -f ticketly-key -N ""
+
+# Set correct permissions on the private key
+chmod 600 ticketly-key
+```
+
+### 2. Ensure SSH Keys Are in .gitignore
+
+The `.gitignore` file already exists in the aws directory. If you generate new SSH keys, make sure they are excluded from git:
+
+1. Check the `.gitignore` file in the aws directory to ensure it includes:
+
+```
+# Ignore SSH keys
+ticketly-key
+ticketly-key.pub
+```
+
+2. If you generate keys with different names, add those to the `.gitignore` file:
+
+```bash
+echo "your-custom-key-name" >> aws/.gitignore
+echo "your-custom-key-name.pub" >> aws/.gitignore
+```
+
+### 3. Set Up Terraform for Production
+
+Initialize Terraform and select the production workspace:
+
+```bash
+# Make sure you're in the aws directory
+cd aws/
+
+# Initialize Terraform
+terraform init
+
+# Select the production workspace
+terraform workspace select infra-ticketly
+```
+
+### 4. Apply Production Infrastructure
+
+Deploy the production infrastructure:
+
+```bash
+# Apply Terraform configuration
+terraform apply
+```
+
+Review the plan carefully and type `yes` to provision the resources. This will create:
+- VPC with public and private subnets
+- EC2 instance with SSH access
+- RDS PostgreSQL database
+- S3 bucket for assets
+- SQS queues for event handling
+- IAM roles and policies
+- EventBridge scheduler
+
+### 5. Connect to the EC2 Instance
+
+After the infrastructure is deployed, connect to your EC2 instance using:
+
+```bash
+# The command will be provided in Terraform outputs
+ssh -i ticketly-key ubuntu@<EC2_PUBLIC_IP>
+
+# Example:
+# ssh -i ticketly-key ubuntu@65.0.29.156
+```
+
+### 6. Important Production Outputs
+
+The following outputs are provided after Terraform apply:
+- `ec2_ip`: Public IP address of the EC2 instance
+- `ssh_command`: Command to SSH into the EC2 instance
+- `ticketly_db_endpoint`: RDS database endpoint
+- `s3_bucket_name`: S3 bucket for assets
+- `sqs_session_scheduling_url`: URL for the session scheduling queue
+- `sqs_trending_job_url`: URL for the trending job queue
+- `sqs_session_reminders_url`: URL for the session reminders queue
+
+To view these outputs again at any time:
+
+```bash
+terraform output
+```
+
+### 7. Production Infrastructure Maintenance
+
+- **Update Infrastructure**: Make changes to Terraform files and run `terraform apply`
+- **Destroy Infrastructure**: Run `terraform destroy` (use with caution!)
+- **Access AWS Resources**: Use AWS console or CLI with appropriate credentials
+- **Database Backups**: RDS creates automatic backups according to configuration
+- **Monitoring**: Set up CloudWatch alarms for resource monitoring
+
 Happy Coding\!

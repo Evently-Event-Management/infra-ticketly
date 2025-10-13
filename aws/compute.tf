@@ -17,5 +17,5 @@ resource "aws_key_pair" "ticketly" {
   count = local.is_prod ? 1 : 0
 
   key_name   = "ticketly-key"
-  public_key = var.public_key_content
+  public_key = file("${path.module}/ticketly-key.pub")
 }

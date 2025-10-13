@@ -4,12 +4,6 @@ variable "aws_region" {
   default     = "ap-south-1"
 }
 
-variable "public_key_content" {
-  description = "Public key content for the EC2 key pair (used in prod only)."
-  type        = string
-  default     = "" # Can be empty for dev workspaces
-}
-
 variable "rds_user" {
   description = "The username for the RDS database (used in prod only)."
   type        = string

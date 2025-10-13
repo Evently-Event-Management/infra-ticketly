@@ -86,3 +86,8 @@ output "ec2_ip" {
   description = "The public IP address of the EC2 instance. (Prod only)"
   value       = local.is_prod ? aws_instance.ticketly-infra[0].public_ip : "N/A (not deployed in this workspace)"
 }
+
+output "ssh_command" {
+  description = "Command to SSH into the EC2 instance (Prod only)"
+  value       = local.is_prod ? "ssh -i ${path.module}/ticketly-key ubuntu@${aws_instance.ticketly-infra[0].public_ip}" : "N/A (not deployed in this workspace)"
+}
