@@ -130,8 +130,23 @@ services:
       - LOG_LEVEL_REACTOR_NETTY=WARN
       - LOG_LEVEL_REACTOR_NETTY_HTTP_CLIENT=WARN
       - LOG_LEVEL_SPRING_SECURITY=WARN
+    depends_on:
+      event-command-service:
+        condition: service_healthy
+      event-query-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+      scheduler-service:
+        condition: service_healthy
     networks:
       - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/api/gateway/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # Go Scheduler Service
   scheduler-service:
@@ -157,10 +172,19 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
-    volumes:
-      - ~/.aws:/root/.aws:ro
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      kafka:
+        condition: service_healthy
     networks:
       - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/api/scheduler/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # Event Seating Service
   event-command-service:
@@ -186,14 +210,21 @@ services:
       - LOG_LEVEL_ROOT=INFO
       - COM_TICKETLY_LOG_LEVEL=INFO
       - SPRING_SECURITY_LOG_LEVEL=WARN
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - infra-net
     volumes:
-      - ~/.aws:/root/.aws:ro
       - ./credentials/gcp-credentials.json:/config/gcp-credentials.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/event-seating/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # Event Query Service
   event-query-service:
@@ -224,8 +255,12 @@ services:
       - GOOGLE_PRIVATE_KEY_ID=${GOOGLE_PRIVATE_KEY_ID}
     networks:
       - infra-net
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/api/event-query/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # Order Service
   order-service:
@@ -238,7 +273,7 @@ services:
       - OIDC_ISSUER=https://auth.dpiyumal.me/realms/event-ticketing
       - KEYCLOAK_URL=https://auth.dpiyumal.me
       - KEYCLOAK_REALM=event-ticketing
-      - EVENT_SEATING_SERVICE_URL=http://event-command-service:8082/api/event-seating
+      - EVENT_SEATING_SERVICE_URL=http://event-command-service:8081/api/event-seating
       - EVENT_QUERY_SERVICE_URL=http://event-query-service:8082/api/event-query
       - QR_SECRET_KEY=4RJUEJDURgKarhbwx3fjKA8Fy/KoFwpAmOWAGwiWU9A=
       - TICKET_CLIENT_SECRET=${TICKET_CLIENT_SECRET}
@@ -246,8 +281,23 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - SEAT_LOCK_TTL_MINUTES=5
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      event-command-service:
+        condition: service_healthy
+      event-query-service:
+        condition: service_healthy
     networks:
       - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/api/orders/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   dozzle:
     container_name: dozzle
