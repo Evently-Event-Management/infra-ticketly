@@ -7,15 +7,15 @@ echo "Starting Nginx installation and configuration..."
 
 # Update package lists
 echo "Updating package lists..."
-sudo apt-get update
+sudo apt update
 
 # Install Nginx
 echo "Installing Nginx..."
-sudo apt-get install -y nginx
+sudo apt install -y nginx
 
 # Install Certbot and Nginx plugin
 echo "Installing Certbot and Nginx plugin..."
-sudo apt-get install -y certbot python3-certbot-nginx
+sudo apt install -y certbot python3-certbot-nginx
 
 # Remove default site
 echo "Removing default Nginx site..."
