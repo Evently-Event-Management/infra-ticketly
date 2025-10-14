@@ -29,8 +29,14 @@ sudo mkdir -p /etc/nginx/sites-enabled
 # Copy configuration files to sites-available
 echo "Copying configuration files to sites-available..."
 
-# Move up one directory to access the nginx folder
-PARENT_DIR="$(dirname "$(pwd)")"
+# Get the script's directory path (more reliable than using pwd)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PARENT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# Show paths for debugging
+echo "Script directory: $SCRIPT_DIR"
+echo "Parent directory: $PARENT_DIR"
+echo "Current directory: $(pwd)"
 
 # API configuration
 echo "Setting up api.dpiyumal.me configuration..."
