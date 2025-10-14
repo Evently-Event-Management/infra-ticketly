@@ -84,6 +84,11 @@ services:
       STATUS_STORAGE_TOPIC: my_connect_statuses
     networks:
       - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   # Debezium connector registration service 
   debezium-connector-init:
