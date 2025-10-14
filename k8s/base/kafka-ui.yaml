@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui
+  namespace: ticketly
+  labels:
+    app: kafka-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-ui
+  template:
+    metadata:
+      labels:
+        app: kafka-ui
+    spec:
+      containers:
+      - image: provectuslabs/kafka-ui:latest
+        name: kafka-ui
+        ports:
+        - containerPort: 8080
+        env:
+        - name: KAFKA_CLUSTERS_0_NAME
+          value: local
+        - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+          value: kafka:29092
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-ui
+  namespace: ticketly
+  labels:
+    app: kafka-ui
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: kafka-ui

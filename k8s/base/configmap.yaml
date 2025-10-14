@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ticketly-config
+  namespace: ticketly
+data:
+  KEYCLOAK_URL: "https://auth.dpiyumal.me"
+  KEYCLOAK_REALM: "event-ticketing"
+  KEYCLOAK_ISSUER_URI: "https://auth.dpiyumal.me/realms/event-ticketing"
+  KEYCLOAK_JWK_SET_URI: "https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs"

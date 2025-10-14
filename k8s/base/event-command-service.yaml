@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-command-service
+  namespace: ticketly
+  labels:
+    app: event-command-service
+spec:
+  selector:
+    matchLabels:
+      app: event-command-service
+  template:
+    metadata:
+      labels:
+        app: event-command-service
+    spec:
+      containers:
+      - image: ticketly/event-command-service:latest
+        name: event-command-service
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SERVER_PORT
+          value: "8081"
+        - name: DATABASE_URL
+          value: jdbc:postgresql://$(RDS_ENDPOINT)/event_service
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: DATABASE_USERNAME
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: DATABASE_PASSWORD
+        - name: JWT_ISSUER_URI
+          value: https://auth.dpiyumal.me/realms/event-ticketing
+        - name: JWT_JWK_SET_URI
+          value: https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_PORT
+          value: "6379"
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_REGION
+              optional: true
+        - name: AWS_S3_BUCKET_NAME
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_S3_BUCKET_NAME
+        - name: SHOW_SQL
+          value: "false"
+        - name: LOG_LEVEL_APP
+          value: "DEBUG"
+        - name: LOG_LEVEL_SECURITY
+          value: "WARN"
+        - name: KEYCLOAK_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: EVENTS_SERVICE_CLIENT_SECRET
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        - name: LOG_LEVEL_ROOT
+          value: "INFO"
+        - name: COM_TICKETLY_LOG_LEVEL
+          value: "INFO"
+        - name: SPRING_SECURITY_LOG_LEVEL
+          value: "WARN"
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SECRET_ACCESS_KEY
+        volumeMounts:
+        - name: gcp-credentials
+          mountPath: /config/gcp-credentials.json
+          subPath: gcp-credentials.json
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 30
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
+      volumes:
+      - name: gcp-credentials
+        secret:
+          secretName: gcp-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-command-service
+  namespace: ticketly
+  labels:
+    app: event-command-service
+spec:
+  ports:
+  - port: 8081
+    targetPort: 8081
+  selector:
+    app: event-command-service
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: event-command-service
+  namespace: ticketly
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: event-command-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

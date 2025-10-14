@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debezium-connect
+  namespace: ticketly
+  labels:
+    app: debezium-connect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium-connect
+  template:
+    metadata:
+      labels:
+        app: debezium-connect
+    spec:
+      containers:
+      - image: debezium/connect:2.5
+        name: debezium-connect
+        ports:
+        - containerPort: 8083
+        env:
+        - name: BOOTSTRAP_SERVERS
+          value: kafka:29092
+        - name: GROUP_ID
+          value: "1"
+        - name: CONFIG_STORAGE_TOPIC
+          value: my_connect_configs
+        - name: OFFSET_STORAGE_TOPIC
+          value: my_connect_offsets
+        - name: STATUS_STORAGE_TOPIC
+          value: my_connect_statuses
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8083
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8083
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 30
+          failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: debezium-connect
+  namespace: ticketly
+  labels:
+    app: debezium-connect
+spec:
+  ports:
+  - port: 8083
+    targetPort: 8083
+  selector:
+    app: debezium-connect
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: debezium-connector-init
+  namespace: ticketly
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: debezium-connector-init
+        image: alpine:latest
+        command:
+        - sh
+        - -c
+        - |
+          apk add --no-cache curl gettext
+          sleep 30 # wait for debezium to be ready
+          envsubst < /debezium/debezium.json > /debezium/debezium-final.json
+          curl -X POST -H "Content-Type: application/json" --data @/debezium/debezium-final.json http://debezium-connect:8083/connectors
+          echo "Debezium connector initialized"
+        volumeMounts:
+        - name: debezium-config
+          mountPath: /debezium
+        envFrom:
+        - secretRef:
+            name: ticketly-secrets
+      restartPolicy: OnFailure
+      volumes:
+      - name: debezium-config
+        configMap:
+          name: debezium-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: debezium-config
+  namespace: ticketly
+data:
+  debezium.json: |-
+    {
+      "name": "inventory-connector",
+      "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "database.hostname": "${RDS_ENDPOINT}",
+        "database.port": "5432",
+        "database.user": "${DATABASE_USERNAME}",
+        "database.password": "${DATABASE_PASSWORD}",
+        "database.dbname": "event_service",
+        "database.server.name": "event-service",
+        "table.include.list": "public.event,public.section,public.seat,public.seat_lock",
+        "plugin.name": "pgoutput"
+      }
+    }

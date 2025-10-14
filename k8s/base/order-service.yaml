@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: ticketly
+  labels:
+    app: order-service
+spec:
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+      - image: ticketly/order-service:latest
+        name: order-service
+        ports:
+        - containerPort: 8084
+        env:
+        - name: POSTGRES_DSN
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: ORDER_POSTGRES_DSN
+        - name: REDIS_ADDR
+          value: redis:6379
+        - name: KAFKA_ADDR
+          value: kafka:29092
+        - name: OIDC_ISSUER
+          value: https://auth.dpiyumal.me/realms/event-ticketing
+        - name: KEYCLOAK_URL
+          value: https://auth.dpiyumal.me
+        - name: KEYCLOAK_REALM
+          value: event-ticketing
+        - name: EVENT_SEATING_SERVICE_URL
+          value: http://event-command-service:8081/api/event-seating
+        - name: EVENT_QUERY_SERVICE_URL
+          value: http://event-query-service:8082/api/event-query
+        - name: QR_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: QR_SECRET_KEY
+        - name: TICKET_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: TICKET_CLIENT_SECRET
+        - name: TICKET_CLIENT_ID
+          value: ticket-service-client
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: STRIPE_SECRET_KEY
+        - name: STRIPE_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: STRIPE_WEBHOOK_SECRET
+        - name: SEAT_LOCK_TTL_MINUTES
+          value: "5"
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8084
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8084
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 30
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: ticketly
+  labels:
+    app: order-service
+spec:
+  ports:
+  - port: 8084
+    targetPort: 8084
+  selector:
+    app: order-service
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: order-service
+  namespace: ticketly
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

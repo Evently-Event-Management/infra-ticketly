@@ -1,0 +1,188 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-service
+  namespace: ticketly
+  labels:
+    app: scheduler-service
+spec:
+  selector:
+    matchLabels:
+      app: scheduler-service
+  template:
+    metadata:
+      labels:
+        app: scheduler-service
+    spec:
+      containers:
+      - image: ticketly/scheduler-service:latest
+        name: scheduler-service
+        ports:
+        - containerPort: 8085
+        env:
+        - name: EVENT_SERVICE_URL
+          value: http://event-command-service:8081/api/event-seating
+        - name: EVENT_QUERY_SERVICE_URL
+          value: http://event-query-service:8082/api/event-query
+        - name: KEYCLOAK_URL
+          value: https://auth.dpiyumal.me
+        - name: POSTGRES_DSN
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: SCHEDULER_POSTGRES_DSN
+        - name: SCHEDULER_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: SCHEDULER_CLIENT_SECRET
+        - name: AWS_SQS_SESSION_SCHEDULING_ARN
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SQS_SESSION_SCHEDULING_ARN
+        - name: AWS_SQS_SESSION_SCHEDULING_URL
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SQS_SESSION_SCHEDULING_URL
+        - name: AWS_SQS_TRENDING_JOB_ARN
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SQS_TRENDING_JOB_ARN
+        - name: AWS_SQS_TRENDING_JOB_URL
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SQS_TRENDING_JOB_URL
+        - name: AWS_SQS_SESSION_REMINDERS_ARN
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SQS_SESSION_REMINDERS_ARN
+        - name: AWS_SQS_SESSION_REMINDERS_URL
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SQS_SESSION_REMINDERS_URL
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_REGION
+        - name: AWS_SCHEDULER_ROLE_ARN
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SCHEDULER_ROLE_ARN
+        - name: AWS_SCHEDULER_GROUP_NAME
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SCHEDULER_GROUP_NAME
+        - name: KAFKA_URL
+          value: kafka:29092
+        - name: SMTP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: SMTP_HOST
+        - name: SMTP_PORT
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: SMTP_PORT
+        - name: SMTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: SMTP_USERNAME
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: SMTP_PASSWORD
+        - name: FROM_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: FROM_EMAIL
+        - name: FROM_NAME
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: FROM_NAME
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: AWS_SECRET_ACCESS_KEY
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8085
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8085
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 30
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler-service
+  namespace: ticketly
+  labels:
+    app: scheduler-service
+spec:
+  ports:
+  - port: 8085
+    targetPort: 8085
+  selector:
+    app: scheduler-service
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scheduler-service
+  namespace: ticketly
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: scheduler-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

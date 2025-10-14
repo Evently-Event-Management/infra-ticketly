@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-query-service
+  namespace: ticketly
+  labels:
+    app: event-query-service
+spec:
+  selector:
+    matchLabels:
+      app: event-query-service
+  template:
+    metadata:
+      labels:
+        app: event-query-service
+    spec:
+      containers:
+      - image: ticketly/event-query-service:latest
+        name: event-query-service
+        ports:
+        - containerPort: 8082
+        env:
+        - name: MONGODB_URI
+          value: mongodb://query-db:27017/event-seating
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        - name: COMMAND_SERVICE_URL
+          value: http://event-command-service:8081/api/event-seating
+        - name: EVENT_PROJECTION_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: EVENT_PROJECTION_CLIENT_SECRET
+        - name: KEYCLOAK_ISSUER_URI
+          value: https://auth.dpiyumal.me/realms/event-ticketing
+        - name: KEYCLOAK_JWK_SET_URI
+          value: https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
+        - name: KAFKA_GROUP_ID
+          value: event-query-service
+        - name: AWS_S3_PUBLIC_URL
+          value: https://$(AWS_S3_BUCKET_NAME).s3.$(AWS_REGION).amazonaws.com
+        - name: ROOT_LOG_LEVEL
+          value: INFO
+        - name: COM_TICKETLY_LOG_LEVEL
+          value: INFO
+        - name: SPRING_SECURITY_LOG_LEVEL
+          value: WARN
+        - name: MONGODB_LOG_LEVEL
+          value: WARN
+        - name: GA_PROPERTY_ID
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: GA_PROPERTY_ID
+              optional: true
+        - name: GOOGLE_CLIENT_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: GOOGLE_CLIENT_EMAIL
+              optional: true
+        - name: GOOGLE_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: GOOGLE_PRIVATE_KEY
+              optional: true
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: GOOGLE_CLIENT_ID
+              optional: true
+        - name: GOOGLE_PRIVATE_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: ticketly-secrets
+              key: GOOGLE_PRIVATE_KEY_ID
+              optional: true
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8082
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8082
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 30
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-query-service
+  namespace: ticketly
+  labels:
+    app: event-query-service
+spec:
+  ports:
+  - port: 8082
+    targetPort: 8082
+  selector:
+    app: event-query-service
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: event-query-service
+  namespace: ticketly
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: event-query-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

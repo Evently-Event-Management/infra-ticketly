@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: ticketly
+  labels:
+    app: mongodb
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - image: mongo:latest
+        name: query-mongodb
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongo-data
+          mountPath: /data/db
+        readinessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 30
+          failureThreshold: 3
+      volumes:
+      - name: mongo-data
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: query-db
+  namespace: ticketly
+  labels:
+    app: mongodb
+spec:
+  ports:
+  - port: 27017
+    targetPort: 27017
+  selector:
+    app: mongodb
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  namespace: ticketly
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
