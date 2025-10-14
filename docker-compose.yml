@@ -148,6 +148,86 @@ services:
       retries: 3
       start_period: 10s
 
+    # Event Seating Service
+  event-command-service:
+    image: ticketly/event-command-service:latest
+    container_name: event-command-service
+    environment:
+      - SERVER_PORT=8081
+      - DATABASE_URL=jdbc:postgresql://${RDS_ENDPOINT}/event_service
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - JWT_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
+      - JWT_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AWS_REGION=${AWS_REGION:-ap-south-1}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      - SHOW_SQL=false
+      - LOG_LEVEL_APP=DEBUG
+      - LOG_LEVEL_SECURITY=WARN
+      - KEYCLOAK_CLIENT_SECRET=${EVENTS_SERVICE_CLIENT_SECRET}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - GOOGLE_APPLICATION_CREDENTIALS=/config/gcp-credentials.json
+      - LOG_LEVEL_ROOT=INFO
+      - COM_TICKETLY_LOG_LEVEL=INFO
+      - SPRING_SECURITY_LOG_LEVEL=WARN
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - infra-net
+    volumes:
+      - ./credentials/gcp-credentials.json:/config/gcp-credentials.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/event-seating/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    # Event Query Service
+  event-query-service:
+    image: ticketly/event-query-service:latest
+    container_name: event-query-service
+    depends_on:
+      query-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      event-command-service:
+        condition: service_healthy
+    environment:
+      - MONGODB_URI=mongodb://query-db:27017/event-seating
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - COMMAND_SERVICE_URL=http://event-command-service:8081/api/event-seating
+      - EVENT_PROJECTION_CLIENT_SECRET=${EVENT_PROJECTION_CLIENT_SECRET}
+      - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
+      - KEYCLOAK_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
+      - KAFKA_GROUP_ID=event-query-service
+      - AWS_S3_PUBLIC_URL=https://${AWS_S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com
+      - ROOT_LOG_LEVEL=INFO
+      - COM_TICKETLY_LOG_LEVEL=INFO
+      - SPRING_SECURITY_LOG_LEVEL=WARN
+      - MONGODB_LOG_LEVEL=WARN
+      - GA_PROPERTY_ID=${GA_PROPERTY_ID}
+      - GOOGLE_CLIENT_EMAIL=${GOOGLE_CLIENT_EMAIL}
+      - GOOGLE_PRIVATE_KEY=${GOOGLE_PRIVATE_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_PRIVATE_KEY_ID=${GOOGLE_PRIVATE_KEY_ID}
+    networks:
+      - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/api/event-query/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   # Go Scheduler Service
   scheduler-service:
     image: ticketly/scheduler-service:latest
@@ -177,86 +257,14 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+      event-command-service:
+        condition: service_healthy
+      event-query-service:
+        condition: service_healthy
     networks:
       - infra-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8085/api/scheduler/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-
-  # Event Seating Service
-  event-command-service:
-    image: ticketly/event-command-service:latest
-    container_name: event-command-service
-    environment:
-      - SERVER_PORT=8081
-      - DATABASE_URL=jdbc:postgresql://${RDS_ENDPOINT}/event_service
-      - DATABASE_USERNAME=${DATABASE_USERNAME}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - JWT_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
-      - JWT_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - AWS_REGION=${AWS_REGION:-ap-south-1}
-      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
-      - SHOW_SQL=false
-      - LOG_LEVEL_APP=DEBUG
-      - LOG_LEVEL_SECURITY=WARN
-      - KEYCLOAK_CLIENT_SECRET=${EVENTS_SERVICE_CLIENT_SECRET}
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - GOOGLE_APPLICATION_CREDENTIALS=/config/gcp-credentials.json
-      - LOG_LEVEL_ROOT=INFO
-      - COM_TICKETLY_LOG_LEVEL=INFO
-      - SPRING_SECURITY_LOG_LEVEL=WARN
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - infra-net
-    volumes:
-      - ./credentials/gcp-credentials.json:/config/gcp-credentials.json:ro
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/api/event-seating/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-
-  # Event Query Service
-  event-query-service:
-    image: ticketly/event-query-service:latest
-    container_name: event-query-service
-    depends_on:
-      query-db:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    environment:
-      - MONGODB_URI=mongodb://query-db:27017/event-seating
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - COMMAND_SERVICE_URL=http://event-command-service:8081/api/event-seating
-      - EVENT_PROJECTION_CLIENT_SECRET=${EVENT_PROJECTION_CLIENT_SECRET}
-      - KEYCLOAK_ISSUER_URI=https://auth.dpiyumal.me/realms/event-ticketing
-      - KEYCLOAK_JWK_SET_URI=https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs
-      - KAFKA_GROUP_ID=event-query-service
-      - AWS_S3_PUBLIC_URL=https://${AWS_S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com
-      - ROOT_LOG_LEVEL=INFO
-      - COM_TICKETLY_LOG_LEVEL=INFO
-      - SPRING_SECURITY_LOG_LEVEL=WARN
-      - MONGODB_LOG_LEVEL=WARN
-      - GA_PROPERTY_ID=${GA_PROPERTY_ID}
-      - GOOGLE_CLIENT_EMAIL=${GOOGLE_CLIENT_EMAIL}
-      - GOOGLE_PRIVATE_KEY=${GOOGLE_PRIVATE_KEY}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_PRIVATE_KEY_ID=${GOOGLE_PRIVATE_KEY_ID}
-    networks:
-      - infra-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/api/event-query/health"]
       interval: 15s
       timeout: 5s
       retries: 3
