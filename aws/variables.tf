@@ -7,12 +7,11 @@ variable "aws_region" {
 variable "rds_user" {
   description = "The username for the RDS database (used in prod only)."
   type        = string
-  default     = "" # Can be empty for dev workspaces
+  default = "ticketly"
 }
 
 variable "rds_password" {
   description = "The password for the RDS database (used in prod only)."
   type        = string
   sensitive   = true
-  default     = "" # Can be empty for dev workspaces
 }
