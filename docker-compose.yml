@@ -84,11 +84,6 @@ services:
       STATUS_STORAGE_TOPIC: my_connect_statuses
     networks:
       - infra-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
   # Debezium connector registration service 
   debezium-connector-init:
@@ -141,12 +136,6 @@ services:
         condition: service_healthy
     networks:
       - infra-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8088/api/gateway/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
     # Event Seating Service
   event-command-service:
@@ -183,12 +172,6 @@ services:
       - infra-net
     volumes:
       - ./credentials/gcp-credentials.json:/config/gcp-credentials.json:ro
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/api/event-seating/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
     # Event Query Service
   event-query-service:
@@ -221,12 +204,6 @@ services:
       - GOOGLE_PRIVATE_KEY_ID=${GOOGLE_PRIVATE_KEY_ID}
     networks:
       - infra-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/api/event-query/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
   # Go Scheduler Service
   scheduler-service:
@@ -263,12 +240,6 @@ services:
         condition: service_healthy
     networks:
       - infra-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8085/api/scheduler/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
   # Order Service
   order-service:
@@ -300,12 +271,6 @@ services:
         condition: service_healthy
     networks:
       - infra-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/api/orders/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
   dozzle:
     container_name: dozzle
