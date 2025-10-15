@@ -10,6 +10,8 @@
     "database.server.name": "ticketly-postgres",
     "table.include.list": "public.events,public.event_sessions,public.session_seating_maps,public.organizations,public.categories,public.event_cover_photos,public.tiers,public.discounts,public.discount_sessions,public.discount_tiers",
     "topic.prefix": "dbz.ticketly",
-    "plugin.name": "pgoutput"
+    "plugin.name": "pgoutput",
+    "heartbeat.interval.ms": "60000",
+    "heartbeat.action.query": "UPDATE public.debezium_heartbeat SET ts = NOW() WHERE id = '1';"
   }
 }
