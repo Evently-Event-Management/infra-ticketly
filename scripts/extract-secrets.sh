@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env"
 ENV_LOCAL_FILE="${PROJECT_ROOT}/.env.local"
+ENV_K8S_FILE="${PROJECT_ROOT}/.env.k8s"
 
 # --- Detect OS and set Docker socket path ---
 echo "Detecting operating system..."
@@ -184,7 +185,72 @@ if [ -f "${ENV_LOCAL_FILE}" ]; then
     done < "${ENV_LOCAL_FILE}"
 fi
 
-echo "✅ Secrets extraction complete."
+# --- Create Kubernetes-compatible .env.k8s file ---
+create_k8s_env() {
+  echo "Creating Kubernetes-compatible environment file: ${ENV_K8S_FILE}"
+  # Start with a clean file
+  echo "# Kubernetes-compatible Environment Variables - Generated: $(date)" > "${ENV_K8S_FILE}"
+  
+  # Read the .env file line by line
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # Skip comments and empty lines
+    if [[ "$line" =~ ^[[:space:]]*# || -z "$line" || ! "$line" == *"="* ]]; then
+      continue
+    fi
+    
+    # Extract key and value
+    key=$(echo "$line" | cut -d= -f1)
+    value=$(echo "$line" | cut -d= -f2-)
+    
+    # Remove leading = if present
+    value="${value#=}"
+    
+    # Remove quotes if they exist
+    value="${value#\"}"
+    value="${value%\"}"
+    
+    # Check if it's the Google private key (which is multi-line)
+    if [[ "$key" == "GOOGLE_PRIVATE_KEY" ]]; then
+      # For K8S: Replace newlines with '\n' for the private key
+      # This makes it a single line that Kubernetes can handle
+      # Use sed to escape newlines correctly for Kubernetes
+      encoded_value=$(echo "$value" | sed ':a;N;$!ba;s/\n/\\n/g')
+      echo "${key}=${encoded_value}" >> "${ENV_K8S_FILE}"
+      echo "  -> ✅ K8S-encoded: ${key} (multiline value encoded)"
+    else
+      # For other values, keep them as is but ensure valid K8S env var format
+      # Remove any characters not allowed in Kubernetes env var names
+      clean_key=$(echo "$key" | tr -cd '[:alnum:]_.-')
+      # Ensure it doesn't start with a number
+      if [[ "$clean_key" =~ ^[0-9] ]]; then
+        clean_key="ENV_${clean_key}"
+      fi
+      
+      echo "${clean_key}=${value}" >> "${ENV_K8S_FILE}"
+      echo "  -> ✅ K8S-compatible: ${key}"
+    fi
+  done < "${ENV_FILE}"
+  
+  # Add a note for kubectl create secret command
+  echo -e "\n# To create a Kubernetes secret from this file, run:" >> "${ENV_K8S_FILE}"
+  echo "# kubectl create secret generic ticketly-app-secrets --namespace ticketly --from-env-file=.env.k8s" >> "${ENV_K8S_FILE}"
+  
+  echo "✅ Kubernetes-compatible .env.k8s file created."
+}
+
+# Generate the regular .env file first, then the k8s version if requested
+echo "✅ Regular .env secrets extraction complete."
+
+# Check if the --k8s flag was passed
+if [[ "$1" == "--k8s" || "$2" == "--k8s" || "$1" == "k8s-only" ]]; then
+  create_k8s_env
+  
+  # If k8s-only mode is specified, exit after creating the K8s file
+  if [[ "$1" == "k8s-only" ]]; then
+    echo "Executed in k8s-only mode. Only .env.k8s was generated."
+    exit 0
+  fi
+fi
 
 # # --- Prompt for Docker Compose restart (no changes here) ---
 # echo ""

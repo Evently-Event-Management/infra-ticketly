@@ -22,13 +22,30 @@ kubectl apply -f k8s/k3s/configs/ticketly-global-config.yaml
 
 Secrets are templated so you can inject the values produced by `extract-secrets.sh` without editing every manifest.
 
-1. Generate the main secret from `.env` (edit the Google key afterwards so the multi-line block is preserved):
+1. Generate a Kubernetes-compatible environment file and create the main secret:
 
     ```bash
-    kubectl create secret generic ticketly-app-secrets       --namespace ticketly       --from-env-file=.env       --dry-run=client -o yaml       > k8s/k3s/secrets/app-secrets.yaml
+    # Generate a Kubernetes-compatible environment file with properly encoded multiline values
+    # This will handle the multi-line GCP private key by encoding newlines as \n
+    ./scripts/extract-secrets.sh --k8s
+    
+    # Create the secret from the Kubernetes-compatible .env.k8s file
+    kubectl create secret generic ticketly-app-secrets \
+      --namespace ticketly \
+      --from-env-file=.env.k8s \
+      --dry-run=client -o yaml \
+      > k8s/k3s/secrets/app-secrets.yaml
     ```
 
-    Open the generated file, ensure the `GOOGLE_PRIVATE_KEY` entry uses the multi-line block style from `app-secrets.template.yaml`, remove any unused keys, then apply it:
+    The `--k8s` flag ensures that multi-line values (like `GOOGLE_PRIVATE_KEY`) are properly encoded for Kubernetes. 
+    
+    Alternatively, you can run:
+    ```bash
+    # Generate only the K8s compatible .env file without extracting other secrets
+    ./scripts/extract-secrets.sh k8s-only
+    ```
+    
+    Review the generated file to ensure all values are properly encoded, remove any unused keys, then apply it:
 
     ```bash
     kubectl apply -f k8s/k3s/secrets/app-secrets.yaml
