@@ -116,12 +116,32 @@ sudo -- sh -c 'echo "<K3S_NODE_IP> api.dpiyumal.me" >> /etc/hosts'
 
 ## 7. Observability and tooling
 
+### 7.1. Infrastructure Monitoring
+
 - Kafka UI: `http://$KAFKA_PUBLIC_HOST:9000`
 - Debezium Connect API: `http://$KAFKA_PUBLIC_HOST:8083`
 - Container logs via Dozzle: `http://$KAFKA_PUBLIC_HOST:9999`
 - Application logs: `kubectl logs -n ticketly <pod>`
 
-Add your own Grafana/Loki stack if you need centralized logging—it's no longer deployed automatically.
+### 7.2. Kubernetes Dashboard
+
+A lightweight Kubernetes dashboard is included to monitor cluster resources:
+
+```bash
+# Deploy the dashboard
+kubectl apply -f k8s/k3s/monitoring/dashboard.yaml
+
+# Add DNS entry (if not already done)
+sudo -- sh -c 'echo "<K3S_NODE_IP> logs.dpiyumal.me" >> /etc/hosts'
+```
+
+Access the dashboard at `http://logs.dpiyumal.me` to view:
+- Node information
+- Pod counts and status
+- Deployment status
+- Horizontal Pod Autoscaler metrics
+
+The dashboard auto-refreshes every 30 seconds and requires minimal resources.
 
 ## 8. Teardown
 

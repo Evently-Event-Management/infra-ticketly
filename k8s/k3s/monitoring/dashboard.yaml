@@ -1,0 +1,236 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticketly-dashboard
+  namespace: ticketly
+  labels:
+    app: ticketly-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticketly-dashboard
+  template:
+    metadata:
+      labels:
+        app: ticketly-dashboard
+    spec:
+      serviceAccountName: ticketly-dashboard
+      containers:
+      - name: dashboard
+        image: nginxinc/nginx-unprivileged:stable
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+        - name: nginx-conf
+          mountPath: /etc/nginx/conf.d
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      - name: data-collector
+        image: bitnami/kubectl:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        - |
+          mkdir -p /html
+          
+          # Create an index.html file with a dashboard layout
+          cat > /html/index.html << EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Kubernetes Dashboard</title>
+              <meta charset="utf-8">
+              <meta http-equiv="refresh" content="30">
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+                  h1, h2 { color: #336699; }
+                  .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+                  pre { background: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 3px; overflow-x: auto; white-space: pre-wrap; }
+                  .section { margin-bottom: 30px; }
+                  .refresh-time { font-size: 0.8em; color: #666; text-align: right; margin-top: 20px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>Ticketly Kubernetes Dashboard</h1>
+                  <div class="section">
+                      <h2>Nodes</h2>
+                      <pre id="nodes">Loading...</pre>
+                  </div>
+                  <div class="section">
+                      <h2>Pods</h2>
+                      <pre id="pods">Loading...</pre>
+                  </div>
+                  <div class="section">
+                      <h2>Horizontal Pod Autoscalers</h2>
+                      <pre id="hpas">Loading...</pre>
+                  </div>
+                  <div class="section">
+                      <h2>Deployments</h2>
+                      <pre id="deployments">Loading...</pre>
+                  </div>
+                  <div class="refresh-time">Auto-refreshes every 30 seconds. Last update: <span id="timestamp"></span></div>
+              </div>
+              <script>
+              function loadContent() {
+                  fetch('nodes.txt').then(response => response.text()).then(data => {
+                      document.getElementById('nodes').textContent = data;
+                  }).catch(error => {
+                      document.getElementById('nodes').textContent = 'Error loading data';
+                  });
+                  
+                  fetch('pods.txt').then(response => response.text()).then(data => {
+                      document.getElementById('pods').textContent = data;
+                  }).catch(error => {
+                      document.getElementById('pods').textContent = 'Error loading data';
+                  });
+                  
+                  fetch('hpas.txt').then(response => response.text()).then(data => {
+                      document.getElementById('hpas').textContent = data;
+                  }).catch(error => {
+                      document.getElementById('hpas').textContent = 'Error loading data';
+                  });
+                  
+                  fetch('deployments.txt').then(response => response.text()).then(data => {
+                      document.getElementById('deployments').textContent = data;
+                  }).catch(error => {
+                      document.getElementById('deployments').textContent = 'Error loading data';
+                  });
+                  
+                  document.getElementById('timestamp').textContent = new Date().toLocaleString();
+              }
+              
+              // Load content initially
+              loadContent();
+              
+              // Refresh every 30 seconds
+              setInterval(loadContent, 30000);
+              </script>
+          </body>
+          </html>
+          EOF
+          
+          # Create nginx.conf
+          cat > /nginx-conf/default.conf << EOF
+          server {
+              listen 8080;
+              server_name localhost;
+              
+              location / {
+                  root /usr/share/nginx/html;
+                  index index.html;
+              }
+              
+              location /health {
+                  return 200 'OK';
+                  add_header Content-Type text/plain;
+              }
+          }
+          EOF
+          
+          # Update data every 30 seconds
+          while true; do
+              # Get nodes info
+              kubectl get nodes -o wide > /html/nodes.txt
+              
+              # Get all pods
+              kubectl get pods --all-namespaces > /html/pods.txt
+              
+              # Get HPA status
+              kubectl get hpa --all-namespaces > /html/hpas.txt
+              
+              # Get deployments
+              kubectl get deployments --all-namespaces > /html/deployments.txt
+              
+              # Sleep for 30 seconds
+              sleep 30
+          done
+        volumeMounts:
+        - name: html
+          mountPath: /html
+        - name: nginx-conf
+          mountPath: /nginx-conf
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      volumes:
+      - name: html
+        emptyDir: {}
+      - name: nginx-conf
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ticketly-dashboard
+  namespace: ticketly
+  labels:
+    app: ticketly-dashboard
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http
+  selector:
+    app: ticketly-dashboard
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ticketly-dashboard
+  namespace: ticketly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ticketly-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: ticketly-dashboard
+  namespace: ticketly
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ticketly-dashboard
+  namespace: ticketly
+  annotations:
+    traefik.ingress.kubernetes.io/cors-allow-origin: "*"
+    traefik.ingress.kubernetes.io/cors-allow-methods: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+    traefik.ingress.kubernetes.io/cors-allow-headers: "*"
+    traefik.ingress.kubernetes.io/cors-max-age: "3600"
+    traefik.ingress.kubernetes.io/request-timeout: "60s"
+    traefik.ingress.kubernetes.io/idle-timeout: "60s"
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: logs.dpiyumal.me
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ticketly-dashboard
+            port:
+              number: 80
