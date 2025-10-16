@@ -1,0 +1,158 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: ticketly
+  labels:
+    app: order-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+        - name: order-service
+          image: ticketly/order-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8084
+          env:
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: DATABASE_USERNAME
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: DATABASE_PASSWORD
+            - name: RDS_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: RDS_ENDPOINT
+            - name: POSTGRES_DSN
+              value: postgres://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@$(RDS_ENDPOINT)/order_service
+            - name: REDIS_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: REDIS_ADDR
+            - name: KAFKA_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: KAFKA_ADDR
+            - name: OIDC_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: KEYCLOAK_ISSUER_URI
+            - name: KEYCLOAK_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: KEYCLOAK_URL
+            - name: KEYCLOAK_REALM
+              value: event-ticketing
+            - name: EVENT_SEATING_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: EVENT_SERVICE_URL
+            - name: EVENT_QUERY_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: EVENT_QUERY_SERVICE_URL
+            - name: QR_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: QR_SECRET_KEY
+            - name: TICKET_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: TICKET_CLIENT_SECRET
+            - name: TICKET_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: TICKET_CLIENT_ID
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: STRIPE_SECRET_KEY
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: STRIPE_WEBHOOK_SECRET
+            - name: SEAT_LOCK_TTL_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: SEAT_LOCK_TTL_MINUTES
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 700m
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8084
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: ticketly
+  labels:
+    app: order-service
+spec:
+  selector:
+    app: order-service
+  ports:
+    - name: http
+      port: 8084
+      targetPort: 8084
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: order-service
+  namespace: ticketly
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-service
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 65

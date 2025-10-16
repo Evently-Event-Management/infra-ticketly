@@ -1,0 +1,19 @@
+grafana:
+  enabled: true
+  adminPassword: "admin"
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - logs.dpiyumal.me
+    tls: []
+prometheus:
+  enabled: false
+loki:
+  auth_enabled: false
+  persistence:
+    enabled: false
+promtail:
+  enabled: true
+  serviceMonitor:
+    enabled: false

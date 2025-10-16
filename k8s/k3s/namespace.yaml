@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ticketly
+  labels:
+    app.kubernetes.io/name: ticketly
+    app.kubernetes.io/environment: k3s
