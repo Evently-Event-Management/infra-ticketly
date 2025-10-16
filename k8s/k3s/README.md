@@ -27,17 +27,23 @@ Secrets are templated so you can inject the values produced by `extract-secrets.
     ```bash
     # Generate environment files (also writes credentials/google-private-key.pem)
     ./scripts/extract-secrets.sh --k8s
-    
-    # Create the secret from the .env.k8s file and the PEM that contains newlines
+
+    # Render the main secret YAML from environment values
     kubectl create secret generic ticketly-app-secrets \
       --namespace ticketly \
       --from-env-file=.env.k8s \
-      --from-file=GOOGLE_PRIVATE_KEY=credentials/google-private-key.pem \
       --dry-run=client -o yaml \
       > k8s/k3s/secrets/app-secrets.yaml
+
+    # Render the Google private key secret separately (kubectl forbids mixing the flags)
+    kubectl create secret generic ticketly-google-private-key \
+      --namespace ticketly \
+      --from-file=GOOGLE_PRIVATE_KEY=credentials/google-private-key.pem \
+      --dry-run=client -o yaml \
+      > k8s/k3s/secrets/google-private-key.yaml
     ```
 
-    The `--k8s` flag generates `.env.k8s` **and** writes `credentials/google-private-key.pem`. Because the Google key contains newlines, it must be provided via `--from-file` instead of an environment variable.
+    The `--k8s` flag generates `.env.k8s` **and** writes `credentials/google-private-key.pem`. Because the Google key contains newlines, it must live in a separate secret created with `--from-file`.
 
     Alternatively, you can run:
     ```bash
@@ -45,10 +51,11 @@ Secrets are templated so you can inject the values produced by `extract-secrets.
     ./scripts/extract-secrets.sh k8s-only
     ```
 
-    Review the generated file to ensure all values are properly encoded, remove any unused keys, then apply it:
+    Review the generated files to ensure all values are correct, remove any unused keys, then apply them:
 
     ```bash
     kubectl apply -f k8s/k3s/secrets/app-secrets.yaml
+    kubectl apply -f k8s/k3s/secrets/google-private-key.yaml
     ```
 
 2. Create the service-account JSON secret so the Java service can mount the file:

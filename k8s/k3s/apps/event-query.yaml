@@ -93,7 +93,7 @@ spec:
             - name: GOOGLE_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: ticketly-app-secrets
+                  name: ticketly-google-private-key
                   key: GOOGLE_PRIVATE_KEY
             - name: GOOGLE_CLIENT_ID
               valueFrom:

@@ -234,13 +234,13 @@ create_k8s_env() {
   done < "${ENV_FILE}"
   
   # Add a note for kubectl create secret command
-  echo -e "\n# To create a Kubernetes secret from this file, run:" >> "${ENV_K8S_FILE}"
-  echo "# kubectl create secret generic ticketly-app-secrets --namespace ticketly --from-env-file=.env.k8s" >> "${ENV_K8S_FILE}"
-  echo "#   --from-file=GOOGLE_PRIVATE_KEY=credentials/gcp-private-key.pem" >> "${ENV_K8S_FILE}"
-  echo "# (The GOOGLE_PRIVATE_KEY is sourced separately from the credentials file because it contains newlines.)" >> "${ENV_K8S_FILE}"
+  echo -e "\n# To create Kubernetes secrets, run:" >> "${ENV_K8S_FILE}"
+  echo "# kubectl create secret generic ticketly-app-secrets --namespace ticketly --from-env-file=.env.k8s --dry-run=client -o yaml > k8s/k3s/secrets/app-secrets.yaml" >> "${ENV_K8S_FILE}"
+  echo "# kubectl create secret generic ticketly-google-private-key --namespace ticketly --from-file=GOOGLE_PRIVATE_KEY=credentials/google-private-key.pem --dry-run=client -o yaml > k8s/k3s/secrets/google-private-key.yaml" >> "${ENV_K8S_FILE}"
+  echo "# (The GOOGLE_PRIVATE_KEY is shipped in its own secret because kubectl forbids mixing --from-env-file with --from-file.)" >> "${ENV_K8S_FILE}"
   
   echo "✅ Kubernetes-compatible .env.k8s file created."
-  echo "ℹ️  Remember to include the Google private key with --from-file when creating the Kubernetes secret."
+  echo "ℹ️  Remember to apply both generated manifests so workloads can read the Google private key."
 }
 
 # Generate the regular .env file first, then the k8s version if requested
