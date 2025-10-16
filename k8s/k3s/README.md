@@ -1,15 +1,16 @@
 # Ticketly on K3s
 
-This guide mirrors the Docker Compose setup on a single-node [k3s](https://k3s.io/) cluster. Redis and MongoDB are installed from their Helm charts, Kafka and the application services run from manifests in this directory, and the built-in Traefik ingress controller replaces the Spring Cloud Gateway.
+This walkthrough deploys Ticketly with a clear split: Docker Compose keeps the shared infrastructure (Kafka, Redis, MongoDB, Debezium, tooling) on the host, while the Java and Go microservices run on a single-node [k3s](https://k3s.io/) cluster behind Traefik.
 
 ## 1. Prerequisites
 
-- k3s v1.27+ running on your server (Traefik and metrics-server are enabled by default)
-- kubectl and Helm v3.12+ installed on your workstation (or directly on the server)
-- `extract-secrets.sh` run so that `.env` contains the latest Terraform outputs
-- Public DNS (or `/etc/hosts`) entries for `api.dpiyumal.me`, `kafka.dpiyumal.me`, and `logs.dpiyumal.me` pointing to the k3s server IP
+- k3s v1.27+ on the target host (Traefik and metrics-server remain enabled)
+- Docker 24+ and Docker Compose v2 on the same host that runs k3s
+- `kubectl` installed locally (or on the server)
+- `extract-secrets.sh` executed so that `.env` is populated with the latest Terraform outputs
+- Public DNS (or `/etc/hosts`) entries for `api.dpiyumal.me` pointing to the k3s node IP
 
-Grab the server IP with `kubectl get nodes -o wide` (or `hostname -I` locally) and keep it handy for DNS/hosts updates.
+Grab the node IP with `kubectl get nodes -o wide` (or `hostname -I`) and keep it handy—it must match the address advertised by Kafka.
 
 ## 2. Create namespace and shared configuration
 
@@ -20,22 +21,20 @@ kubectl apply -f k8s/k3s/configs/ticketly-global-config.yaml
 
 ## 3. Create secrets
 
-Secrets are templated so you can inject the values produced by `extract-secrets.sh` without editing every manifest.
+Secrets are templated so you can inject Terraform outputs without editing manifests manually.
 
-1. Generate a Kubernetes-compatible environment file and create the main secret:
+1. Generate a Kubernetes-compatible env file and render the secrets:
 
     ```bash
-    # Generate environment files (also writes credentials/google-private-key.pem)
+    # Generate .env.k8s and credentials/google-private-key.pem
     ./scripts/extract-secrets.sh --k8s
 
-    # Render the main secret YAML from environment values
     kubectl create secret generic ticketly-app-secrets \
       --namespace ticketly \
       --from-env-file=.env.k8s \
       --dry-run=client -o yaml \
       > k8s/k3s/secrets/app-secrets.yaml
 
-    # Render the Google private key secret separately (kubectl forbids mixing the flags)
     kubectl create secret generic ticketly-google-private-key \
       --namespace ticketly \
       --from-file=GOOGLE_PRIVATE_KEY=credentials/google-private-key.pem \
@@ -43,132 +42,96 @@ Secrets are templated so you can inject the values produced by `extract-secrets.
       > k8s/k3s/secrets/google-private-key.yaml
     ```
 
-    The `--k8s` flag generates `.env.k8s` **and** writes `credentials/google-private-key.pem`. Because the Google key contains newlines, it must live in a separate secret created with `--from-file`.
+    Alternative (only write `.env.k8s`):
 
-    Alternatively, you can run:
     ```bash
-    # Generate only the K8s compatible .env file without extracting other secrets
     ./scripts/extract-secrets.sh k8s-only
     ```
 
-    Review the generated files to ensure all values are correct, remove any unused keys, then apply them:
+    Apply the generated manifests after reviewing the contents:
 
     ```bash
     kubectl apply -f k8s/k3s/secrets/app-secrets.yaml
     kubectl apply -f k8s/k3s/secrets/google-private-key.yaml
     ```
 
-2. Create the service-account JSON secret so the Java service can mount the file:
+2. Create the service-account JSON secret so the command service can mount it:
 
     ```bash
-    kubectl create secret generic ticketly-gcp-credentials       --namespace ticketly       --from-file=google-credentials.json=credentials/gcp-credentials.json       --dry-run=client -o yaml       > k8s/k3s/secrets/gcp-credentials.yaml
+    kubectl create secret generic ticketly-gcp-credentials \
+      --namespace ticketly \
+      --from-file=google-credentials.json=credentials/gcp-credentials.json \
+      --dry-run=client -o yaml \
+      > k8s/k3s/secrets/gcp-credentials.yaml
 
     kubectl apply -f k8s/k3s/secrets/gcp-credentials.yaml
     ```
 
-3. If you keep credential files elsewhere, copy them into the same manifest before applying.
+3. If credentials live elsewhere, update the rendered YAML before applying it.
 
-## 4. Provision infrastructure with Helm
+## 4. Start shared infrastructure with Docker Compose
 
-Add the upstream repositories once:
+1. Export the advertised host for Kafka (must equal the k3s node IP or a DNS name that resolves to it):
 
-```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
-```
+    ```bash
+    export KAFKA_PUBLIC_HOST=<K3S_NODE_IP>
+    ```
 
-Install the charts in the `ticketly` namespace using the provided overrides (single replica, persistence enabled on the default `local-path` storage class):
+    You can persist this value inside `.env` so `docker compose` picks it up automatically.
 
-```bash
-helm upgrade --install redis bitnami/redis   --namespace ticketly   --create-namespace   -f k8s/k3s/infra/redis-values.yaml
+2. Bring up the infrastructure stack from the repository root:
 
-helm upgrade --install mongodb bitnami/mongodb   --namespace ticketly   -f k8s/k3s/infra/mongodb-values.yaml
+    ```bash
+    docker compose up -d query-db redis kafka kafka-ui debezium-connect debezium-connector-init dozzle
+    ```
 
-helm upgrade --install ticketly-logs grafana/loki-stack   --namespace ticketly   -f k8s/k3s/logging/loki-stack-values.yaml
-```
+    The stack publishes Redis (6379), MongoDB (27017), Kafka (9092), Debezium (8083), Kafka UI (9000), and Dozzle (9999) on the host. Verify with `docker compose ps` and wait for the health checks to turn green.
 
-MongoDB provisions a 5 Gi PVC on the default `local-path` storage class; delete the `data-mongodb-0` PVC in the `ticketly` namespace if you need to reset the database between runs. The Loki stack deploys Grafana with an ingress at `logs.dpiyumal.me`; change the host inside `loki-stack-values.yaml` if you prefer a different domain.
+## 5. Deploy microservices to k3s
 
-## 5. Deploy Kafka and supporting workloads
-
-```bash
-kubectl apply -f k8s/k3s/apps/kafka.yaml
-kubectl wait --namespace ticketly --for=condition=ready pod -l app=kafka --timeout=180s
-
-kubectl apply -f k8s/k3s/apps/debezium-connect.yaml
-kubectl wait --namespace ticketly --for=condition=ready pod -l app=debezium-connect --timeout=180s
-```
-
-Kafka uses a 10 Gi PVC on the default storage class; delete the `data-kafka-0` PVC if you need to wipe broker logs and offsets.
-
-## 6. Deploy application services
-
-Apply the services and HPAs once secrets and infra are ready:
+Apply the workloads once the infrastructure containers are healthy:
 
 ```bash
 kubectl apply -f k8s/k3s/apps/event-command.yaml
 kubectl apply -f k8s/k3s/apps/event-query.yaml
 kubectl apply -f k8s/k3s/apps/order-service.yaml
 kubectl apply -f k8s/k3s/apps/scheduler-service.yaml
-kubectl apply -f k8s/k3s/apps/kafka-ui.yaml
 ```
 
-HPAs require the metrics-server, which k3s enables by default. Use `kubectl get hpa -n ticketly` to monitor scaling behaviour.
+Each deployment derives the node IP from `status.hostIP`, so the pods connect back to the Docker Compose services on the host. HPAs require the built-in metrics server; confirm readiness with `kubectl get hpa -n ticketly`.
 
-## 7. Register the Debezium connector
+## 6. Configure ingress
 
-Once the connect worker is running and the target PostgreSQL instance is reachable, apply the bootstrap ConfigMap + Job:
-
-```bash
-kubectl apply -f k8s/k3s/jobs/debezium-bootstrap.yaml
-kubectl logs -n ticketly job/debezium-connector-init -f
-```
-
-Delete the job whenever you need to re-run it:
-
-```bash
-kubectl delete job -n ticketly debezium-connector-init
-```
-
-## 8. Configure ingress
-
-Traefik ships with k3s, so no extra ingress controller is required. Apply the ingress manifest after DNS (or `/etc/hosts`) points to the server IP:
+Traefik is bundled with k3s, so no extra controller is required. Apply the ingress once DNS (or `/etc/hosts`) points `api.dpiyumal.me` to the node IP:
 
 ```bash
 kubectl apply -f k8s/k3s/ingress.yaml
 ```
 
-Ingress rules mirror the Spring Cloud Gateway routing:
-
-- `api.dpiyumal.me` handles the microservice paths (`/api/event-seating`, `/api/event-query`, `/api/order`, `/api/scheduler`).
-- `kafka.dpiyumal.me` serves the Kafka UI deployment.
-- The Loki stack chart exposes Grafana under `logs.dpiyumal.me` (see step 4).
-
-For quick local testing, add entries to `/etc/hosts`:
+For quick local testing:
 
 ```bash
-sudo -- sh -c 'echo "<SERVER_IP> api.dpiyumal.me kafka.dpiyumal.me logs.dpiyumal.me" >> /etc/hosts'
+sudo -- sh -c 'echo "<K3S_NODE_IP> api.dpiyumal.me" >> /etc/hosts'
 ```
 
-Replace `<SERVER_IP>` with the public or private address of your k3s node.
+## 7. Observability and tooling
 
-## 9. Observability and logs
+- Kafka UI: `http://$KAFKA_PUBLIC_HOST:9000`
+- Debezium Connect API: `http://$KAFKA_PUBLIC_HOST:8083`
+- Container logs via Dozzle: `http://$KAFKA_PUBLIC_HOST:9999`
+- Application logs: `kubectl logs -n ticketly <pod>`
 
-- Grafana (from the Loki stack) is available at `https://logs.dpiyumal.me` (or `http://` if you do not add TLS). Default credentials are `admin` / `admin`.
-- Kafka UI lives at `https://kafka.dpiyumal.me` once TLS is installed; by default it serves over HTTP.
-- Use `kubectl logs` or Grafana Loki queries to inspect application logs.
+Add your own Grafana/Loki stack if you need centralized logging—it's no longer deployed automatically.
 
-## 10. Teardown and upgrades
+## 8. Teardown
 
-- Remove workloads: `kubectl delete -f` the manifests in reverse order.
-- Uninstall charts: `helm uninstall redis mongodb ticketly-logs -n ticketly`.
-- Delete PVCs if you also want to drop persisted data: `kubectl delete pvc data-mongodb-0 data-kafka-0 -n ticketly`.
-- Delete the namespace when finished: `kubectl delete namespace ticketly`.
+- Remove the Kubernetes workloads: `kubectl delete -f k8s/k3s/apps/`
+- Optionally delete the namespace: `kubectl delete namespace ticketly`
+- Stop infrastructure containers and drop volumes: `docker compose down -v`
 
 ## Troubleshooting
 
-- If services cannot reach external AWS resources, double-check the `ticketly-app-secrets` content, especially `AWS_REGION`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`.
-- When redeploying the Debezium job, ensure the target tables and heartbeat table exist; otherwise the bootstrap will exit with a schema error.
-- If HPAs remain in the `Unknown` state, confirm the metrics API is working: `kubectl get --raw /apis/metrics.k8s.io/v1beta1/nodes | jq '.'`.
-- Traefik uses the `traefik` ingress class by default. If you install a different controller, update `ingressClassName` in `k8s/k3s/ingress.yaml` accordingly.
+- **Pods cannot reach Kafka/Redis/MongoDB:** confirm `KAFKA_PUBLIC_HOST` matches the node IP reported by `kubectl get nodes -o wide`, then restart the Docker Compose stack.
+- **Kafka keeps advertising `localhost`:** ensure `KAFKA_PUBLIC_HOST` is exported (or present in `.env`) before running `docker compose up`.
+- **Debezium connector fails to register:** inspect `debezium-connector-init` logs with `docker compose logs debezium-connector-init`. The script re-runs on container restart.
+- **Ingress returns 404:** verify Traefik sees the ingress (`kubectl get ingress -n ticketly`) and that DNS/hosts entries resolve to the node IP.

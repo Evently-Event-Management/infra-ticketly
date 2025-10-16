@@ -37,13 +37,3 @@ spec:
                 name: scheduler-service
                 port:
                   number: 8085
-    - host: kafka.dpiyumal.me
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: kafka-ui
-                port:
-                  number: 8080

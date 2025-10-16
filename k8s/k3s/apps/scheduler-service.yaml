@@ -22,6 +22,10 @@ spec:
           ports:
             - containerPort: 8085
           env:
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
             - name: EVENT_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
@@ -105,10 +109,7 @@ spec:
                   name: ticketly-app-secrets
                   key: AWS_SCHEDULER_GROUP_NAME
             - name: KAFKA_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: ticketly-global-config
-                  key: KAFKA_URL
+              value: "$(HOST_IP):9092"
             - name: SMTP_HOST
               valueFrom:
                 secretKeyRef:

@@ -24,7 +24,4 @@ data:
   SCHEDULER_SERVICE_URI: "http://scheduler-service:8085"
   EVENT_SERVICE_URL: "http://event-command-service:8081/api/event-seating"
   EVENT_QUERY_SERVICE_URL: "http://event-query-service:8082/api/event-query"
-  REDIS_ADDR: "redis-master:6379"
-  KAFKA_URL: "kafka:9092"
-  KAFKA_ADDR: "kafka:9092"
   SMTP_FROM_NAME: "Ticketly Support"

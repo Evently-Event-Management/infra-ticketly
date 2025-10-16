@@ -1,0 +1,138 @@
+services:
+  # MongoDB for Query Service
+  query-db:
+    image: mongo:latest
+    container_name: query-mongodb
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - infra-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching
+  redis:
+    image: redis:latest
+    container_name: event-seating-redis
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - infra-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka Broker in KRaft mode
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT_HOST://${KAFKA_PUBLIC_HOST:-localhost}:9092,PLAINTEXT://kafka:29092'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT_HOST://0.0.0.0:9092,PLAINTEXT://0.0.0.0:29092,CONTROLLER://kafka:9093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - infra-net
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # Kafka UI for easy topic management and message browsing
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "9000:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - infra-net
+
+  # Debezium for Change Data Capture (CDC)
+  debezium-connect:
+    image: debezium/connect:2.5
+    container_name: debezium-connect
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+    ports:
+      - "8083:8083"
+    networks:
+      - infra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Debezium connector registration service 
+  debezium-connector-init:
+    image: alpine:latest
+    container_name: debezium-connector-init
+    env_file:
+      - .env
+    depends_on:
+      debezium-connect:
+        condition: service_healthy
+    volumes:
+      - ./debezium:/debezium
+      - ./scripts/init-debezium.sh:/scripts/init-debezium.sh
+    command: >
+      sh -c "
+        apk add --no-cache curl gettext jq;
+        /scripts/init-debezium.sh;
+      "
+    networks:
+      - infra-net
+
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro"
+    ports:
+      - "9999:8080"
+    networks:
+      - infra-net
+
+volumes:
+  redis-data:
+  kafka-data:
+  mongo-data:
+
+networks:
+  infra-net:
+    driver: bridge
