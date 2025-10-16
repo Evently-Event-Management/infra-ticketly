@@ -60,6 +60,8 @@ spec:
             - containerPort: 9093
           # This entire env block is corrected for Kubernetes networking
           env:
+            - name: KAFKA_HEAP_OPTS # <-- THIS IS THE KEY FIX
+              value: "-Xms1G -Xmx1G"
             - name: KAFKA_NODE_ID
               value: "1"
             - name: KAFKA_PROCESS_ROLES
