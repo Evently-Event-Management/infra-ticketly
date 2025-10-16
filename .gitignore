@@ -1,7 +1,7 @@
 .vscode/
 .env
 .env.local
-
+.env.clean
 
 # Local Terraform directories
 **/.terraform/*

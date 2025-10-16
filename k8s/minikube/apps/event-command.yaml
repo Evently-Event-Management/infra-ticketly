@@ -1,0 +1,182 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-command-service
+  namespace: ticketly
+  labels:
+    app: event-command-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-command-service
+  template:
+    metadata:
+      labels:
+        app: event-command-service
+    spec:
+      containers:
+        - name: event-command-service
+          image: ticketly/event-command-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SERVER_PORT
+              value: "8081"
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: DATABASE_USERNAME
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: DATABASE_PASSWORD
+            - name: RDS_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: RDS_ENDPOINT
+            - name: DATABASE_URL
+              value: jdbc:postgresql://$(RDS_ENDPOINT)/event_service
+            - name: JWT_ISSUER_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: KEYCLOAK_ISSUER_URI
+            - name: JWT_JWK_SET_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: KEYCLOAK_JWK_SET_URI
+            - name: REDIS_HOST
+              value: redis-master
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: REDIS_PORT
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_REGION
+            - name: AWS_S3_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_S3_BUCKET_NAME
+            - name: SHOW_SQL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: SHOW_SQL
+            - name: LOG_LEVEL_APP
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: LOG_LEVEL_APP
+            - name: LOG_LEVEL_SECURITY
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: LOG_LEVEL_SECURITY
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: EVENTS_SERVICE_CLIENT_SECRET
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: kafka:9092
+            - name: LOG_LEVEL_ROOT
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: LOG_LEVEL_ROOT
+            - name: COM_TICKETLY_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: COM_TICKETLY_LOG_LEVEL
+            - name: SPRING_SECURITY_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: SPRING_SECURITY_LOG_LEVEL
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /config/google-credentials.json
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          volumeMounts:
+            - name: gcp-credentials
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: gcp-credentials
+          secret:
+            secretName: ticketly-gcp-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-command-service
+  namespace: ticketly
+  labels:
+    app: event-command-service
+spec:
+  selector:
+    app: event-command-service
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: event-command-service
+  namespace: ticketly
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: event-command-service
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
