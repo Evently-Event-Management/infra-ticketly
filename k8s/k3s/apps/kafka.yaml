@@ -53,6 +53,7 @@ spec:
       containers:
         - name: kafka
           image: confluentinc/cp-kafka:7.6.0
+          command: ["/bin/sh", "-c", "sleep 3600"]
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
