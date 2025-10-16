@@ -114,13 +114,13 @@ spec:
               memory: 1Gi
           readinessProbe:
             httpGet:
-              path: /actuator/health/readiness
+              path: /api/event-query/actuator/health/readiness
               port: 8082
             initialDelaySeconds: 20
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /actuator/health/liveness
+              path: /api/event-query/actuator/health/liveness
               port: 8082
             initialDelaySeconds: 60
             periodSeconds: 20
