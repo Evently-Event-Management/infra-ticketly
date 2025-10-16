@@ -135,6 +135,12 @@ extract_ga_credentials() {
     if [ -n "$private_key" ]; then
       echo "GOOGLE_PRIVATE_KEY=\"${private_key}\"" >> "${ENV_FILE}"
       echo "  -> ✅ Extracted: GOOGLE_PRIVATE_KEY"
+
+      # Persist the private key to a PEM file for Kubernetes secret creation
+      private_key_file="${PROJECT_ROOT}/credentials/google-private-key.pem"
+      printf "%s\n" "$private_key" > "$private_key_file"
+      chmod 600 "$private_key_file"
+      echo "  -> ✅ Wrote Google private key file: ${private_key_file}"
     fi
     
     # Extract client_id
@@ -211,12 +217,8 @@ create_k8s_env() {
     
     # Check if it's the Google private key (which is multi-line)
     if [[ "$key" == "GOOGLE_PRIVATE_KEY" ]]; then
-      # For K8S: Replace newlines with '\n' for the private key
-      # This makes it a single line that Kubernetes can handle
-      # Use sed to escape newlines correctly for Kubernetes
-      encoded_value=$(echo "$value" | sed ':a;N;$!ba;s/\n/\\n/g')
-      echo "${key}=${encoded_value}" >> "${ENV_K8S_FILE}"
-      echo "  -> ✅ K8S-encoded: ${key} (multiline value encoded)"
+      echo "  -> ℹ️ Skipping GOOGLE_PRIVATE_KEY for .env.k8s (handled via dedicated secret from credentials file)"
+      continue
     else
       # For other values, keep them as is but ensure valid K8S env var format
       # Remove any characters not allowed in Kubernetes env var names
@@ -234,8 +236,11 @@ create_k8s_env() {
   # Add a note for kubectl create secret command
   echo -e "\n# To create a Kubernetes secret from this file, run:" >> "${ENV_K8S_FILE}"
   echo "# kubectl create secret generic ticketly-app-secrets --namespace ticketly --from-env-file=.env.k8s" >> "${ENV_K8S_FILE}"
+  echo "#   --from-file=GOOGLE_PRIVATE_KEY=credentials/gcp-private-key.pem" >> "${ENV_K8S_FILE}"
+  echo "# (The GOOGLE_PRIVATE_KEY is sourced separately from the credentials file because it contains newlines.)" >> "${ENV_K8S_FILE}"
   
   echo "✅ Kubernetes-compatible .env.k8s file created."
+  echo "ℹ️  Remember to include the Google private key with --from-file when creating the Kubernetes secret."
 }
 
 # Generate the regular .env file first, then the k8s version if requested

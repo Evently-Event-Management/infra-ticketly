@@ -25,26 +25,26 @@ Secrets are templated so you can inject the values produced by `extract-secrets.
 1. Generate a Kubernetes-compatible environment file and create the main secret:
 
     ```bash
-    # Generate a Kubernetes-compatible environment file with properly encoded multiline values
-    # This will handle the multi-line GCP private key by encoding newlines as \n
+    # Generate environment files (also writes credentials/google-private-key.pem)
     ./scripts/extract-secrets.sh --k8s
     
-    # Create the secret from the Kubernetes-compatible .env.k8s file
+    # Create the secret from the .env.k8s file and the PEM that contains newlines
     kubectl create secret generic ticketly-app-secrets \
       --namespace ticketly \
       --from-env-file=.env.k8s \
+      --from-file=GOOGLE_PRIVATE_KEY=credentials/google-private-key.pem \
       --dry-run=client -o yaml \
       > k8s/k3s/secrets/app-secrets.yaml
     ```
 
-    The `--k8s` flag ensures that multi-line values (like `GOOGLE_PRIVATE_KEY`) are properly encoded for Kubernetes. 
-    
+    The `--k8s` flag generates `.env.k8s` **and** writes `credentials/google-private-key.pem`. Because the Google key contains newlines, it must be provided via `--from-file` instead of an environment variable.
+
     Alternatively, you can run:
     ```bash
     # Generate only the K8s compatible .env file without extracting other secrets
     ./scripts/extract-secrets.sh k8s-only
     ```
-    
+
     Review the generated file to ensure all values are properly encoded, remove any unused keys, then apply it:
 
     ```bash
