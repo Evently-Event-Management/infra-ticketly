@@ -25,3 +25,4 @@ data:
   EVENT_SERVICE_URL: "http://event-command-service:8081/api/event-seating"
   EVENT_QUERY_SERVICE_URL: "http://event-query-service:8082/api/event-query"
   SMTP_FROM_NAME: "Ticketly Support"
+  QR_SECRET_KEY: "replace-with-a-secure-random-string"

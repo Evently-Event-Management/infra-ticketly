@@ -152,11 +152,11 @@ spec:
                   key: AWS_SECRET_ACCESS_KEY
           resources:
             requests:
-              cpu: 150m
-              memory: 256Mi
+              cpu: 80m
+              memory: 128Mi
             limits:
-              cpu: 400m
-              memory: 512Mi
+              cpu: 200m
+              memory: 256Mi
           readinessProbe:
             httpGet:
               path: /healthz
@@ -185,3 +185,23 @@ spec:
       port: 8085
       targetPort: 8085
   type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scheduler-service
+  namespace: ticketly
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: scheduler-service
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

@@ -73,8 +73,8 @@ spec:
                   key: EVENT_QUERY_SERVICE_URL
             - name: QR_SECRET_KEY
               valueFrom:
-                secretKeyRef:
-                  name: ticketly-app-secrets
+                configMapKeyRef:
+                  name: ticketly-global-config
                   key: QR_SECRET_KEY
             - name: TICKET_CLIENT_SECRET
               valueFrom:
@@ -103,11 +103,11 @@ spec:
                   key: SEAT_LOCK_TTL_MINUTES
           resources:
             requests:
-              cpu: 200m
-              memory: 512Mi
+              cpu: 120m
+              memory: 256Mi
             limits:
-              cpu: 700m
-              memory: 1Gi
+              cpu: 400m
+              memory: 512Mi
           readinessProbe:
             httpGet:
               path: /healthz
@@ -148,11 +148,11 @@ spec:
     kind: Deployment
     name: order-service
   minReplicas: 1
-  maxReplicas: 4
+  maxReplicas: 6
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 65
+          averageUtilization: 70
