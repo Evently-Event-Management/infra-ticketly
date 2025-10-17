@@ -1,6 +1,7 @@
 .vscode/
 .env
 .env.local
+.env.k8s
 
 
 # Local Terraform directories

@@ -2,7 +2,7 @@
 resource "keycloak_realm" "event_ticketing" {
   realm             = "event-ticketing"
   enabled           = true
-  display_name      = "Event Ticketing Platform"
+  display_name      = var.realm_display_name
   
   # Registration and login settings
   registration_allowed           = true
