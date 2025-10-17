@@ -18,7 +18,7 @@ spec:
       containers:
         - name: event-query-service
           image: ticketly/event-query-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8082
           env:
@@ -164,17 +164,31 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 60
     - type: Resource
       resource:
         name: memory
         target:
-          type: Utilization
-          averageUtilization: 85
+          type: AverageValue
+          averageValue: 800Mi
   behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 15
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
     scaleDown:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 180
       policies:
       - type: Percent
         value: 50
         periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Max
