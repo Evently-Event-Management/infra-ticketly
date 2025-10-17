@@ -22,10 +22,16 @@ spec:
           ports:
             - containerPort: 8084
           env:
-            - name: HOST_IP
+            - name: INFRA_HOST
               valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: INFRA_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: REDIS_PORT
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -44,11 +50,11 @@ spec:
             - name: POSTGRES_DSN
               value: postgres://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@$(RDS_ENDPOINT)/order_service
             - name: REDIS_ADDR
-              value: "$(HOST_IP):6379"
+              value: "$(INFRA_HOST):$(REDIS_PORT)"
             - name: REDIS_HOST
-              value: "$(HOST_IP)"
+              value: "$(INFRA_HOST)"
             - name: KAFKA_ADDR
-              value: "$(HOST_IP):9092"
+              value: "$(INFRA_HOST):9092"
             - name: OIDC_ISSUER
               valueFrom:
                 configMapKeyRef:

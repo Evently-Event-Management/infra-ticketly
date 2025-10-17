@@ -22,12 +22,13 @@ spec:
           ports:
             - containerPort: 8081
           env:
-            - name: HOST_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
             - name: SERVER_PORT
               value: "8081"
+            - name: INFRA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: INFRA_HOST
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -56,9 +57,12 @@ spec:
                   name: ticketly-global-config
                   key: KEYCLOAK_JWK_SET_URI
             - name: REDIS_HOST
-              value: "$(HOST_IP)"
+              value: "$(INFRA_HOST)"
             - name: REDIS_PORT
-              value: "6379"
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: REDIS_PORT
             - name: AWS_REGION
               valueFrom:
                 secretKeyRef:
@@ -90,7 +94,7 @@ spec:
                   name: ticketly-app-secrets
                   key: EVENTS_SERVICE_CLIENT_SECRET
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "$(HOST_IP):9092"
+              value: "$(INFRA_HOST):9092"
             - name: LOG_LEVEL_ROOT
               valueFrom:
                 configMapKeyRef:

@@ -12,12 +12,16 @@ This walkthrough deploys Ticketly with a clear split: Docker Compose keeps the s
 
 Grab the node IP with `kubectl get nodes -o wide` (or `hostname -I`) and keep it handy—it must match the address advertised by Kafka.
 
+If you're copying the cluster config from `/etc/rancher/k3s/k3s.yaml`, place it at `~/.kube/config`, ensure ownership (`sudo chown $(id -u):$(id -g) ~/.kube/config`) and permissions (`chmod 600 ~/.kube/config`), then set `export KUBECONFIG=$HOME/.kube/config` (add it to your shell profile so non-sudo `kubectl` uses the local file).
+
 ## 2. Create namespace and shared configuration
 
 ```bash
 kubectl apply -f k8s/k3s/namespace.yaml
 kubectl apply -f k8s/k3s/configs/ticketly-global-config.yaml
 ```
+
+Make sure `INFRA_HOST` inside `k8s/k3s/configs/ticketly-global-config.yaml` points to the server hosting Kafka, Redis, and MongoDB (default: `10.160.0.7`) before applying the ConfigMap.
 
 ## 3. Create secrets
 
@@ -71,10 +75,10 @@ Secrets are templated so you can inject Terraform outputs without editing manife
 
 ## 4. Start shared infrastructure with Docker Compose
 
-1. Export the advertised host for Kafka (must equal the k3s node IP or a DNS name that resolves to it):
+1. Export the advertised host for Kafka (use the server where the Docker Compose infrastructure runs—`10.160.0.7` by default):
 
     ```bash
-    export KAFKA_PUBLIC_HOST=<K3S_NODE_IP>
+    export KAFKA_PUBLIC_HOST=<INFRA_HOST>
     ```
 
     You can persist this value inside `.env` so `docker compose` picks it up automatically.
@@ -98,9 +102,36 @@ kubectl apply -f k8s/k3s/apps/order-service.yaml
 kubectl apply -f k8s/k3s/apps/scheduler-service.yaml
 ```
 
-Each deployment derives the node IP from `status.hostIP`, so the pods connect back to the Docker Compose services on the host. HPAs require the built-in metrics server; confirm readiness with `kubectl get hpa -n ticketly`.
+Each deployment now reads the shared infrastructure host from the ConfigMap, so the pods connect to the Docker Compose services running on the external server. HPAs require the built-in metrics server; confirm readiness with `kubectl get hpa -n ticketly`.
 
-## 6. Configure ingress
+## 6. Enable TLS certificates
+
+Install cert-manager so Traefik can request certificates from Let's Encrypt:
+
+```bash
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm upgrade --install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --set crds.enabled=true
+```
+
+Create the ClusterIssuer that cert-manager will use (update the email in the manifest if needed):
+
+```bash
+kubectl apply -f k8s/k3s/infra/cert-manager-clusterissuer.yaml
+```
+
+You can inspect the status with:
+
+```bash
+kubectl describe clusterissuer ticketly-letsencrypt
+```
+
+Wait until the issuer shows `Ready=True` before applying the ingress.
+
+## 7. Configure ingress
 
 Traefik is bundled with k3s, so no extra controller is required. Apply the ingress once DNS (or `/etc/hosts`) points `api.dpiyumal.me` to the node IP:
 
@@ -108,22 +139,24 @@ Traefik is bundled with k3s, so no extra controller is required. Apply the ingre
 kubectl apply -f k8s/k3s/ingress.yaml
 ```
 
+Traefik and cert-manager will issue a certificate for `api.dpiyumal.me` automatically; track the request with `kubectl describe certificate ticketly-api-tls -n ticketly` and `kubectl get challenges -A` if troubleshooting is needed.
+
 For quick local testing:
 
 ```bash
 sudo -- sh -c 'echo "<K3S_NODE_IP> api.dpiyumal.me" >> /etc/hosts'
 ```
 
-## 7. Observability and tooling
+## 8. Observability and tooling
 
-### 7.1. Infrastructure Monitoring
+### Infrastructure monitoring
 
 - Kafka UI: `http://$KAFKA_PUBLIC_HOST:9000`
 - Debezium Connect API: `http://$KAFKA_PUBLIC_HOST:8083`
 - Container logs via Dozzle: `http://$KAFKA_PUBLIC_HOST:9999`
 - Application logs: `kubectl logs -n ticketly <pod>`
 
-### 7.2. Kubernetes Dashboard
+### Kubernetes dashboard
 
 A lightweight Kubernetes dashboard is included to monitor cluster resources:
 
@@ -143,7 +176,7 @@ Access the dashboard at `http://logs.dpiyumal.me` to view:
 
 The dashboard auto-refreshes every 30 seconds and requires minimal resources.
 
-## 8. Teardown
+## 9. Teardown
 
 - Remove the Kubernetes workloads: `kubectl delete -f k8s/k3s/apps/`
 - Optionally delete the namespace: `kubectl delete namespace ticketly`
@@ -151,7 +184,7 @@ The dashboard auto-refreshes every 30 seconds and requires minimal resources.
 
 ## Troubleshooting
 
-- **Pods cannot reach Kafka/Redis/MongoDB:** confirm `KAFKA_PUBLIC_HOST` matches the node IP reported by `kubectl get nodes -o wide`, then restart the Docker Compose stack.
+- **Pods cannot reach Kafka/Redis/MongoDB:** confirm `INFRA_HOST` in the ConfigMap and `KAFKA_PUBLIC_HOST` in your environment both reference the infrastructure server IP/DNS, then restart the Docker Compose stack if needed.
 - **Kafka keeps advertising `localhost`:** ensure `KAFKA_PUBLIC_HOST` is exported (or present in `.env`) before running `docker compose up`.
 - **Debezium connector fails to register:** inspect `debezium-connector-init` logs with `docker compose logs debezium-connector-init`. The script re-runs on container restart.
 - **Ingress returns 404:** verify Traefik sees the ingress (`kubectl get ingress -n ticketly`) and that DNS/hosts entries resolve to the node IP.
