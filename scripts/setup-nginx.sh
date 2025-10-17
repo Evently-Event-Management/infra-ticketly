@@ -3,8 +3,8 @@
 # Exit on error
 set -e
 
-# Default values
-MODE="default"
+# infra values
+MODE="infra"
 CLEANUP=false
 NO_RESTART=false
 NO_SSL=false
@@ -13,14 +13,14 @@ NO_SSL=false
 show_usage() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "  --mode=MODE    Set the mode to use (default or k8s). Default is 'default'"
+    echo "  --mode=MODE    Set the mode to use (infra or k8s). infra is 'infra'"
     echo "  --cleanup      Clean up existing configurations"
     echo "  --no-restart   Don't restart nginx after setup (useful with --cleanup)"
     echo "  --no-ssl       Skip SSL certificate setup"
     echo "  --help         Show this help message"
     echo ""
     echo "Example:"
-    echo "  $0 --mode=default"
+    echo "  $0 --mode=infra"
     echo "  $0 --mode=k8s"
     echo "  $0 --cleanup"
     echo "  $0 --cleanup --no-restart"
@@ -32,8 +32,8 @@ for arg in "$@"; do
     case $arg in
         --mode=*)
             MODE="${arg#*=}"
-            if [[ "$MODE" != "default" && "$MODE" != "k8s" ]]; then
-                echo "Error: Invalid mode. Use 'default' or 'k8s'."
+            if [[ "$MODE" != "infra" && "$MODE" != "k8s" ]]; then
+                echo "Error: Invalid mode. Use 'infra' or 'k8s'."
                 show_usage
                 exit 1
             fi
@@ -73,9 +73,9 @@ sudo apt install -y nginx
 echo "Installing Certbot and Nginx plugin..."
 sudo apt install -y certbot python3-certbot-nginx
 
-# Remove default site
-echo "Removing default Nginx site..."
-sudo rm -f /etc/nginx/sites-enabled/default
+# Remove infra site
+echo "Removing infra Nginx site..."
+sudo rm -f /etc/nginx/sites-enabled/infra
 
 # Create directory for sites if it doesn't exist
 echo "Setting up directories..."
