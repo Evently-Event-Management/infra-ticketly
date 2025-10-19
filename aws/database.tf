@@ -30,7 +30,7 @@ resource "aws_db_instance" "ticketly_db" {
 
   identifier             = "ticketly-db"
   engine                 = "postgres"
-  engine_version         = "16.6"
+  engine_version         = "16.8"
   instance_class         = "db.t3.micro"
   username               = var.rds_user
   password               = var.rds_password

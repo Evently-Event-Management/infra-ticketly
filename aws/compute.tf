@@ -91,7 +91,7 @@ resource "aws_instance" "infra" {
   count = local.is_prod ? 1 : 0
 
   ami                         = "ami-02d26659fd82cf299"
-  instance_type               = "t3.medium"
+  instance_type               = "c7i-flex.large"
   subnet_id                   = aws_subnet.private[2].id
   private_ip                  = local.infra_private_ip
   associate_public_ip_address = false
