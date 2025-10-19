@@ -1,11 +1,10 @@
 terraform {
   required_version = ">= 1.5"
 
-  # Updated backend to support multiple workspaces under a common prefix
   backend "remote" {
     organization = "ticketly-org"
     workspaces {
-      prefix = "infra-"
+      name = "infra-ticketly"
     }
   }
 
@@ -19,8 +18,4 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-}
-
-locals {
-  is_prod = terraform.workspace == "infra-ticketly"
 }

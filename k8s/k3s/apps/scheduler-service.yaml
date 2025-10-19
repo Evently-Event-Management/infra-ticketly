@@ -1,0 +1,227 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-service
+  namespace: ticketly
+  labels:
+    app: scheduler-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scheduler-service
+  template:
+    metadata:
+      labels:
+        app: scheduler-service
+    spec:
+      containers:
+        - name: scheduler-service
+          image: ticketly/scheduler-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8085
+          env:
+            - name: INFRA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: INFRA_HOST
+            - name: EVENT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: EVENT_SERVICE_URL
+            - name: EVENT_QUERY_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: EVENT_QUERY_SERVICE_URL
+            - name: KEYCLOAK_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: KEYCLOAK_URL
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: DATABASE_USERNAME
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: DATABASE_PASSWORD
+            - name: RDS_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: RDS_ENDPOINT
+            - name: POSTGRES_DSN
+              value: postgres://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@$(RDS_ENDPOINT)/scheduler_service
+            - name: SCHEDULER_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: SCHEDULER_CLIENT_SECRET
+            - name: AWS_SQS_SESSION_SCHEDULING_ARN
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SQS_SESSION_SCHEDULING_ARN
+            - name: AWS_SQS_SESSION_SCHEDULING_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SQS_SESSION_SCHEDULING_URL
+            - name: AWS_SQS_TRENDING_JOB_ARN
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SQS_TRENDING_JOB_ARN
+            - name: AWS_SQS_TRENDING_JOB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SQS_TRENDING_JOB_URL
+            - name: AWS_SQS_SESSION_REMINDERS_ARN
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SQS_SESSION_REMINDERS_ARN
+            - name: AWS_SQS_SESSION_REMINDERS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SQS_SESSION_REMINDERS_URL
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_REGION
+            - name: AWS_SCHEDULER_ROLE_ARN
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SCHEDULER_ROLE_ARN
+            - name: AWS_SCHEDULER_GROUP_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SCHEDULER_GROUP_NAME
+            - name: KAFKA_URL
+              value: "$(INFRA_HOST):9092"
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: SMTP_HOST
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: SMTP_PORT
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: SMTP_USERNAME
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: SMTP_PASSWORD
+            - name: FROM_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: FROM_EMAIL
+            - name: FROM_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: FROM_NAME
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ticketly-app-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+          resources:
+            requests:
+              cpu: 80m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8085
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8085
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler-service
+  namespace: ticketly
+  labels:
+    app: scheduler-service
+spec:
+  selector:
+    app: scheduler-service
+  ports:
+    - name: http
+      port: 8085
+      targetPort: 8085
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scheduler-service
+  namespace: ticketly
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: scheduler-service
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 85
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60

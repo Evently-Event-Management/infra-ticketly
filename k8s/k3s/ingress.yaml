@@ -1,0 +1,62 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ticketly-api
+  namespace: ticketly
+  annotations:
+    # CORS configuration
+    traefik.ingress.kubernetes.io/cors-allow-origin: "http://localhost:8090, http://ticketly.test:8090, http://www.localhost:8090, https://ticketly.dpiyumal.me"
+    traefik.ingress.kubernetes.io/cors-allow-methods: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+    traefik.ingress.kubernetes.io/cors-allow-headers: "*"
+    traefik.ingress.kubernetes.io/cors-allow-credentials: "true"
+    traefik.ingress.kubernetes.io/cors-max-age: "3600"
+    
+    # SSE support - extended timeouts
+    traefik.ingress.kubernetes.io/request-timeout: "3h"
+    traefik.ingress.kubernetes.io/idle-timeout: "3h"  
+    traefik.ingress.kubernetes.io/connection-idle-timeout: "3h"
+    traefik.ingress.kubernetes.io/response-force-complete-timeout: "3h"
+    
+    # Buffer settings for SSE
+    traefik.ingress.kubernetes.io/buffering: "true"
+    traefik.ingress.kubernetes.io/buffer-size: "8k"
+    
+    # HTTP/2 for better SSE performance
+    traefik.ingress.kubernetes.io/enable-http2: "true"
+    
+    # Maximum request body size (100MB)
+    traefik.ingress.kubernetes.io/max-request-body-bytes: "104857600"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: api.dpiyumal.me
+      http:
+        paths:
+          - path: /api/event-seating
+            pathType: Prefix
+            backend:
+              service:
+                name: event-command-service
+                port:
+                  number: 8081
+          - path: /api/event-query
+            pathType: Prefix
+            backend:
+              service:
+                name: event-query-service
+                port:
+                  number: 8082
+          - path: /api/order
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 8084
+          - path: /api/scheduler
+            pathType: Prefix
+            backend:
+              service:
+                name: scheduler-service
+                port:
+                  number: 8085

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ticketly-global-config
+  namespace: ticketly
+data:
+  LOG_LEVEL_ROOT: "INFO"
+  COM_TICKETLY_LOG_LEVEL: "INFO"
+  SPRING_SECURITY_LOG_LEVEL: "WARN"
+  MONGODB_LOG_LEVEL: "WARN"
+  LOG_LEVEL_SECURITY: "WARN"
+  LOG_LEVEL_APP: "DEBUG"
+  SHOW_SQL: "false"
+  INFRA_HOST: "10.0.80.20"
+  REDIS_PORT: "6379"
+  SEAT_LOCK_TTL_MINUTES: "5"
+  SMTP_PORT: "587"
+  TICKET_CLIENT_ID: "ticket-service-client"
+  KEYCLOAK_ISSUER_URI: "https://auth.dpiyumal.me/realms/event-ticketing"
+  KEYCLOAK_JWK_SET_URI: "https://auth.dpiyumal.me/realms/event-ticketing/protocol/openid-connect/certs"
+  KEYCLOAK_URL: "https://auth.dpiyumal.me"
+  EVENT_SEATING_SERVICE_URI: "http://event-command-service:8081"
+  EVENT_QUERY_SERVICE_URI: "http://event-query-service:8082"
+  ORDER_SERVICE_URI: "http://order-service:8084"
+  SCHEDULER_SERVICE_URI: "http://scheduler-service:8085"
+  EVENT_SERVICE_URL: "http://event-command-service:8081/api/event-seating"
+  EVENT_QUERY_SERVICE_URL: "http://event-query-service:8082/api/event-query"
+  SMTP_FROM_NAME: "Ticketly Support"
+  QR_SECRET_KEY: "replace-with-a-secure-random-string"
