@@ -8,7 +8,7 @@ variable "realm_name" {
 variable "realm_display_name" {
   description = "The display name of the Keycloak realm"
   type        = string
-  default     = "Event Ticketing Platform"
+  default     = "Ticketly"
 }
 
 variable "smtp_host" {
