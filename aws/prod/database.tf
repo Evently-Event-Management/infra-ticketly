@@ -1,19 +1,14 @@
-# The entire RDS setup is only created in the 'prod' workspace.
 resource "aws_db_subnet_group" "ticketly" {
-  count = local.is_prod ? 1 : 0
-
   name       = "ticketly-db-subnets"
-  subnet_ids = aws_subnet.private[*].id # Changed from public to private subnets
+  subnet_ids = aws_subnet.private[*].id
 
   tags = {
     Name = "ticketly-db-subnet-group"
-    VPC  = aws_vpc.ticketly_vpc[0].id
+    VPC  = aws_vpc.ticketly_vpc.id
   }
 }
 
 resource "aws_db_parameter_group" "ticketly_logical_replication" {
-  count = local.is_prod ? 1 : 0
-
   name   = "ticketly-logical-replication"
   family = "postgres16"
 
@@ -24,10 +19,7 @@ resource "aws_db_parameter_group" "ticketly_logical_replication" {
   }
 }
 
-
 resource "aws_db_instance" "ticketly_db" {
-  count = local.is_prod ? 1 : 0
-
   identifier             = "ticketly-db"
   engine                 = "postgres"
   engine_version         = "16.8"
@@ -35,15 +27,15 @@ resource "aws_db_instance" "ticketly_db" {
   username               = var.rds_user
   password               = var.rds_password
   allocated_storage      = 20
-  parameter_group_name   = aws_db_parameter_group.ticketly_logical_replication[0].name
-  vpc_security_group_ids = [aws_security_group.database[0].id]
-  db_subnet_group_name   = aws_db_subnet_group.ticketly[0].name
-  publicly_accessible    = true # Already set to true, which is needed for public access
+  parameter_group_name   = aws_db_parameter_group.ticketly_logical_replication.name
+  vpc_security_group_ids = [aws_security_group.database.id]
+  db_subnet_group_name   = aws_db_subnet_group.ticketly.name
+  publicly_accessible    = true
   skip_final_snapshot    = true
 
   tags = {
     Name        = "ticketly-db"
     Environment = "production"
-    VPC         = aws_vpc.ticketly_vpc[0].id
+    VPC         = aws_vpc.ticketly_vpc.id
   }
 }

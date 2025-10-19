@@ -1,13 +1,10 @@
-# Application Load Balancer routing public traffic into the private worker nodes.
 resource "aws_lb" "cluster" {
-  count = local.is_prod ? 1 : 0
-
   name               = "tktly-alb-${terraform.workspace}"
   load_balancer_type = "application"
   internal           = false
-  security_groups    = [aws_security_group.alb[0].id]
+  security_groups    = [aws_security_group.alb.id]
   subnets            = aws_subnet.public[*].id
-  idle_timeout       = 600  # 10 minutes to support Server-Sent Events (SSE)
+  idle_timeout       = 600
 
   tags = {
     Name        = "ticketly-cluster-alb"
@@ -15,14 +12,11 @@ resource "aws_lb" "cluster" {
   }
 }
 
-# Target group representing the worker nodes that serve cluster ingress.
 resource "aws_lb_target_group" "worker" {
-  count = local.is_prod ? 1 : 0
-
   name     = "tktly-tg-${terraform.workspace}"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_vpc.ticketly_vpc[0].id
+  vpc_id   = aws_vpc.ticketly_vpc.id
 
   health_check {
     enabled             = true
@@ -32,7 +26,7 @@ resource "aws_lb_target_group" "worker" {
     healthy_threshold   = 3
     unhealthy_threshold = 3
     timeout             = 5
-    matcher             = "200-499" # Treat 404s from Traefik as healthy
+    matcher             = "200-499"
   }
 
   tags = {
@@ -41,16 +35,14 @@ resource "aws_lb_target_group" "worker" {
   }
 }
 
-# Listener that forwards HTTP traffic from the ALB to the worker nodes.
 resource "aws_lb_listener" "http" {
-  count = local.is_prod ? 1 : 0
-
-  load_balancer_arn = aws_lb.cluster[0].arn
+  load_balancer_arn = aws_lb.cluster.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
     type = "redirect"
+
     redirect {
       port        = "443"
       protocol    = "HTTPS"
@@ -59,11 +51,8 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# HTTPS listener with SSL certificate
 resource "aws_lb_listener" "https" {
-  count = local.is_prod ? 1 : 0
-
-  load_balancer_arn = aws_lb.cluster[0].arn
+  load_balancer_arn = aws_lb.cluster.arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
@@ -71,15 +60,14 @@ resource "aws_lb_listener" "https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.worker[0].arn
+    target_group_arn = aws_lb_target_group.worker.arn
   }
 }
 
-# Attach each worker instance to the target group.
 resource "aws_lb_target_group_attachment" "worker" {
-  for_each = local.is_prod ? aws_instance.worker : {}
+  for_each = aws_instance.worker
 
-  target_group_arn = aws_lb_target_group.worker[0].arn
+  target_group_arn = aws_lb_target_group.worker.arn
   target_id        = each.value.id
   port             = 80
 }
