@@ -148,6 +148,14 @@ resource "aws_security_group" "public" {
     description = "HTTPS access"
   }
 
+  ingress {
+    from_port   = 8472
+    to_port     = 8472
+    protocol    = "udp"
+    cidr_blocks = ["10.0.0.0/16"]
+    description = "Flannel VXLAN from workers"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -224,6 +232,22 @@ resource "aws_security_group" "worker" {
     protocol        = "tcp"
     security_groups = [aws_security_group.public[0].id]
     description     = "SSH access from control plane"
+  }
+
+  ingress {
+    from_port   = 8472
+    to_port     = 8472
+    protocol    = "udp"
+    cidr_blocks = ["10.0.0.0/16"]
+    description = "Flannel VXLAN from control plane"
+  }
+
+  ingress {
+    from_port   = 8472
+    to_port     = 8472
+    protocol    = "udp"
+    self        = true
+    description = "Flannel VXLAN from other workers"
   }
 
   egress {
@@ -313,6 +337,19 @@ resource "aws_security_group_rule" "control_plane_from_workers" {
   security_group_id        = aws_security_group.public[0].id
   source_security_group_id = aws_security_group.worker[0].id
   description              = "Allow worker nodes to reach the control plane API"
+}
+
+# Allow traffic from control plane to worker nodes on port 8443 for dashboard
+resource "aws_security_group_rule" "dashboard_from_control_plane" {
+  count = local.is_prod ? 1 : 0
+
+  type                     = "ingress"
+  from_port                = 8443
+  to_port                  = 8443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.worker[0].id
+  source_security_group_id = aws_security_group.public[0].id
+  description              = "Allow control plane to reach Kubernetes dashboard"
 }
 
 resource "aws_security_group" "database" {
