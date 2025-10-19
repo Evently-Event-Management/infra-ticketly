@@ -79,59 +79,14 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
+# --- SECURITY GROUPS (Empty) ---
+
 resource "aws_security_group" "public" {
   name        = "ticketly-public-sg-${terraform.workspace}"
   description = "Security group for public instances"
   vpc_id      = aws_vpc.ticketly_vpc.id
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "SSH access"
-  }
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8088
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Application ports"
-  }
-
-  ingress {
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    cidr_blocks = ["112.135.195.95/32"]
-    description = "Kubernetes API access from Home IP"
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP access"
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS access"
-  }
-
-  ingress {
-    from_port   = 8472
-    to_port     = 8472
-    protocol    = "udp"
-    cidr_blocks = ["10.0.0.0/16"]
-    description = "Flannel VXLAN from workers"
-  }
-
+  # All ingress rules are defined separately below
   egress {
     from_port   = 0
     to_port     = 0
@@ -147,22 +102,7 @@ resource "aws_security_group" "alb" {
   description = "Security group for the public Application Load Balancer"
   vpc_id      = aws_vpc.ticketly_vpc.id
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP access"
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS access"
-  }
-
+  # All ingress rules are defined separately below
   egress {
     from_port   = 0
     to_port     = 0
@@ -178,46 +118,7 @@ resource "aws_security_group" "worker" {
   description = "Security group for Kubernetes worker nodes"
   vpc_id      = aws_vpc.ticketly_vpc.id
 
-  ingress {
-    from_port   = 10250
-    to_port     = 10250
-    protocol    = "tcp"
-    self        = true
-    description = "Kubelet API"
-  }
-
-  ingress {
-    from_port   = 30000
-    to_port     = 32767
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Kubernetes NodePort Services"
-  }
-
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.public.id]
-    description     = "SSH access from control plane"
-  }
-
-  ingress {
-    from_port   = 8472
-    to_port     = 8472
-    protocol    = "udp"
-    cidr_blocks = ["10.0.0.0/16"]
-    description = "Flannel VXLAN from control plane"
-  }
-
-  ingress {
-    from_port   = 8472
-    to_port     = 8472
-    protocol    = "udp"
-    self        = true
-    description = "Flannel VXLAN from other workers"
-  }
-
+  # All ingress rules are defined separately below
   egress {
     from_port   = 0
     to_port     = 0
@@ -233,6 +134,7 @@ resource "aws_security_group" "infra" {
   description = "Security group for shared infrastructure services"
   vpc_id      = aws_vpc.ticketly_vpc.id
 
+  # All ingress rules are defined separately below
   egress {
     from_port   = 0
     to_port     = 0
@@ -240,16 +142,234 @@ resource "aws_security_group" "infra" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.public.id]
-    description     = "SSH access from control plane"
-  }
-
   tags = { Name = "ticketly-infra-sg-${terraform.workspace}" }
 }
+
+resource "aws_security_group" "database" {
+  name        = "ticketly-database-sg-${terraform.workspace}"
+  description = "Security group for database instances"
+  vpc_id      = aws_vpc.ticketly_vpc.id
+
+  # All ingress rules are defined separately below
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "ticketly-database-sg-${terraform.workspace}" }
+}
+
+# --- STANDALONE SECURITY GROUP RULES ---
+
+# --- ALB Rules (aws_security_group.alb) ---
+resource "aws_security_group_rule" "alb_http_in" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.alb.id
+  description       = "HTTP access"
+}
+
+resource "aws_security_group_rule" "alb_https_in" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.alb.id
+  description       = "HTTPS access"
+}
+
+# --- Public Rules (aws_security_group.public) ---
+resource "aws_security_group_rule" "public_ssh_in" {
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.public.id
+  description       = "SSH access"
+}
+
+resource "aws_security_group_rule" "public_app_ports_in" {
+  type              = "ingress"
+  from_port         = 8080
+  to_port           = 8088
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.public.id
+  description       = "Application ports"
+}
+
+resource "aws_security_group_rule" "public_kube_api_from_home_in" {
+  type              = "ingress"
+  from_port         = 6443
+  to_port           = 6443
+  protocol          = "tcp"
+  cidr_blocks       = ["112.135.195.95/32"]
+  security_group_id = aws_security_group.public.id
+  description       = "Kubernetes API access from Home IP"
+}
+
+resource "aws_security_group_rule" "public_http_in_generic" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.public.id
+  description       = "HTTP access"
+}
+
+resource "aws_security_group_rule" "public_https_in_generic" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.public.id
+  description       = "HTTPS access"
+}
+
+resource "aws_security_group_rule" "public_flannel_from_workers_in" {
+  type                     = "ingress"
+  from_port                = 8472
+  to_port                  = 8472
+  protocol                 = "udp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.public.id
+  description              = "Flannel VXLAN from workers"
+}
+
+resource "aws_security_group_rule" "public_flannel_from_self_in" {
+  type              = "ingress"
+  from_port         = 8472
+  to_port           = 8472
+  protocol          = "udp"
+  self              = true
+  security_group_id = aws_security_group.public.id
+  description       = "Flannel VXLAN from self"
+}
+
+resource "aws_security_group_rule" "public_kubelet_from_self_in" {
+  type              = "ingress"
+  from_port         = 10250
+  to_port           = 10250
+  protocol          = "tcp"
+  self              = true
+  security_group_id = aws_security_group.public.id
+  description       = "Kubelet API from self"
+}
+
+resource "aws_security_group_rule" "public_kubelet_from_workers_in" {
+  type                     = "ingress"
+  from_port                = 10250
+  to_port                  = 10250
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.public.id
+  description              = "Kubelet API from workers"
+}
+
+# --- Worker Rules (aws_security_group.worker) ---
+resource "aws_security_group_rule" "worker_kubelet_from_public_in" {
+  type                     = "ingress"
+  from_port                = 10250
+  to_port                  = 10250
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.public.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "Kubelet API from control plane"
+}
+
+resource "aws_security_group_rule" "worker_kubelet_from_self_in" {
+  type              = "ingress"
+  from_port         = 10250
+  to_port           = 10250
+  protocol          = "tcp"
+  self              = true
+  security_group_id = aws_security_group.worker.id
+  description       = "Kubelet API from other workers"
+}
+
+resource "aws_security_group_rule" "worker_nodeports_in" {
+  type              = "ingress"
+  from_port         = 30000
+  to_port           = 32767
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.worker.id
+  description       = "Kubernetes NodePort Services"
+}
+
+resource "aws_security_group_rule" "worker_ssh_from_public_in" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.public.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "SSH access from control plane"
+}
+
+resource "aws_security_group_rule" "worker_flannel_from_public_in" {
+  type                     = "ingress"
+  from_port                = 8472
+  to_port                  = 8472
+  protocol                 = "udp"
+  source_security_group_id = aws_security_group.public.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "Flannel VXLAN from control plane"
+}
+
+resource "aws_security_group_rule" "worker_flannel_from_self_in" {
+  type              = "ingress"
+  from_port         = 8472
+  to_port           = 8472
+  protocol          = "udp"
+  self              = true
+  security_group_id = aws_security_group.worker.id
+  description       = "Flannel VXLAN from other workers"
+}
+
+# --- Infra Rules (aws_security_group.infra) ---
+resource "aws_security_group_rule" "infra_ssh_from_public_in" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.public.id
+  security_group_id        = aws_security_group.infra.id
+  description              = "SSH access from control plane"
+}
+
+# --- Database Rules (aws_security_group.database) ---
+resource "aws_security_group_rule" "db_psql_from_public_in" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.public.id
+  security_group_id        = aws_security_group.database.id
+  description              = "PostgreSQL access from application"
+}
+
+resource "aws_security_group_rule" "db_psql_from_any_in" {
+  type              = "ingress"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.database.id
+  description       = "PostgreSQL direct access for development"
+}
+
+
+# --- EXISTING STANDALONE RULES (Unchanged) ---
 
 resource "aws_security_group_rule" "infra_from_workers" {
   type                     = "ingress"
@@ -299,35 +419,4 @@ resource "aws_security_group_rule" "dashboard_from_control_plane" {
   security_group_id        = aws_security_group.worker.id
   source_security_group_id = aws_security_group.public.id
   description              = "Allow control plane to reach Kubernetes dashboard"
-}
-
-resource "aws_security_group" "database" {
-  name        = "ticketly-database-sg-${terraform.workspace}"
-  description = "Security group for database instances"
-  vpc_id      = aws_vpc.ticketly_vpc.id
-
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.public.id]
-    description     = "PostgreSQL access from application"
-  }
-
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "PostgreSQL direct access for development"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "ticketly-database-sg-${terraform.workspace}" }
 }
