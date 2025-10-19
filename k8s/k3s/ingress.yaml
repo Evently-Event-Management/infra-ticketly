@@ -13,7 +13,7 @@ metadata:
     
     # SSE support - extended timeouts
     traefik.ingress.kubernetes.io/request-timeout: "3h"
-    traefik.ingress.kubernetes.io/idle-timeout: "3h"
+    traefik.ingress.kubernetes.io/idle-timeout: "3h"  
     traefik.ingress.kubernetes.io/connection-idle-timeout: "3h"
     traefik.ingress.kubernetes.io/response-force-complete-timeout: "3h"
     

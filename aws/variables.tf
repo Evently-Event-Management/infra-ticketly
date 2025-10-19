@@ -15,3 +15,8 @@ variable "rds_password" {
   type        = string
   sensitive   = true
 }
+
+variable "api_domain_ssl_arn" {
+  description = "arn of the domain api.(yourdomain)"
+  type        = string
+}
