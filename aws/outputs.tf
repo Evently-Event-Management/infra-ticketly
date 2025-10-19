@@ -82,12 +82,33 @@ output "ticketly_db_password" {
   sensitive = true
 }
 
-output "ec2_ip" {
-  description = "The public IP address of the EC2 instance. (Prod only)"
-  value       = local.is_prod ? aws_instance.ticketly-infra[0].public_ip : "N/A (not deployed in this workspace)"
+
+output "auth_public_ip" {
+  description = "Public IP address of the Keycloak auth server (Prod only)."
+  value       = local.is_prod ? aws_instance.ticketly_auth[0].public_ip : "N/A (not deployed in this workspace)"
 }
 
-output "ssh_command" {
-  description = "Command to SSH into the EC2 instance (Prod only)"
-  value       = local.is_prod ? "ssh -i ${path.module}/ticketly-key ubuntu@${aws_instance.ticketly-infra[0].public_ip}" : "N/A (not deployed in this workspace)"
+output "auth_ssh_command" {
+  description = "SSH command for the Keycloak auth server (Prod only)."
+  value       = local.is_prod ? "ssh -i ${path.module}/ticketly-key ubuntu@${aws_instance.ticketly_auth[0].public_ip}" : "N/A (not deployed in this workspace)"
+}
+
+output "control_plane_public_ip" {
+  description = "Public IP address of the Kubernetes control plane node (Prod only)."
+  value       = local.is_prod ? aws_instance.control_plane[0].public_ip : "N/A (not deployed in this workspace)"
+}
+
+output "control_plane_ssh_command" {
+  description = "SSH command for the control plane node (Prod only)."
+  value       = local.is_prod ? "ssh -i ${path.module}/ticketly-key ubuntu@${aws_instance.control_plane[0].public_ip}" : "N/A (not deployed in this workspace)"
+}
+
+output "worker_private_ips" {
+  description = "Private IP addresses for the Kubernetes worker nodes (Prod only)."
+  value       = local.is_prod ? [for worker in values(aws_instance.worker) : worker.private_ip] : []
+}
+
+output "infra_private_ip" {
+  description = "Private IP address for the infrastructure services node (Prod only)."
+  value       = local.is_prod ? aws_instance.infra[0].private_ip : "N/A (not deployed in this workspace)"
 }

@@ -15,8 +15,8 @@ resource "aws_scheduler_schedule" "trending_events_daily_job" {
     role_arn = aws_iam_role.eventbridge_scheduler_role.arn
 
     input = jsonencode({
-      "jobType"  : "CALCULATE_TRENDING_EVENTS",
-      "timestamp": formatdate("YYYY-MM-DD'T'hh:mm:ssZ", timestamp())
+      "jobType" : "CALCULATE_TRENDING_EVENTS",
+      "timestamp" : formatdate("YYYY-MM-DD'T'hh:mm:ssZ", timestamp())
     })
   }
 

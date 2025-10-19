@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "ticketly_assets" {
-  bucket = "ticketly-assets-${terraform.workspace}-${random_id.bucket_suffix.hex}"
-  tags = { Name = "TicketlyAssets-${terraform.workspace}" }
+  bucket        = "ticketly-assets-${terraform.workspace}-${random_id.bucket_suffix.hex}"
+  tags          = { Name = "TicketlyAssets-${terraform.workspace}" }
   force_destroy = true
 }
 
@@ -9,7 +9,7 @@ resource "random_id" "bucket_suffix" {
 }
 
 resource "aws_s3_bucket_public_access_block" "assets_block" {
-  bucket = aws_s3_bucket.ticketly_assets.id
+  bucket                  = aws_s3_bucket.ticketly_assets.id
   block_public_acls       = false
   block_public_policy     = false
   ignore_public_acls      = false

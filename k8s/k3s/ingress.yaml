@@ -4,7 +4,6 @@ metadata:
   name: ticketly-api
   namespace: ticketly
   annotations:
-    cert-manager.io/cluster-issuer: ticketly-letsencrypt
     # CORS configuration
     traefik.ingress.kubernetes.io/cors-allow-origin: "http://localhost:8090, http://ticketly.test:8090, http://www.localhost:8090, https://ticketly.dpiyumal.me"
     traefik.ingress.kubernetes.io/cors-allow-methods: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
@@ -29,10 +28,6 @@ metadata:
     traefik.ingress.kubernetes.io/max-request-body-bytes: "104857600"
 spec:
   ingressClassName: traefik
-  tls:
-    - hosts:
-        - api.dpiyumal.me
-      secretName: ticketly-api-tls
   rules:
     - host: api.dpiyumal.me
       http:
