@@ -192,6 +192,24 @@ resource "aws_security_group" "worker" {
   description = "Security group for Kubernetes worker nodes"
   vpc_id      = aws_vpc.ticketly_vpc[0].id
 
+  # Kubelet API
+  ingress {
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    self        = true
+    description = "Kubelet API"
+  }
+
+  # NodePort Services
+  ingress {
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Kubernetes NodePort Services"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -215,6 +233,15 @@ resource "aws_security_group" "infra" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # SSH access from control plane
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.public[0].id]
+    description     = "SSH access from control plane"
   }
 
   tags = { Name = "ticketly-infra-sg-${terraform.workspace}" }
