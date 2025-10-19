@@ -122,6 +122,13 @@ resource "aws_security_group" "public" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "Application ports"
   }
+  ingress {
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = ["112.135.195.95/32"]
+    description = "Kubernetes API access from Home IP"
+  }
 
   # HTTP access from anywhere
   ingress {
@@ -208,6 +215,15 @@ resource "aws_security_group" "worker" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "Kubernetes NodePort Services"
+  }
+  
+  
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.public[0].id]
+    description     = "SSH access from control plane"
   }
 
   egress {
