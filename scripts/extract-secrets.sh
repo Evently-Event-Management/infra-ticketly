@@ -1,6 +1,63 @@
 #!/bin/bash
 
-echo "🚀 Extracting secrets from Terraform..."
+# Display help message
+display_help() {
+  echo "Usage: $0 --env <env> [--k8s] [aws-only | k8s-only]"
+  echo "Options:"
+  echo "  --env <env>    Required: Environment to extract secrets from (dev or prod)"
+  echo "  --k8s          Optional: Generate Kubernetes-compatible secrets"
+  echo "  aws-only       Optional: Extract only AWS resources"
+  echo "  k8s-only       Optional: Generate only Kubernetes-compatible secrets"
+  echo "Example: $0 --env dev --k8s"
+  exit 1
+}
+
+# Parse command-line arguments
+ENV=""
+K8S_FLAG=false
+AWS_ONLY=false
+K8S_ONLY=false
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --env)
+      ENV="$2"
+      shift 2
+      ;;
+    --k8s)
+      K8S_FLAG=true
+      shift
+      ;;
+    aws-only)
+      AWS_ONLY=true
+      shift
+      ;;
+    k8s-only)
+      K8S_ONLY=true
+      shift
+      ;;
+    -h|--help)
+      display_help
+      ;;
+    *)
+      echo "Unknown option: $1"
+      display_help
+      ;;
+  esac
+done
+
+# Validate environment flag
+if [[ -z "$ENV" ]]; then
+  echo "❌ Error: --env flag is required"
+  display_help
+fi
+
+if [[ "$ENV" != "dev" && "$ENV" != "prod" ]]; then
+  echo "❌ Error: --env must be either 'dev' or 'prod'"
+  display_help
+fi
+
+echo "🚀 Extracting secrets from Terraform for environment: $ENV..."
 
 # --- Setup: Get project root and define .env file path ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -162,15 +219,23 @@ extract_ga_credentials() {
 }
 
 # --- Run Extraction ---
-if [[ "$1" == "aws-only" ]]; then
+AWS_ENV_PATH="${PROJECT_ROOT}/aws/${ENV}"
+echo "Using AWS environment path: ${AWS_ENV_PATH}"
+
+if [[ ! -d "$AWS_ENV_PATH" ]]; then
+  echo "❌ Error: AWS environment directory not found at ${AWS_ENV_PATH}"
+  exit 1
+fi
+
+if [[ "$AWS_ONLY" == true ]]; then
   # Extract only AWS resources
   echo "Running in AWS-only mode..."
-  extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources & Credentials"
+  extract_outputs_from_json "${AWS_ENV_PATH}" "$AWS_MAPPINGS" "# AWS Resources & Credentials (${ENV})"
   extract_ga_credentials
 else
   # Extract all resources
   extract_outputs_from_json "${PROJECT_ROOT}/keycloak/terraform" "$KEYCLOAK_MAPPINGS" "# Keycloak Client Secrets"
-  extract_outputs_from_json "${PROJECT_ROOT}/aws" "$AWS_MAPPINGS" "# AWS Resources & Credentials"
+  extract_outputs_from_json "${AWS_ENV_PATH}" "$AWS_MAPPINGS" "# AWS Resources & Credentials (${ENV})"
   extract_ga_credentials
 fi
 
@@ -244,15 +309,15 @@ create_k8s_env() {
 }
 
 # Generate the regular .env file first, then the k8s version if requested
-echo "✅ Regular .env secrets extraction complete."
+echo "✅ Regular .env secrets extraction complete for ${ENV} environment."
 
 # Check if the --k8s flag was passed
-if [[ "$1" == "--k8s" || "$2" == "--k8s" || "$1" == "k8s-only" ]]; then
+if [[ "$K8S_FLAG" == true || "$K8S_ONLY" == true ]]; then
   create_k8s_env
   
   # If k8s-only mode is specified, exit after creating the K8s file
-  if [[ "$1" == "k8s-only" ]]; then
-    echo "Executed in k8s-only mode. Only .env.k8s was generated."
+  if [[ "$K8S_ONLY" == true ]]; then
+    echo "Executed in k8s-only mode. Only .env.k8s was generated for ${ENV} environment."
     exit 0
   fi
 fi

@@ -4,7 +4,7 @@ terraform {
   backend "remote" {
     organization = "ticketly-org"
     workspaces {
-      name = "infra-dev"
+      prefix = "infra-dev-"
     }
   }
 
