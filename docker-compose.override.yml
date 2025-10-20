@@ -103,6 +103,8 @@ services:
 
   # Override Scheduler Service environment for local Keycloak
   scheduler-service:
+    ports:
+      - "8085:8085"
     environment:
       - EVENT_SERVICE_URL=http://host.docker.internal:8081/api/event-seating
       - EVENT_QUERY_SERVICE_URL=http://host.docker.internal:8082/api/event-query
