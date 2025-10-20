@@ -157,38 +157,35 @@ spec:
     kind: Deployment
     name: event-query-service
   minReplicas: 1
-  maxReplicas: 4
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 60
+          averageUtilization: 65
     - type: Resource
       resource:
         name: memory
         target:
-          type: AverageValue
-          averageValue: 800Mi
+          type: Utilization
+          averageUtilization: 75
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 15
+      stabilizationWindowSeconds: 30
       policies:
       - type: Percent
-        value: 100
+        value: 150
         periodSeconds: 30
       - type: Pods
         value: 2
         periodSeconds: 30
       selectPolicy: Max
     scaleDown:
-      stabilizationWindowSeconds: 180
+      stabilizationWindowSeconds: 240
       policies:
       - type: Percent
-        value: 50
-        periodSeconds: 60
-      - type: Pods
-        value: 1
+        value: 33
         periodSeconds: 60
       selectPolicy: Max

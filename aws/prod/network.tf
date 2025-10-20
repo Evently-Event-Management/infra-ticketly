@@ -210,7 +210,7 @@ resource "aws_security_group_rule" "public_kube_api_from_home_in" {
   from_port         = 6443
   to_port           = 6443
   protocol          = "tcp"
-  cidr_blocks       = ["112.135.195.95/32"]
+  cidr_blocks       = ["${var.my_ip}/32"]
   security_group_id = aws_security_group.public.id
   description       = "Kubernetes API access from Home IP"
 }

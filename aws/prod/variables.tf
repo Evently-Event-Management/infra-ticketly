@@ -20,3 +20,8 @@ variable "api_domain_ssl_arn" {
   description = "arn of the domain api.(yourdomain)"
   type        = string
 }
+
+variable "my_ip" {
+  description = "Your IP address to allow access to the control plane."
+  type        = string
+}

@@ -23,62 +23,73 @@ The HPA was configured with **memory utilization threshold of 85%**, which was t
 
 ### HPA Configuration Changes
 
-#### All Services
-- **CPU threshold**: 70% → **75%** (more tolerant for idle loads)
-- **Memory threshold**: 85% → **90%** (prevents premature scaling)
-- **Scale-down stabilization**: 60s → **300s** (5 minutes to avoid flapping)
-- **Scale-down policy**: 50% reduction → **100%** (can scale down completely in one cycle)
-
 #### Service-Specific Optimizations
 
-**event-command-service & event-query-service**:
+**event-command-service (Spring MVC)**:
 ```yaml
 metrics:
-  - cpu: 75% utilization
-  - memory: 90% utilization
+  - cpu: 70% utilization
+  - memory: 80% utilization
+behavior:
+  scaleUp:
+    stabilizationWindowSeconds: 60
+    policies:
+      - 100% increase per 60s OR
+      - 1 pod per 60s (whichever is higher)
+  scaleDown:
+    stabilizationWindowSeconds: 300
+    policies:
+      - 50% reduction per 120s
+```
+
+**event-query-service (Spring WebFlux)**:
+```yaml
+metrics:
+  - cpu: 65% utilization
+  - memory: 75% utilization
 behavior:
   scaleUp:
     stabilizationWindowSeconds: 30
     policies:
-      - 50% increase per 30s OR
-      - 1 pod per 30s (whichever is higher)
+      - 150% increase per 30s OR
+      - 2 pods per 30s (whichever is higher)
   scaleDown:
-    stabilizationWindowSeconds: 300
+    stabilizationWindowSeconds: 240
     policies:
-      - 100% reduction per 60s (can remove all pods if needed)
+      - 33% reduction per 60s
 ```
 
-**order-service**:
+**order-service (Go)**:
 ```yaml
 metrics:
-  - cpu: 75% utilization
-  - memory: 85% utilization (Go service, more efficient)
+  - cpu: 60% utilization
+  - memory: 70% utilization
 behavior:
   scaleUp:
-    stabilizationWindowSeconds: 30
+    stabilizationWindowSeconds: 0
     policies:
-      - 100% increase per 30s OR
-      - 2 pods per 30s (aggressive for traffic spikes)
+      - 300% increase per 15s OR
+      - 4 pods per 15s (whichever is higher)
   scaleDown:
-    stabilizationWindowSeconds: 300
+    stabilizationWindowSeconds: 120
     policies:
-      - 100% reduction per 60s
+      - 50% reduction per 60s
 ```
 
-**scheduler-service**:
+**scheduler-service (Go with background jobs)**:
 ```yaml
 metrics:
-  - cpu: 75% utilization
-  - memory: 85% utilization
+  - cpu: 70% utilization
+  - memory: 70% utilization
 behavior:
   scaleUp:
-    stabilizationWindowSeconds: 60 (slower, less traffic)
+    stabilizationWindowSeconds: 90
     policies:
-      - 1 pod per 60s
+      - 1 pod per 90s
   scaleDown:
-    stabilizationWindowSeconds: 300
+    stabilizationWindowSeconds: 360
     policies:
-      - 100% reduction per 60s
+      - 100% reduction per 90s
 ```
 
 ## Results
@@ -86,10 +97,10 @@ behavior:
 ### After Optimization
 | Service | Before | After | CPU | Memory |
 |---------|--------|-------|-----|--------|
-| event-command | 3 pods | **1 pod** | 4% | 79% |
-| event-query | 2 pods | **1 pod** | 4% | 56% |
-| order-service | 1 pod | **1 pod** | 1% | 5% |
-| scheduler | 1 pod | **1 pod** | 2% | 7% |
+| event-command | 3 pods | **1 pod** | 1.6% | 54.1% |
+| event-query | 2 pods | **1 pod** | 2% | 52.2% |
+| order-service | 1 pod | **1 pod** | 0.8% | 6.2% |
+| scheduler | 1 pod | **1 pod** | 1.2% | 7.8% |
 
 ### Resource Savings
 - **Before**: 7 total pods
@@ -98,42 +109,48 @@ behavior:
 
 ### Current Resource Usage (Idle State)
 ```
-event-command-service: 13m CPU, 754Mi memory
-event-query-service:   13m CPU, 479Mi memory
-order-service:         2m CPU,  12Mi memory
-scheduler-service:     2m CPU,  9Mi memory
+event-command-service: 4m CPU, 622Mi memory (54% of 1150Mi request)
+event-query-service:   7m CPU, 444Mi memory (52% of 850Mi request)
+order-service:         1m CPU, 16Mi memory (6% of 256Mi request)
+scheduler-service:     1m CPU, 10Mi memory (8% of 128Mi request)
 ```
 
 ## Behavior Under Load
 
 ### Scale-Up Triggers
-- **event-command/event-query**: Will scale at 75% CPU or 90% memory
-  - Can add 1 pod every 30 seconds
-  - Max 3-4 pods total
+- **event-command-service (Spring MVC)**: Will scale at 70% CPU or 80% memory
+  - Can add 1 pod every 60 seconds (100% increase)
+  - Max 3 pods total (event creator traffic)
 
-- **order-service**: Will scale at 75% CPU or 85% memory
-  - Can add 2 pods every 30 seconds (aggressive)
-  - Max 6 pods total
+- **event-query-service (Spring WebFlux)**: Will scale at 65% CPU or 75% memory
+  - Can add 2 pods every 30 seconds (150% increase)
+  - Max 5 pods total (buyer traffic)
 
-- **scheduler-service**: Will scale at 75% CPU or 85% memory
-  - Can add 1 pod every 60 seconds (conservative)
-  - Max 2 pods total
+- **order-service (Go)**: Will scale at 60% CPU or 70% memory
+  - Can add 4 pods every 15 seconds (300% increase) - immediate response
+  - Max 8 pods total (purchase spikes)
+
+- **scheduler-service (Go background)**: Will scale at 70% CPU or 70% memory
+  - Can add 1 pod every 90 seconds (conservative)
+  - Max 3 pods total (notification processing)
 
 ### Scale-Down Behavior
-- **Stabilization window**: 5 minutes (300s)
+- **Stabilization windows vary by service** (60s-360s)
   - Ensures sustained low usage before scaling down
   - Prevents flapping during intermittent traffic
-- **Scale-down rate**: Can remove 100% of excess pods every 60s
+- **Scale-down rates**: 33%-100% reduction per 60-120s
   - Once stabilization window passes, rapid scale-down to minReplicas
 
 ## Best Practices Applied
 
-1. ✅ **Memory metrics added**: Prevents CPU-only scaling misses
-2. ✅ **Higher thresholds**: 75-90% allows better resource utilization
-3. ✅ **Long stabilization**: 5-minute window prevents scaling thrash
-4. ✅ **Aggressive scale-down**: Removes unnecessary pods quickly after stabilization
-5. ✅ **Service-specific tuning**: Different behaviors for different workload types
-6. ✅ **minReplicas=1**: All services can scale to zero extra pods during idle
+1. ✅ **Technology-aware scaling**: Different thresholds for Spring vs Go services
+2. ✅ **Workload-specific tuning**: Command (creator) vs Query (buyer) vs Order (purchases) vs Scheduler (background)
+3. ✅ **Memory utilization metrics**: Prevents CPU-only scaling misses
+4. ✅ **Service-specific stabilization windows**: 0s-360s based on service needs
+5. ✅ **Aggressive scale-up for critical services**: Order service scales immediately (0s window)
+6. ✅ **Conservative scale-down**: Prevents flapping while allowing rapid cleanup
+7. ✅ **Resource-efficient thresholds**: 60-80% utilization allows better resource utilization
+8. ✅ **minReplicas=1**: All services can scale to minimum during idle periods
 
 ## Monitoring Recommendations
 
@@ -162,6 +179,18 @@ Consider implementing:
 ## Testing Plan
 
 1. **Load test**: Generate traffic to verify scale-up behavior
-2. **Idle test**: Wait 5+ minutes to verify scale-down
-3. **Spike test**: Sudden traffic burst to verify rapid response
+   - Event creation traffic → command-service should scale to 3 pods
+   - Event browsing traffic → query-service should scale to 5 pods
+   - Purchase spikes → order-service should scale to 8 pods immediately
+2. **Idle test**: Wait 2-6 minutes to verify scale-down (service-specific windows)
+3. **Spike test**: Sudden traffic burst to verify rapid response (order-service: 0s window)
 4. **Sustained load**: Verify stabilization doesn't cause flapping
+5. **Background job test**: Scheduler service notification batch processing
+
+## Key Improvements
+
+- **Order service**: Zero stabilization window for instant scale-up during purchase spikes
+- **Query service**: More aggressive scaling (150% increase) for buyer traffic
+- **Command service**: Conservative scaling for event creator traffic
+- **Scheduler service**: Extended stabilization windows for background job stability
+- **Resource efficiency**: Lower utilization thresholds (60-80%) for better resource usage
