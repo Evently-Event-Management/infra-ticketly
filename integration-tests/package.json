@@ -8,7 +8,9 @@
     "test:cqrs": "jest --config=jestconfig.js src/tests/cqrs-flow.test.ts",
     "build": "tsc",
     "start": "npm run build && npm run test:cqrs",
-    "connectivity": "npm run build && node -r ./register-paths.js dist/index.js"
+    "connectivity": "npm run build && node -r ./register-paths.js dist/index.js",
+    "seed": "npm run build && ENV=seed node -r ./register-paths.js dist/index.js seed",
+    "cleanup": "npm run build && ENV=seed node -r ./register-paths.js dist/index.js cleanup"
   },
   "keywords": [],
   "author": "",
