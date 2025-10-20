@@ -1,0 +1,155 @@
+{
+  "organizationId": "22a67f04-b918-44ac-9b63-49efe8d34356",
+  "events": [
+    {
+      "id": "3471e132-69f2-4764-ac79-e5ad57111483",
+      "title": "Annual Tech Summit Sri Lanka",
+      "sessionId": "a5b2ef51-cf41-4349-9238-c33ac8409e96"
+    },
+    {
+      "id": "977b13ab-6b95-4391-94f1-3650136b2124",
+      "title": "Colombo Jazz Festival",
+      "sessionId": "9479927d-1d39-4dde-93a4-d834537d4c4c"
+    },
+    {
+      "id": "39f29896-dd50-4902-a4c9-003e5b0232c6",
+      "title": "Sri Lankan Heritage Exhibition",
+      "sessionId": "6d83c460-f2cb-4be6-80c8-9c73b45e25ca"
+    },
+    {
+      "id": "bf576755-163e-40ef-b509-2507b03b4e72",
+      "title": "Kandy Esala Perahera Cultural Show",
+      "sessionId": "f763b41c-0326-4ebe-8125-9d1ff089f323"
+    },
+    {
+      "id": "5c65df2e-805e-44cb-afab-a6696178cfc4",
+      "title": "Digital Marketing Conference",
+      "sessionId": "bafe531c-2c43-4a90-a968-ed6bd47658f9"
+    },
+    {
+      "id": "2d992fab-9e89-413a-81f1-ff4849e914c6",
+      "title": "Beach Volleyball Championship",
+      "sessionId": "94a1d9c2-e6b3-43a2-a4dd-4ae5260cb299"
+    },
+    {
+      "id": "cbed0359-c37b-40d4-9e5d-6a8f9ab76c8d",
+      "title": "Sri Lankan Food Festival",
+      "sessionId": "59e8bbbf-695e-46d8-931a-dcf891458971"
+    },
+    {
+      "id": "8811da0f-be23-4d70-ab07-ba83d0c9b53c",
+      "title": "Startup Weekend Colombo",
+      "sessionId": "8c3ec13b-c68d-42a2-bee2-ccca638272ac"
+    },
+    {
+      "id": "b9ea1504-14c9-4b2a-8f76-501996ecac43",
+      "title": "International Film Festival",
+      "sessionId": "d9bd6199-a2d3-4f20-b115-7d8fa4ce325f"
+    },
+    {
+      "id": "4530caf7-ddcf-4725-b500-c4785783b618",
+      "title": "Ayurveda & Wellness Retreat",
+      "sessionId": "aea9ff01-a8df-441b-b6be-6e90690b1300"
+    },
+    {
+      "id": "7dfaa03c-3fc8-4e5b-93ab-61fb92a2531b",
+      "title": "Tropical Wildlife Photography Exhibition",
+      "sessionId": "3e2a6cac-cff9-462d-b828-8cfe4e58ee8d"
+    },
+    {
+      "id": "41bad8ae-94cb-4264-8c54-ae50881671ad",
+      "title": "Ceylon Tea Celebration",
+      "sessionId": "8554105a-8644-484d-9204-4ca1b9b15a73"
+    },
+    {
+      "id": "ced46ea0-5867-4a46-8581-4720ca560f95",
+      "title": "Galle Literary Festival",
+      "sessionId": "2b223e06-0660-4c6f-8982-22ae3029d6f7"
+    },
+    {
+      "id": "f04cfce2-3bc8-44d3-ac86-24f788291324",
+      "title": "Sri Lankan Fashion Week",
+      "sessionId": "debeba4c-e6dd-4589-9f4c-5b30668b16c5"
+    },
+    {
+      "id": "d35043d0-e60c-4cac-9a74-fa7e08fd210f",
+      "title": "EDM Night: Tropical Beats",
+      "sessionId": "3881ad55-ba70-4d88-8741-43ac9ab3e396"
+    },
+    {
+      "id": "81288343-6adf-4d59-9c2c-94647da092cf",
+      "title": "Cricket Tournament Finals",
+      "sessionId": "4fb156b0-73d7-4cc4-87f0-a00abc3c9213"
+    },
+    {
+      "id": "ab81ba47-f89e-435e-bddd-2eee49f99eb3",
+      "title": "Handloom & Craft Market",
+      "sessionId": "bfa084eb-ab15-4e0f-9b83-3c8d58eb9165"
+    },
+    {
+      "id": "ced42663-a04a-4240-8829-959f6da0488b",
+      "title": "Sacred Temple Music Concert",
+      "sessionId": "8c7b62ee-2f9c-4e9f-9de9-f852d3eef9d0"
+    },
+    {
+      "id": "0bdc8dfc-b9b2-457b-a203-66b7e6be8b55",
+      "title": "Environmental Conservation Summit",
+      "sessionId": "4dedfce0-d3ff-4e91-bb9b-fd132e3c9c07"
+    },
+    {
+      "id": "5b500df4-8a58-4138-88d3-ca326a15f63c",
+      "title": "Traditional Dance Performance",
+      "sessionId": "8c7300b1-afdf-42e7-9b99-1dd4a701c5bf"
+    },
+    {
+      "id": "5479b492-cff7-49aa-a161-e268d51880d1",
+      "title": "Buddhist Art Exhibition",
+      "sessionId": "09990637-b7e3-45fe-8c5e-e9324be26fa2"
+    },
+    {
+      "id": "2ee0bbb0-2a6c-4f8c-9b8f-a29f755503a5",
+      "title": "Entrepreneurship Masterclass",
+      "sessionId": "6e8f810a-1702-4664-9b0e-a364656a01fe"
+    },
+    {
+      "id": "5d879b75-5634-4fb5-9062-1d968eb519ec",
+      "title": "South Asian Poetry Slam",
+      "sessionId": "b6814b50-1bcc-4cfa-8a6e-6c72f1a566bd"
+    },
+    {
+      "id": "755f317f-aba5-49f9-8cf3-7a29d4ad853b",
+      "title": "Colombo Night Market",
+      "sessionId": "7d868631-247d-4b15-bfb3-abcf05eb9474"
+    },
+    {
+      "id": "34591735-df7a-44c7-a5b5-07df63c4b175",
+      "title": "Gems & Jewelry Exhibition",
+      "sessionId": "8ac56c27-7c0c-42f8-8af1-585cc75dd93d"
+    },
+    {
+      "id": "63b1a9bb-242b-4776-b22a-3fac066379e3",
+      "title": "Vesak Lantern Festival",
+      "sessionId": "60a5053a-e2bf-45e3-a0e5-fbb1596c1f1a"
+    },
+    {
+      "id": "f69dae29-6c4d-451d-88d4-3db0407817fa",
+      "title": "Eco-Tourism Conference",
+      "sessionId": "2db68f00-96e6-4044-b099-d357442f6a2e"
+    },
+    {
+      "id": "fb254283-3e36-4453-8e85-4e9272056de4",
+      "title": "Jaffna Cultural Celebration",
+      "sessionId": "08ef2b90-6e38-42c1-ac48-4c86ed35d18e"
+    },
+    {
+      "id": "c3793f00-d583-402c-8cc9-b84610e5ab1c",
+      "title": "International Yoga Day Event",
+      "sessionId": "0db5da20-787f-4a22-9fe5-403d8379526f"
+    },
+    {
+      "id": "032d963e-5a7a-4efb-9f6d-8423e44c5a54",
+      "title": "Marine Conservation Awareness Day",
+      "sessionId": "1b51aa36-2166-4fc9-8560-64ff0aa2ea22"
+    }
+  ]
+}

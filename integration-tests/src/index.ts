@@ -3,10 +3,18 @@ import { getKeycloakToken, makeAuthenticatedRequest } from './utils/apiUtils';
 
 /**
  * This is the main entry point for the integration tests.
- * It can be run directly using `node dist/index.js`
+ * It can be run directly using `node dist/index.js [mode]`
+ * 
+ * Modes:
+ * - connectivity: Check connectivity to services (default)
+ * - seed: Seed the system with events
+ * - cleanup: Clean up seeded data
  */
 
-async function main() {
+const args = process.argv.slice(2);
+const mode = args[0] || 'connectivity';
+
+async function checkConnectivity() {
   console.log('Starting integration tests...');
   console.log('Using configuration:', {
     eventCommandServiceUrl: config.eventCommandServiceUrl,
@@ -62,11 +70,35 @@ async function main() {
   } catch (error) {
     console.error('Error while performing connectivity tests:', error);
     console.log('\nSome services may not be available yet. You can still run the tests, but they might fail if services are not ready.');
-    process.exit(0); // Exit with success code to allow CI/CD to continue
+    return; // Continue with other operations if needed
+  }
+}
+
+async function main() {
+  switch (mode.toLowerCase()) {
+    case 'seed':
+      // Import dynamically to avoid circular dependencies
+      const { seedEvents } = await import('./seeding/seed');
+      await seedEvents();
+      break;
+      
+    case 'cleanup':
+      const seedDataPath = args[1]; // Optional path to seed data file
+      const { cleanupSeededData } = await import('./seeding/cleanup');
+      await cleanupSeededData(seedDataPath);
+      break;
+      
+    case 'connectivity':
+    default:
+      await checkConnectivity();
+      break;
   }
 }
 
 // Only execute if this file is run directly (not imported)
 if (require.main === module) {
-  main().catch(console.error);
+  main().catch(error => {
+    console.error('Error during execution:', error);
+    process.exit(1);
+  });
 }

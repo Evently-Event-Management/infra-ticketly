@@ -22,8 +22,18 @@ export async function getKeycloakToken(username: string, password: string): Prom
   params.append('password', password);
   params.append('grant_type', 'password');
 
-  const response = await axios.post(config.keycloakTokenUrl, params);
-  return response.data.access_token;
+  console.log(`Authenticating with Keycloak at: ${config.keycloakTokenUrl}`);
+  
+  try {
+    const response = await axios.post(config.keycloakTokenUrl, params);
+    return response.data.access_token;
+  } catch (error) {
+    console.error('Keycloak authentication failed:');
+    if (error.config) {
+      console.error(`URL attempted: ${error.config.url}`);
+    }
+    throw error;
+  }
 }
 
 export async function makeAuthenticatedRequest(method: Method, url: string, token: string, data?: any): Promise<any> {
@@ -41,15 +51,46 @@ export async function makeAuthenticatedRequest(method: Method, url: string, toke
   }
 }
 
-export async function formDataRequest(url: string, jsonData: any, token: string): Promise<any> {
+export async function formDataRequest(url: string, jsonData: string | object, token: string, imageFilePath?: string): Promise<any> {
     const form = new FormData();
-    form.append('request', JSON.stringify(jsonData), { contentType: 'application/json' });
+    
+    // Add the JSON data
+    if (typeof jsonData === 'string') {
+        form.append('request', jsonData);
+    } else {
+        form.append('request', JSON.stringify(jsonData));
+    }
+    
+    // Add image file if provided
+    if (imageFilePath) {
+        const fs = require('fs');
+        const path = require('path');
+        const fileName = path.basename(imageFilePath);
+        // Using 'coverImages' key as expected by the backend
+        form.append('coverImages', fs.createReadStream(imageFilePath), { filename: fileName });
+    }
+    
     try {
+        // Log the form data keys for debugging
+        console.log(`Form data parts: ${Object.keys(form).join(', ')}`);
+        if (imageFilePath) {
+            console.log(`Uploading image as 'coverImages' part`);
+        }
+        
         const response = await axios.post(url, form, {
-            headers: { 'Authorization': `Bearer ${token}`, ...form.getHeaders() },
+            headers: { 
+                'Authorization': `Bearer ${token}`, 
+                ...form.getHeaders(),
+                // Ensure proper content type is set
+                'Content-Type': 'multipart/form-data'
+            },
         });
         return response.data;
     } catch (error) {
+        console.error('Error in formDataRequest:');
+        if (imageFilePath) {
+            console.error(`Failed to upload image: ${imageFilePath}`);
+        }
         handleAxiosError(error as AxiosError, url, 'post');
         throw error; // re-throw after logging
     }
