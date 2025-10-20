@@ -1,20 +1,11 @@
-import { devConfig } from './environments/dev';
-import { prodConfig } from './environments/prod';
-import { seedConfig } from './environments/seed';
+import { environments } from './environments/config';
 
 // Determine which configuration to use based on environment flag
 const getConfig = () => {
   const env = process.env.ENV || 'dev';
   
-  switch (env.toLowerCase()) {
-    case 'prod':
-      return prodConfig;
-    case 'seed':
-      return seedConfig;
-    case 'dev':
-    default:
-      return devConfig;
-  }
+  // Use the environment or fallback to dev if not found
+  return environments[env.toLowerCase()] || environments.dev;
 };
 
 // Allow overriding with environment variables

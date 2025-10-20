@@ -8,7 +8,7 @@ function show_help {
   echo "Options:"
   echo "  -h, --help           Display this help message"
   echo "  -c, --clean          Clean up previously seeded data"
-  echo "  -e, --env ENV        Use specific environment (dev, prod, seed)"
+  echo "  -e, --env ENV        Use specific environment (dev or prod)"
   echo "  -t, --test-upload    Test image upload functionality only"
   echo "  -v, --verify         Verify images only"
   echo ""
@@ -33,6 +33,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -e|--env)
       ENV="$2"
+      if [[ "$ENV" != "dev" && "$ENV" != "prod" ]]; then
+        echo "Error: Environment must be 'dev' or 'prod'"
+        exit 1
+      fi
       shift 2
       ;;
     -v|--verify)
@@ -50,9 +54,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Set NODE_ENV
-export NODE_ENV=$ENV
-echo "Using environment: $NODE_ENV"
+# Set environment variables
+export ENV=$ENV
+export SEED_ENV=$ENV  # Keep it simple - SEED_ENV is the same as ENV
+echo "Using environment: $ENV"
 
 # Verify images
 echo "Verifying image assets..."
@@ -74,6 +79,9 @@ if [ "$TEST_UPLOAD" = true ]; then
   node ./scripts/test-image-upload.js
   exit $?
 fi
+
+# Print current environment configuration
+./scripts/check-env.sh "$ENV"
 
 # Execute appropriate action
 if [ "$ACTION" = "seed" ]; then

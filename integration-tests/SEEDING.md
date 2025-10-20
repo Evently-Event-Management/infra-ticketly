@@ -23,24 +23,25 @@ The seeding tools allow you to:
 
 ## Environment Configuration
 
-The seeding system supports multiple environments:
+The seeding system supports two environments:
 
 - `dev`: Local development environment (default)
 - `prod`: Production environment
-- `seed`: Special configuration for seeding operations
 
-You can select an environment by setting the `ENV` variable:
+You can select which environment to use with the `--env` flag:
 
 ```bash
-# Use development environment
-ENV=dev ./seed-events.sh seed
+# Use development environment (default)
+./scripts/seed-events.sh
+
+# Explicitly specify development environment
+./scripts/seed-events.sh --env dev
 
 # Use production environment
-ENV=prod ./seed-events.sh seed
-
-# Use seed-specific configuration
-ENV=seed ./seed-events.sh seed
+./scripts/seed-events.sh --env prod
 ```
+
+This setting determines which API endpoints will be used for seeding events. The development environment targets local services, while the production environment targets the production API endpoints.
 
 ## Seeding Events
 

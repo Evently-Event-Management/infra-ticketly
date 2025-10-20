@@ -22,8 +22,18 @@ export async function getKeycloakToken(username: string, password: string): Prom
   params.append('password', password);
   params.append('grant_type', 'password');
 
-  const response = await axios.post(config.keycloakTokenUrl, params);
-  return response.data.access_token;
+  console.log(`Authenticating with Keycloak at: ${config.keycloakTokenUrl}`);
+  
+  try {
+    const response = await axios.post(config.keycloakTokenUrl, params);
+    return response.data.access_token;
+  } catch (error) {
+    console.error('Keycloak authentication failed:');
+    if (error.config) {
+      console.error(`URL attempted: ${error.config.url}`);
+    }
+    throw error;
+  }
 }
 
 export async function makeAuthenticatedRequest(method: Method, url: string, token: string, data?: any): Promise<any> {
