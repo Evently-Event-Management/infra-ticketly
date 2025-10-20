@@ -141,12 +141,13 @@ async function seedEvents(): Promise<void> {
       const endTime = new Date(eventDate);
       endTime.setHours(15, 30, 0, 0);
       
-      // Sales start time (15 mins from now)
+      // Sales start time (60 mins from now)
       const salesStartTime = new Date();
-      salesStartTime.setMinutes(salesStartTime.getMinutes() + 15);
+      salesStartTime.setMinutes(salesStartTime.getMinutes() + 60);
       
       // Generate unique IDs
-      const tierId = generateUUID();
+      const standardTierId = generateUUID();
+      const vipTierId = generateUUID();
       const sessionId = generateUUID();
       const discountId = generateUUID();
       
@@ -160,10 +161,16 @@ async function seedEvents(): Promise<void> {
         categoryName: categoryName,
         tiers: [
           {
-            id: tierId,
-            name: "General Admission",
+            id: standardTierId,
+            name: "Standard",
             price: 1000 + (i * 100), // Vary prices a bit
             color: "#3B82F6"
+          },
+          {
+            id: vipTierId,
+            name: "VIP",
+            price: 2000 + (i * 150), // Higher price for VIP
+            color: "#EF4444"
           }
         ],
         sessions: [
@@ -185,7 +192,7 @@ async function seedEvents(): Promise<void> {
                 blocks: [
                   {
                     id: generateUUID(),
-                    name: "Main seating area",
+                    name: "seating",
                     type: "seated_grid",
                     position: {
                       x: 86.6666259765625,
@@ -199,13 +206,25 @@ async function seedEvents(): Promise<void> {
                           {
                             id: generateUUID(),
                             label: "1A",
-                            tierId,
+                            tierId: standardTierId,
                             status: "AVAILABLE"
                           },
                           {
                             id: generateUUID(),
                             label: "2A",
-                            tierId,
+                            tierId: standardTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "3A",
+                            tierId: standardTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "4A",
+                            tierId: standardTierId,
                             status: "AVAILABLE"
                           }
                         ]
@@ -217,13 +236,85 @@ async function seedEvents(): Promise<void> {
                           {
                             id: generateUUID(),
                             label: "1B",
-                            tierId,
+                            tierId: standardTierId,
                             status: "AVAILABLE"
                           },
                           {
                             id: generateUUID(),
                             label: "2B",
-                            tierId,
+                            tierId: standardTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "3B",
+                            tierId: standardTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "4B",
+                            tierId: standardTierId,
+                            status: "AVAILABLE"
+                          }
+                        ]
+                      },
+                      {
+                        id: generateUUID(),
+                        label: "C",
+                        seats: [
+                          {
+                            id: generateUUID(),
+                            label: "1C",
+                            tierId: vipTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "2C",
+                            tierId: vipTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "3C",
+                            tierId: vipTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "4C",
+                            tierId: vipTierId,
+                            status: "AVAILABLE"
+                          }
+                        ]
+                      },
+                      {
+                        id: generateUUID(),
+                        label: "D",
+                        seats: [
+                          {
+                            id: generateUUID(),
+                            label: "1D",
+                            tierId: vipTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "2D",
+                            tierId: vipTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "3D",
+                            tierId: vipTierId,
+                            status: "AVAILABLE"
+                          },
+                          {
+                            id: generateUUID(),
+                            label: "4D",
+                            tierId: vipTierId,
                             status: "AVAILABLE"
                           }
                         ]
@@ -253,10 +344,10 @@ async function seedEvents(): Promise<void> {
             }
           }
         ],
-        discounts: [
+        discounts: Math.random() < 0.7 ? [ // 70% chance of having a discount
           {
             id: discountId,
-            code: `SAVE${10 + i}`,
+            code: `SAVE${Math.floor(Math.random() * 16) + 5}`, // Random discount code SAVE5 to SAVE20
             maxUsage: null,
             currentUsage: 0,
             discountedTotal: 0,
@@ -264,16 +355,18 @@ async function seedEvents(): Promise<void> {
             public: true,
             activeFrom: null,
             expiresAt: null,
-            applicableTierIds: [tierId],
+            applicableTierIds: Math.random() < 0.5 ? 
+              [standardTierId] : // 50% chance of standard tier only
+              [standardTierId, vipTierId], // 50% chance of both tiers
             applicableSessionIds: [sessionId],
             parameters: {
               type: "PERCENTAGE",
-              percentage: 10,
-              minSpend: 10,
+              percentage: Math.floor(Math.random() * 16) + 5, // Random value between 5-20
+              minSpend: Math.floor(Math.random() * 500) + 500, // Random min spend between 500-1000
               maxDiscount: null
             }
           }
-        ]
+        ] : []
       };
       
       // Create the event
@@ -314,10 +407,6 @@ async function seedEvents(): Promise<void> {
       await makeAuthenticatedRequest('post', `${config.eventCommandServiceUrl}/v1/events/${eventId}/approve`, adminToken);
       console.log(`Event approved: ${eventId}`);
       
-      // Wait for event to propagate to query service
-      console.log('Waiting for event propagation...');
-      await wait(5000); // Wait 5 seconds
-      
       // Store event data for later cleanup
       seedData.events.push({
         id: eventId,
@@ -325,11 +414,7 @@ async function seedEvents(): Promise<void> {
         sessionId
       });
       
-      // Wait between event creations
-      if (i < eventCount - 1) {
-        console.log('Waiting before creating next event...');
-        await wait(2000);
-      }
+
     } catch (error) {
       console.error(`Error creating event ${i + 1}:`, error);
     }
