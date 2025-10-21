@@ -41,7 +41,7 @@ spec:
                 -XX:G1PeriodicGCInterval=30000
                 -XX:MaxHeapFreeRatio=30
                 -XX:MinHeapFreeRatio=10
-            
+
             # Application Configuration
             - name: INFRA_HOST
               valueFrom:
@@ -52,6 +52,13 @@ spec:
               value: "mongodb://$(INFRA_HOST):27017/event-seating"
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "$(INFRA_HOST):9092"
+            - name: REDIS_HOST
+              value: "$(INFRA_HOST)"
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ticketly-global-config
+                  key: REDIS_PORT
             - name: COMMAND_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
@@ -134,7 +141,7 @@ spec:
           resources:
             requests:
               cpu: 300m
-              memory: 750Mi 
+              memory: 750Mi
             limits:
               cpu: 1000m
               memory: 1280Mi

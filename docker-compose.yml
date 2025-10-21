@@ -212,6 +212,8 @@ services:
       - GOOGLE_PRIVATE_KEY=${GOOGLE_PRIVATE_KEY}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_PRIVATE_KEY_ID=${GOOGLE_PRIVATE_KEY_ID}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
       # 🧠 JVM tuning for memory and GC behavior
       - JAVA_OPTS=-XX:+UseContainerSupport \
