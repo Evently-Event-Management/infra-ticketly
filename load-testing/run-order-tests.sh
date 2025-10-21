@@ -57,12 +57,12 @@ if [[ "${CLOUD_MODE}" == "true" ]]; then
   echo "Cloud run submitted to Mumbai region"
 else
   timestamp=$(date +"%Y%m%d_%H%M%S")
-  result_file="output/order_race_${ENVIRONMENT}_${timestamp}.json"
+  report_file="output/order_race_${ENVIRONMENT}_${timestamp}.html"
 
   k6 run \
-    --out json="${result_file}" \
+    --out "dashboard=export=${report_file}" \
     --env ENV="${ENVIRONMENT}" \
     order-test.js
 
-  echo "Results saved to ${result_file}"
+  echo "HTML report saved to ${report_file}"
 fi

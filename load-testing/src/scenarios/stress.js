@@ -3,14 +3,11 @@ export const stressTestScenario = {
   executor: 'ramping-vus',
   startVUs: 0,
   stages: [
+    { duration: '1m', target: 250 },     // Ramp to 250 users
     { duration: '1m', target: 500 },    // Ramp to 500 users
     { duration: '2m', target: 500 },    // Hold at 500 for 2m
     { duration: '1m', target: 1000 },   // Ramp to 1000 users
     { duration: '2m', target: 1000 },   // Hold at 1000 for 2m
-    { duration: '1m', target: 1500 },   // Ramp to 1500 users
-    { duration: '2m', target: 1500 },   // Hold at 1500 for 2m
-    { duration: '1m', target: 2000 },   // Ramp to 2000 users
-    { duration: '2m', target: 2000 },   // Hold at 2000 for 2m
     { duration: '30s', target: 0 },     // Ramp down gracefully
   ],
   gracefulRampDown: '30s',

@@ -80,16 +80,16 @@ run_k6() {
   else
     local timestamp
     timestamp=$(date +"%Y%m%d_%H%M%S")
-    local result_file="output/query_${scenario}_${environment}_${timestamp}.json"
+    local report_file="output/query_${scenario}_${environment}_${timestamp}.html"
 
     k6 run \
-      --out dashboard \
+      --out "dashboard=export=${report_file}" \
       --env ENV="${environment}" \
       --env SCENARIO="${scenario}" \
       --env ONLY_SCENARIO="${scenario}" \
       query-test.js
 
-    echo "Results saved to ${result_file}"
+    echo "HTML report saved to ${report_file}"
   fi
 
   echo ""
