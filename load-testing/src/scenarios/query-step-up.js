@@ -15,7 +15,7 @@ export const stepUpLoadScenario = {
     { duration: '30s', target: 500 },   // Ramp up to 500 users
     
     // Hold the peak load long enough to show stability
-    { duration: '2m', target: 500 },    
+    { duration: '2m', target: 500 },
     
     // Ramp down
     { duration: '30s', target: 0 },   
