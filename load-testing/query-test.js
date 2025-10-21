@@ -1,5 +1,5 @@
 import { Rate, Trend } from 'k6/metrics';
-import { getAuthToken } from './src/lib/auth.js';
+import { getAuthToken, getValidToken } from './src/lib/auth.js';
 import { simulateTicketPurchaseQueryFlow } from './src/lib/workflows.js';
 import { applyEnvironment } from './src/config.js';
 
@@ -59,19 +59,30 @@ export const options = {
 // Store iteration counters per VU
 let iterationCounters = {};
 
+// Store token data per VU to allow refreshing
+let tokenCache = {};
+
 export function setup() {
     console.log('Starting query service load test setup');
     const environmentKey = (__ENV.ENV || '').toLowerCase();
     applyEnvironment(environmentKey);
-    const authToken = getAuthToken();
+    const tokenData = getAuthToken();
     console.log('Authentication completed');
-    return { authToken };
+    return { tokenData };
 }
 
 export default function (data) {
     const scenarioName = __ENV.SCENARIO || 'default';
-    const authToken = data.authToken;
     const vuId = __VU || 'shared';
+
+    // Initialize or refresh token for this VU
+    if (!tokenCache[vuId]) {
+        tokenCache[vuId] = data.tokenData;
+    }
+    
+    // Check and refresh token if needed
+    tokenCache[vuId] = getValidToken(tokenCache[vuId]);
+    const authToken = tokenCache[vuId].access_token;
 
     if (!iterationCounters[vuId]) {
         iterationCounters[vuId] = 0;

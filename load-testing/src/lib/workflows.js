@@ -21,11 +21,18 @@ function recordTrend(trends, key, response) {
   trends[key].add(response.timings.duration);
 }
 
-function parseJson(body, description) {
+function parseJson(body, description, response = null) {
   try {
     return JSON.parse(body);
   } catch (error) {
     console.error(`Failed to parse ${description}: ${error.message}`);
+    if (response) {
+      console.error(`Response status: ${response.status}`);
+      console.error(`Response body (first 500 chars): ${String(body).substring(0, 500)}`);
+      console.error(`Response headers: ${JSON.stringify(response.headers)}`);
+    } else {
+      console.error(`Response body (first 500 chars): ${String(body).substring(0, 500)}`);
+    }
     throw new Error(`Invalid JSON response for ${description}`);
   }
 }
@@ -48,7 +55,7 @@ function ensureId(value, description) {
  * 5. Load session details
  * 6. Fetch the seating map
  *
- * @param {string} authToken
+ * @param {string} authToken - JWT access token string
  * @param {{ trends?: Record<string, import('k6/metrics').Trend> }} [dependencies]
  * @returns {{ eventId: string, sessionId: string, seatIds: string[] }}
  */
@@ -71,7 +78,7 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
   const trendingResponse = http.get(`${baseUrl}/v1/events/trending?limit=10`, params);
   recordTrend(trends, 'trendingEvents', trendingResponse);
 
-  const trendingEvents = parseJson(trendingResponse.body, 'trending events');
+  const trendingEvents = parseJson(trendingResponse.body, 'trending events', trendingResponse);
   const trendingSuccess = check(trendingResponse, {
     'trending events status is 200': (r) => r.status === 200,
     'trending events list is not empty': () => Array.isArray(trendingEvents) && trendingEvents.length > 0,
@@ -98,7 +105,7 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
   const searchResponse = http.get(`${baseUrl}/v1/events/search?${searchParams}`, params);
   recordTrend(trends, 'eventSearch', searchResponse);
 
-  const searchData = parseJson(searchResponse.body, 'event search');
+  const searchData = parseJson(searchResponse.body, 'event search', searchResponse);
   const searchSuccess = check(searchResponse, {
     'search events status is 200': (r) => r.status === 200,
     'search results contain content': () => Array.isArray(searchData?.content) && searchData.content.length > 0,
@@ -120,7 +127,7 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
   const eventDetailsResponse = http.get(`${baseUrl}/v1/events/${eventId}/basic-info`, params);
   recordTrend(trends, 'eventDetails', eventDetailsResponse);
 
-  const eventDetails = parseJson(eventDetailsResponse.body, 'event details');
+  const eventDetails = parseJson(eventDetailsResponse.body, 'event details', eventDetailsResponse);
   const eventDetailsSuccess = check(eventDetailsResponse, {
     'event details status is 200': (r) => r.status === 200,
     'event details match id': () => eventDetails?.id === eventId,
@@ -138,7 +145,7 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
   const sessionsResponse = http.get(`${baseUrl}/v1/events/${eventId}/sessions?pageable.page=0&pageable.size=10`, params);
   recordTrend(trends, 'eventSessions', sessionsResponse);
 
-  const sessionsData = parseJson(sessionsResponse.body, 'event sessions');
+  const sessionsData = parseJson(sessionsResponse.body, 'event sessions', sessionsResponse);
   const sessionsSuccess = check(sessionsResponse, {
     'event sessions status is 200': (r) => r.status === 200,
     'event sessions list is not empty': () => Array.isArray(sessionsData?.content) && sessionsData.content.length > 0,
@@ -158,7 +165,7 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
   const sessionDetailsResponse = http.get(`${baseUrl}/v1/sessions/${sessionId}/basic-info`, params);
   recordTrend(trends, 'sessionDetails', sessionDetailsResponse);
 
-  const sessionDetails = parseJson(sessionDetailsResponse.body, 'session details');
+  const sessionDetails = parseJson(sessionDetailsResponse.body, 'session details', sessionDetailsResponse);
   const sessionDetailsSuccess = check(sessionDetailsResponse, {
     'session details status is 200': (r) => r.status === 200,
     'session details match id': () => sessionDetails?.id === sessionId,
@@ -176,7 +183,7 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
   const seatingMapResponse = http.get(`${baseUrl}/v1/sessions/${sessionId}/seating-map`, params);
   recordTrend(trends, 'seatingMap', seatingMapResponse);
 
-  const seatingMap = parseJson(seatingMapResponse.body, 'seating map');
+  const seatingMap = parseJson(seatingMapResponse.body, 'seating map', seatingMapResponse);
   const seatingMapSuccess = check(seatingMapResponse, {
     'seating map status is 200': (r) => r.status === 200,
     'seating map contains layout information': () => Boolean(seatingMap?.layout),

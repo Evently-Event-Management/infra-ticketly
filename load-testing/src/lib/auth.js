@@ -7,7 +7,7 @@ import { config } from '../config.js';
  * @param {string} clientSecret - OAuth client secret
  * @param {string} username - Optional username for password grant
  * @param {string} password - Optional password for password grant
- * @returns {string} Access token
+ * @returns {{ access_token: string, expires_in: number, expires_at: number }} Token data
  */
 export function getAuthToken(clientId = config.auth.clientId, clientSecret = config.auth.clientSecret, 
                             username = config.auth.username, password = config.auth.password) {
@@ -48,5 +48,29 @@ export function getAuthToken(clientId = config.auth.clientId, clientSecret = con
     throw new Error('Received invalid token');
   }
   
-  return tokenResponse.access_token;
+  // Calculate expiration time (subtract 30 seconds as buffer)
+  const expiresAt = Date.now() + ((tokenResponse.expires_in - 30) * 1000);
+  
+  return {
+    access_token: tokenResponse.access_token,
+    expires_in: tokenResponse.expires_in,
+    expires_at: expiresAt,
+  };
+}
+
+/**
+ * Gets a valid auth token, refreshing if necessary
+ * @param {{ access_token: string, expires_at: number }} tokenData - Current token data
+ * @returns {{ access_token: string, expires_in: number, expires_at: number }} Valid token data
+ */
+export function getValidToken(tokenData) {
+  // Check if token is expired or will expire soon
+  if (!tokenData || !tokenData.expires_at || Date.now() >= tokenData.expires_at) {
+    if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+      console.log('Token expired or missing, refreshing...');
+    }
+    return getAuthToken();
+  }
+  
+  return tokenData;
 }
