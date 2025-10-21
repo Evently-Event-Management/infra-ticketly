@@ -64,7 +64,10 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
     timeout: '10s',
   };
 
-  console.log('Step 1: Browsing trending events');
+  // Only log in first VU or in debug scenario
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    console.log('Step 1: Browsing trending events');
+  }
   const trendingResponse = http.get(`${baseUrl}/v1/events/trending?limit=10`, params);
   recordTrend(trends, 'trendingEvents', trendingResponse);
 
@@ -82,7 +85,9 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
 
   sleep(Math.random() * 2 + 1);
 
-  console.log('Step 2: Searching for events');
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    console.log('Step 2: Searching for events');
+  }
   const searchTerm = getRandomItem(queryConfig.searchTerms) || 'event';
   const searchParams = toQueryString({
     searchTerm,
@@ -109,7 +114,9 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
 
   sleep(Math.random() * 3 + 2);
 
-  console.log(`Step 3: Viewing details for event ${eventId}`);
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    console.log(`Step 3: Viewing details for event ${eventId}`);
+  }
   const eventDetailsResponse = http.get(`${baseUrl}/v1/events/${eventId}/basic-info`, params);
   recordTrend(trends, 'eventDetails', eventDetailsResponse);
 
@@ -125,7 +132,9 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
 
   sleep(Math.random() * 2 + 1);
 
-  console.log(`Step 4: Fetching sessions for event ${eventId}`);
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    console.log(`Step 4: Fetching sessions for event ${eventId}`);
+  }
   const sessionsResponse = http.get(`${baseUrl}/v1/events/${eventId}/sessions?pageable.page=0&pageable.size=10`, params);
   recordTrend(trends, 'eventSessions', sessionsResponse);
 
@@ -143,7 +152,9 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
 
   sleep(Math.random() * 2 + 1);
 
-  console.log(`Step 5: Viewing details for session ${sessionId}`);
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    console.log(`Step 5: Viewing details for session ${sessionId}`);
+  }
   const sessionDetailsResponse = http.get(`${baseUrl}/v1/sessions/${sessionId}/basic-info`, params);
   recordTrend(trends, 'sessionDetails', sessionDetailsResponse);
 
@@ -159,7 +170,9 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
 
   sleep(Math.random() * 2 + 1);
 
-  console.log(`Step 6: Fetching seating map for session ${sessionId}`);
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    console.log(`Step 6: Fetching seating map for session ${sessionId}`);
+  }
   const seatingMapResponse = http.get(`${baseUrl}/v1/sessions/${sessionId}/seating-map`, params);
   recordTrend(trends, 'seatingMap', seatingMapResponse);
 
@@ -173,7 +186,9 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
     throw new Error('Seating map request failed');
   }
 
-  console.log('Ticket query flow simulation completed');
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    console.log('Ticket query flow simulation completed');
+  }
   return { eventId, sessionId };
 }
 
@@ -220,7 +235,9 @@ export function simulateOrderServiceFlow(authToken, { metrics } = {}) {
     timeout: '10s',
   };
 
-  console.log(`Attempting order for seat ${seatId} in session ${sessionId}`);
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    console.log(`Attempting order for seat ${seatId} in session ${sessionId}`);
+  }
   const response = http.post(baseUrl, JSON.stringify(payload), params);
 
   if (metrics?.requestTrend && typeof response.timings?.duration === 'number') {
@@ -239,12 +256,14 @@ export function simulateOrderServiceFlow(authToken, { metrics } = {}) {
     metrics.successRate.add(success);
   }
 
-  if (!success) {
-    console.warn(`Order attempt failed (${response.status}): ${response.body}`);
-  } else if (responseBody?.order_id) {
-    console.log(`Order succeeded with id ${responseBody.order_id}`);
-  } else {
-    console.log('Order succeeded (no order_id returned).');
+  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+    if (!success) {
+      console.warn(`Order attempt failed (${response.status}): ${response.body}`);
+    } else if (responseBody?.order_id) {
+      console.log(`Order succeeded with id ${responseBody.order_id}`);
+    } else {
+      console.log('Order succeeded (no order_id returned).');
+    }
   }
 
   return { success, response, responseBody };

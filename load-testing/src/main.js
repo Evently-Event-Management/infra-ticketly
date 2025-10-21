@@ -22,6 +22,7 @@ import { spikeTestScenario } from './scenarios/spike.js';
 import { breakpointTestScenario } from './scenarios/breakpoint.js';
 import { debugTestScenario } from './scenarios/debug.js';
 import { orderRaceTestScenario } from './scenarios/order-race.js';
+import { stepUpLoadScenario } from './scenarios/query-step-up.js';
 
 // Define metrics
 export const errorRate = new Rate('errors');
@@ -45,6 +46,7 @@ export const options = {
     : {
       smoke: smokeTestScenario,
       load: loadTestScenario,
+      stepUp: stepUpLoadScenario,
       stress: stressTestScenario,
       soak: soakTestScenario,
       spike: spikeTestScenario,

@@ -1,46 +1,63 @@
-# Ticketly Load Testing Suite with k6
+# Ticketly Load Testing Suite
 
-This directory contains load testing scripts for the Ticketly microservices using [k6](https://k6.io/), an open-source load testing tool.
+k6-based load testing for Ticketly microservices, separated into independent query and order test suites.
 
-## Overview: Load Testing Fundamentals
+## Overview
 
-Load testing is a critical part of ensuring the reliability, scalability, and performance of distributed systems. It simulates real-world traffic patterns and user behaviors to validate that APIs and backend services can handle expected and unexpected loads. The main goals are to:
+This directory contains two independent load testing suites:
 
-- **Verify system stability** under normal and peak loads
-- **Identify bottlenecks** and performance degradation
-- **Ensure error rates remain acceptable** under stress
-- **Detect resource leaks** (memory, connections) during prolonged usage
+1. **Query Service Tests** (`query-test.js`) - Read-only discovery flow testing
+2. **Order Service Tests** (`order-test.js`) - Concurrent booking contention testing
 
-### Types of Load Testing Included
+Each suite has its own dedicated runner script and can be executed independently or via k6 Cloud.
 
-This suite currently targets the **event-query microservice**, but is designed to be easily extended to other Ticketly microservices (e.g., ticketing, payment, user, etc.) in the future.
+### Types of Load Testing
 
-The following types of load testing are implemented:
+**Query Service Scenarios:**
+- **Smoke**: Minimal validation (1 VU, 1m)
+- **Load**: Normal expected traffic (10 VUs, 5m)
+- **Stress**: Peak load conditions (20 VUs, 10m)
+- **Soak**: Extended stability test (5 VUs, 30m)
+- **Spike**: Sudden traffic burst (1→50→1 VUs, 5m)
+- **Breakpoint**: Find maximum capacity (10→100 VUs, 15m)
+- **Debug**: Troubleshooting mode (2 VUs, 1m)
 
-- **Smoke Testing**: Minimal load to verify basic system functionality after deployment.
-- **Load Testing**: Simulates typical production traffic to validate performance under expected conditions.
-- **Stress Testing**: Applies higher-than-normal load to find the system's limits and observe recovery.
-- **Soak Testing**: Sustained moderate load over an extended period to detect resource leaks and long-term issues.
-- **Spike Testing**: Sudden bursts of high traffic to test system resilience and recovery.
-- **Breakpoint Testing**: Gradually increases load to determine the system's breaking point and maximum throughput.
-- **Debug/Quick Testing**: Low-load, short-duration tests for troubleshooting and rapid feedback.
+**Order Service Scenario:**
+- **Order Race**: Concurrent seat booking contention (100 VUs, 30s)
 
-Each scenario is defined in its own script and can be run independently or as part of an integrated workflow.
+## Quick Start
 
-### Tools and Libraries Used
+### Query Service Tests
 
-- **[k6](https://k6.io/)**: The primary load testing engine. It provides a JavaScript-based scripting environment for defining test scenarios, metrics, and thresholds.
-- **Node.js**: Used for formatting scripts and managing dependencies.
-- **Custom JavaScript Libraries**: Located in `src/lib/`, these provide authentication, endpoint utilities, and business transaction helpers.
-- **Shell Scripts**: `run-tests.sh` orchestrates test execution, reporting, and environment selection.
+```bash
+# Smoke test locally
+./run-query-tests.sh smoke local
 
-Future enhancements will include support for additional microservices, more complex business flows, and integration with CI/CD pipelines.
+# Load test against dev
+./run-query-tests.sh load dev
 
-## Prerequisites
+# Run all scenarios sequentially against prod
+./run-query-tests.sh all prod
 
-- [k6](https://k6.io/docs/getting-started/installation/) installed on your system
-- Node.js (for formatting scripts with Prettier)
-- Access to Ticketly API and authentication credentials
+# Stress test in k6 Cloud (Mumbai region)
+./run-query-tests.sh --cloud stress prod
+```
+
+### Order Service Tests
+
+```bash
+# Contention test locally
+./run-order-tests.sh local
+
+# Test against prod
+./run-order-tests.sh prod
+
+# Run in k6 Cloud
+./run-order-tests.sh --cloud prod
+
+# Adjust concurrency
+ORDER_VUS=50 ORDER_DURATION=60s ./run-order-tests.sh dev
+```
 
 ## Directory Structure
 
