@@ -45,6 +45,7 @@ declare -A QUERY_SCENARIOS=(
   [spike]=spike
   [breakpoint]=breakpoint
   [debug]=debug
+)
 CLOUD_MODE=false
 
 if [[ "${1:-}" == "--cloud" || "${1:-}" == "cloud" ]]; then
