@@ -4,7 +4,7 @@ set -euo pipefail
 
 print_help() {
   cat <<'EOF'
-Usage: ./run-tests.sh [service] [scenario] [environment]
+Usage: ./run-tests.sh [--cloud] [service] [scenario] [environment]
 
 Services and scenarios
   query  → discovery flow (default). Scenarios: all (default), smoke, load, stress,
@@ -20,11 +20,14 @@ Setup notes
     directly from that file—no environment variables are required.
   • Optionally adjust ORDER_VUS / ORDER_DURATION when invoking order tests to
     change contention levels (defaults: 100 VUs for 30s).
+  • Pass --cloud to execute the run via k6 Cloud instead of the local k6 engine.
+    Cloud runs stream metrics to Grafana Cloud; local JSON results are not generated.
 
 Examples
-  ./run-tests.sh query smoke local      # Query service, smoke scenario, local endpoints
-  ./run-tests.sh query all dev          # Run every query scenario sequentially against dev
-  ./run-tests.sh order race prod        # Run seat contention test against prod settings
+  ./run-tests.sh query smoke local        # Query service, smoke scenario, local endpoints
+  ./run-tests.sh query all dev            # Run every query scenario sequentially against dev
+  ./run-tests.sh order race prod          # Run seat contention test against prod settings
+  ./run-tests.sh --cloud query load prod  # Execute load scenario in k6 Cloud
 
 EOF
 }
@@ -42,7 +45,12 @@ declare -A QUERY_SCENARIOS=(
   [spike]=spike
   [breakpoint]=breakpoint
   [debug]=debug
-)
+CLOUD_MODE=false
+
+if [[ "${1:-}" == "--cloud" || "${1:-}" == "cloud" ]]; then
+  CLOUD_MODE=true
+  shift
+fi
 
 SERVICE=${1:-query}
 SERVICE=${SERVICE,,}
@@ -57,21 +65,32 @@ run_k6() {
   local service=$1
   local scenario=$2
   local environment=$3
-  local timestamp
-  timestamp=$(date +"%Y%m%d_%H%M%S")
-  local result_file="output/${service}_${scenario}_${environment}_${timestamp}.json"
-
   echo "Running ${service} service :: ${scenario} scenario against ${environment} environment"
 
-  k6 run \
-    --out json="${result_file}" \
-    --env ENV="${environment}" \
-    --env SCENARIO="${scenario}" \
-    --env ONLY_SCENARIO="${scenario}" \
-    --env SERVICE="${service}" \
-    src/main.js
+  if [[ "${CLOUD_MODE}" == "true" ]]; then
+    k6 cloud \
+      --env ENV="${environment}" \
+      --env SCENARIO="${scenario}" \
+      --env ONLY_SCENARIO="${scenario}" \
+      --env SERVICE="${service}" \
+      src/main.js
+    echo "Cloud run submitted"
+  else
+    local timestamp
+    timestamp=$(date +"%Y%m%d_%H%M%S")
+    local result_file="output/${service}_${scenario}_${environment}_${timestamp}.json"
 
-  echo "Results saved to ${result_file}"
+    k6 run \
+      --out json="${result_file}" \
+      --env ENV="${environment}" \
+      --env SCENARIO="${scenario}" \
+      --env ONLY_SCENARIO="${scenario}" \
+      --env SERVICE="${service}" \
+      src/main.js
+
+    echo "Results saved to ${result_file}"
+  fi
+
   echo ""
 }
 
