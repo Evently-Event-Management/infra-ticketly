@@ -173,17 +173,16 @@ spec:
     kind: Deployment
     name: event-query-service
   minReplicas: 1
-  maxReplicas: 1
+  maxReplicas: 4
   metrics:
-    # --- REMOVED MEMORY METRIC ---
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 60 # Lowered target slightly
+          averageUtilization: 70
   behavior:
-    scaleUp: # Keep aggressive scale-up
+    scaleUp:
       stabilizationWindowSeconds: 30
       policies:
         - type: Percent
@@ -193,8 +192,8 @@ spec:
           value: 2
           periodSeconds: 30
       selectPolicy: Max
-    scaleDown: # Scale down based on CPU after idle period
-      stabilizationWindowSeconds: 180 # 3 minutes stabilization
+    scaleDown:
+      stabilizationWindowSeconds: 180
       policies:
         - type: Percent
           value: 50
