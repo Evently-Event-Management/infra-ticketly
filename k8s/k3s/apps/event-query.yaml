@@ -22,6 +22,27 @@ spec:
           ports:
             - containerPort: 8082
           env:
+            # JVM Configuration - CRITICAL FOR MEMORY MANAGEMENT
+            - name: JAVA_OPTS
+              value: >-
+                -XX:+UseContainerSupport
+                -XX:InitialRAMPercentage=40.0
+                -XX:MinRAMPercentage=40.0
+                -XX:MaxRAMPercentage=65.0
+                -XX:+UseG1GC
+                -XX:MaxGCPauseMillis=200
+                -XX:ParallelGCThreads=2
+                -XX:ConcGCThreads=1
+                -XX:InitiatingHeapOccupancyPercent=45
+                -XX:G1ReservePercent=10
+                -XX:MaxMetaspaceSize=256m
+                -XX:+ExitOnOutOfMemoryError
+                -XX:+UseStringDeduplication
+                -XX:G1PeriodicGCInterval=30000
+                -XX:MaxHeapFreeRatio=30
+                -XX:MinHeapFreeRatio=10
+            
+            # Application Configuration
             - name: INFRA_HOST
               valueFrom:
                 configMapKeyRef:
@@ -112,39 +133,27 @@ spec:
                   key: GOOGLE_PRIVATE_KEY_ID
           resources:
             requests:
-              cpu: 350m
-              memory: 850Mi
+              cpu: 300m
+              memory: 750Mi 
             limits:
-              cpu: 900m
-              memory: 1536Mi
+              cpu: 1000m
+              memory: 1280Mi
           readinessProbe:
             httpGet:
               path: /api/event-query/actuator/health/readiness
               port: 8082
             initialDelaySeconds: 20
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /api/event-query/actuator/health/liveness
               port: 8082
             initialDelaySeconds: 60
             periodSeconds: 20
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: event-query-service
-  namespace: ticketly
-  labels:
-    app: event-query-service
-spec:
-  selector:
-    app: event-query-service
-  ports:
-    - name: http
-      port: 8082
-      targetPort: 8082
-  type: ClusterIP
+            timeoutSeconds: 5
+            failureThreshold: 3
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -157,35 +166,30 @@ spec:
     kind: Deployment
     name: event-query-service
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 1
   metrics:
+    # --- REMOVED MEMORY METRIC ---
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 65
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 75
+          averageUtilization: 60 # Lowered target slightly
   behavior:
-    scaleUp:
+    scaleUp: # Keep aggressive scale-up
       stabilizationWindowSeconds: 30
       policies:
-      - type: Percent
-        value: 150
-        periodSeconds: 30
-      - type: Pods
-        value: 2
-        periodSeconds: 30
+        - type: Percent
+          value: 150
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
       selectPolicy: Max
-    scaleDown:
-      stabilizationWindowSeconds: 240
+    scaleDown: # Scale down based on CPU after idle period
+      stabilizationWindowSeconds: 180 # 3 minutes stabilization
       policies:
-      - type: Percent
-        value: 33
-        periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
       selectPolicy: Max

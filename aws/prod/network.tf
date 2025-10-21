@@ -215,6 +215,16 @@ resource "aws_security_group_rule" "public_kube_api_from_home_in" {
   description       = "Kubernetes API access from Home IP"
 }
 
+resource "aws_security_group_rule" "public_kube_api_from_everywhere" {
+  type              = "ingress"
+  from_port         = 6443
+  to_port           = 6443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.public.id
+  description       = "Kubernetes API access from Everywhere"
+}
+
 resource "aws_security_group_rule" "public_http_in_generic" {
   type              = "ingress"
   from_port         = 80

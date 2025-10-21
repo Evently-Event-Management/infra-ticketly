@@ -1,7 +1,7 @@
 import http from 'k6/http';
-import { sleep, check } from 'k6';
+import { check } from 'k6';
 import { config } from '../config.js';
-import { errorRate, eventDetailsTrend, eventSearchTrend, sessionDetailsTrend, trendingEventsTrend } from '../main.js';
+import { errorRate, eventDetailsTrend, eventSearchTrend, eventSessionsTrend, seatingMapTrend, sessionDetailsTrend, trendingEventsTrend } from '../main.js';
 
 /**
  * Makes API requests to test the trending events endpoint
@@ -15,7 +15,7 @@ export function testTrendingEvents(authToken) {
     },
   };
   
-  const response = http.get(`${config.baseUrl}/v1/events/trending?limit=10`, params);
+  const response = http.get(`${config.query.baseUrl}/v1/events/trending?limit=10`, params);
   
   check(response, {
     'trending events status is 200': (r) => r.status === 200,
@@ -55,7 +55,7 @@ export function testEventSearch(authToken, searchParams = {}) {
   // Combine default and provided parameters
   const combinedParams = { ...defaultParams, ...searchParams };
   
-  const searchUrl = `${config.baseUrl}/v1/events/search?` + new URLSearchParams(combinedParams).toString();
+  const searchUrl = `${config.query.baseUrl}/v1/events/search?` + new URLSearchParams(combinedParams).toString();
   
   const response = http.get(searchUrl, params);
   
@@ -80,7 +80,10 @@ export function testEventSearch(authToken, searchParams = {}) {
  * @param {string} authToken - Authentication token
  * @param {string} eventId - Event ID
  */
-export function testEventDetails(authToken, eventId = config.sampleEventId) {
+export function testEventDetails(authToken, eventId) {
+  if (!eventId) {
+    throw new Error('eventId is required for event details testing');
+  }
   const params = {
     headers: {
       'Authorization': `Bearer ${authToken}`,
@@ -88,7 +91,7 @@ export function testEventDetails(authToken, eventId = config.sampleEventId) {
     },
   };
   
-  const response = http.get(`${config.baseUrl}/v1/events/${eventId}/basic-info`, params);
+  const response = http.get(`${config.query.baseUrl}/v1/events/${eventId}/basic-info`, params);
   
   check(response, {
     'event details status is 200': (r) => r.status === 200,
@@ -111,7 +114,10 @@ export function testEventDetails(authToken, eventId = config.sampleEventId) {
  * @param {string} authToken - Authentication token
  * @param {string} sessionId - Session ID
  */
-export function testSessionDetails(authToken, sessionId = config.sampleSessionId) {
+export function testSessionDetails(authToken, sessionId) {
+  if (!sessionId) {
+    throw new Error('sessionId is required for session details testing');
+  }
   const params = {
     headers: {
       'Authorization': `Bearer ${authToken}`,
@@ -119,7 +125,7 @@ export function testSessionDetails(authToken, sessionId = config.sampleSessionId
     },
   };
   
-  const response = http.get(`${config.baseUrl}/v1/sessions/${sessionId}/basic-info`, params);
+  const response = http.get(`${config.query.baseUrl}/v1/sessions/${sessionId}/basic-info`, params);
   
   check(response, {
     'session details status is 200': (r) => r.status === 200,
@@ -142,7 +148,10 @@ export function testSessionDetails(authToken, sessionId = config.sampleSessionId
  * @param {string} authToken - Authentication token
  * @param {string} eventId - Event ID
  */
-export function testEventSessions(authToken, eventId = config.sampleEventId) {
+export function testEventSessions(authToken, eventId) {
+  if (!eventId) {
+    throw new Error('eventId is required for event sessions testing');
+  }
   const params = {
     headers: {
       'Authorization': `Bearer ${authToken}`,
@@ -150,7 +159,7 @@ export function testEventSessions(authToken, eventId = config.sampleEventId) {
     },
   };
   
-  const response = http.get(`${config.baseUrl}/v1/events/${eventId}/sessions?pageable.page=0&pageable.size=10`, params);
+  const response = http.get(`${config.query.baseUrl}/v1/events/${eventId}/sessions?pageable.page=0&pageable.size=10`, params);
   
   check(response, {
     'event sessions status is 200': (r) => r.status === 200,
@@ -164,6 +173,7 @@ export function testEventSessions(authToken, eventId = config.sampleEventId) {
     },
   }) || errorRate.add(1);
   
+  eventSessionsTrend.add(response.timings.duration);
   return response;
 }
 
@@ -172,7 +182,10 @@ export function testEventSessions(authToken, eventId = config.sampleEventId) {
  * @param {string} authToken - Authentication token
  * @param {string} sessionId - Session ID
  */
-export function testSessionSeatingMap(authToken, sessionId = config.sampleSessionId) {
+export function testSessionSeatingMap(authToken, sessionId) {
+  if (!sessionId) {
+    throw new Error('sessionId is required for seating map testing');
+  }
   const params = {
     headers: {
       'Authorization': `Bearer ${authToken}`,
@@ -180,7 +193,7 @@ export function testSessionSeatingMap(authToken, sessionId = config.sampleSessio
     },
   };
   
-  const response = http.get(`${config.baseUrl}/v1/sessions/${sessionId}/seating-map`, params);
+  const response = http.get(`${config.query.baseUrl}/v1/sessions/${sessionId}/seating-map`, params);
   
   check(response, {
     'seating map status is 200': (r) => r.status === 200,
@@ -194,6 +207,7 @@ export function testSessionSeatingMap(authToken, sessionId = config.sampleSessio
     },
   }) || errorRate.add(1);
   
+  seatingMapTrend.add(response.timings.duration);
   return response;
 }
 
@@ -209,7 +223,7 @@ export function testCategories(authToken) {
     },
   };
   
-  const response = http.get(`${config.baseUrl}/v1/categories`, params);
+  const response = http.get(`${config.query.baseUrl}/v1/categories`, params);
   
   check(response, {
     'categories status is 200': (r) => r.status === 200,

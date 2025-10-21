@@ -1,113 +1,115 @@
 #!/bin/bash
 
-# Simple k6 test runner for Ticketly API
-# Exit on error
-set -e
+set -euo pipefail
 
-# Create output directory if it doesn't exist
-mkdir -p output
+print_help() {
+  cat <<'EOF'
+Usage: ./run-tests.sh [service] [scenario] [environment]
 
-# Default values
-SCENARIO=""
-ENVIRONMENT="local"
+Services and scenarios
+  query  → discovery flow (default). Scenarios: all (default), smoke, load, stress,
+            soak, spike, breakpoint, debug.
+  order  → parallel seat booking contention. Scenarios: race (default).
 
-# Function to print usage information
-function print_usage {
-  echo "Usage: $0 [scenario] [environment]"
-  echo ""
-  echo "Options:"
-  echo "  scenario    Test scenario (smoke|load|stress|soak|spike|breakpoint|debug)"
-  echo "              If not specified, all scenarios will run sequentially"
-  echo "  environment Environment (local|dev|staging|prod) [default: local]"
-  echo ""
-  echo "Examples:"
-  echo "  $0                  # Run all scenarios sequentially against local environment"
-  echo "  $0 load             # Run load scenario against local environment"
-  echo "  $0 smoke prod       # Run smoke tests against production environment"
-  exit 1
+Environments
+  local (default), dev, prod. Overrides are applied via src/config.js → environments.
+
+Setup notes
+  • Configure authentication, base URLs, and order identifiers inside src/config.js.
+    The order workload reads event_id, session_id, organization_id, and seat_ids
+    directly from that file—no environment variables are required.
+  • Optionally adjust ORDER_VUS / ORDER_DURATION when invoking order tests to
+    change contention levels (defaults: 100 VUs for 30s).
+
+Examples
+  ./run-tests.sh query smoke local      # Query service, smoke scenario, local endpoints
+  ./run-tests.sh query all dev          # Run every query scenario sequentially against dev
+  ./run-tests.sh order race prod        # Run seat contention test against prod settings
+
+EOF
 }
 
-# Process command line arguments
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-  print_usage
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  print_help
+  exit 0
 fi
 
-# First argument is the scenario (optional)
-if [[ -n "$1" ]]; then
-  SCENARIO="$1"
-  
-  # Validate scenario if provided
-  if [[ ! "$SCENARIO" =~ ^(smoke|load|stress|soak|spike|breakpoint|debug)$ ]]; then
-    echo "ERROR: Invalid scenario: $SCENARIO"
-    print_usage
-  fi
-fi
+declare -A QUERY_SCENARIOS=(
+  [smoke]=smoke
+  [load]=load
+  [stress]=stress
+  [soak]=soak
+  [spike]=spike
+  [breakpoint]=breakpoint
+  [debug]=debug
+)
 
-# Second argument is the environment (optional)
-if [[ -n "$2" ]]; then
-  ENVIRONMENT="$2"
-  
-  # Validate environment
-  if [[ ! "$ENVIRONMENT" =~ ^(local|dev|staging|prod)$ ]]; then
-    echo "ERROR: Invalid environment: $ENVIRONMENT"
-    print_usage
-  fi
-fi
+SERVICE=${1:-query}
+SERVICE=${SERVICE,,}
 
-# Create timestamp for unique output files
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-OUTPUT_FILE="output/test_${ENVIRONMENT}_${TIMESTAMP}.json"
+SCENARIO_INPUT=${2:-}
+ENVIRONMENT=${3:-local}
+ENVIRONMENT=${ENVIRONMENT,,}
 
-# Display banner
-echo "+--------------------------------------------------+"
-echo "|             TICKETLY LOAD TEST RUNNER            |"
-echo "+--------------------------------------------------+"
-echo ""
+mkdir -p output
 
-# Set the scenario environment variable for k6 if specified
-if [[ -n "$SCENARIO" ]]; then
-  echo ">> Running $SCENARIO scenario against $ENVIRONMENT environment"
-  echo ">> Time: $(date)"
-  echo ">> Results will be saved to $OUTPUT_FILE"
-  echo ""
-  
-  # Run k6 test with specific scenario
-  echo ">> Starting k6 test..."
+run_k6() {
+  local service=$1
+  local scenario=$2
+  local environment=$3
+  local timestamp
+  timestamp=$(date +"%Y%m%d_%H%M%S")
+  local result_file="output/${service}_${scenario}_${environment}_${timestamp}.json"
+
+  echo "Running ${service} service :: ${scenario} scenario against ${environment} environment"
+
   k6 run \
-    --out json=$OUTPUT_FILE \
-    --env ENV=$ENVIRONMENT \
-    --env SCENARIO=$SCENARIO \
-    --env ONLY_SCENARIO=$SCENARIO \
+    --out json="${result_file}" \
+    --env ENV="${environment}" \
+    --env SCENARIO="${scenario}" \
+    --env ONLY_SCENARIO="${scenario}" \
+    --env SERVICE="${service}" \
     src/main.js
-else
-  # Run all test scenarios sequentially when no scenario is specified
-  echo ">> Running all scenarios sequentially against $ENVIRONMENT environment"
-  echo ">> Time: $(date)"
-  echo ""
-  
-  # Define all available scenarios
-  SCENARIOS=("smoke" "load" "stress" "soak" "spike" "breakpoint" "debug")
-  
-  # Run each scenario one by one
-  for scenario in "${SCENARIOS[@]}"; do
-    # Create unique output file for each scenario
-    SCENARIO_OUTPUT_FILE="output/${scenario}_${ENVIRONMENT}_${TIMESTAMP}.json"
-    
-    echo ""
-    echo ">> Starting $scenario scenario..."
-    echo ">> Results will be saved to $SCENARIO_OUTPUT_FILE"
-    
-    k6 run \
-      --out json=$SCENARIO_OUTPUT_FILE \
-      --env ENV=$ENVIRONMENT \
-      --env SCENARIO=$scenario \
-      --env ONLY_SCENARIO=$scenario \
-      src/main.js
-      
-    echo ">> Completed $scenario scenario"
-  done
-fi
 
-echo ">> Test completed"
-echo ">> Time: $(date)"
-echo ">> Results saved to $OUTPUT_FILE"
+  echo "Results saved to ${result_file}"
+  echo ""
+}
+
+case "${SERVICE}" in
+  query)
+    SCENARIO=${SCENARIO_INPUT:-all}
+    SCENARIO=${SCENARIO,,}
+    if [[ "${SCENARIO}" == "all" ]]; then
+      echo "Launching full query suite (smoke, load, stress, soak, spike, breakpoint, debug)"
+      for s in smoke load stress soak spike breakpoint debug; do
+        run_k6 "${SERVICE}" "${QUERY_SCENARIOS[$s]}" "${ENVIRONMENT}"
+      done
+    else
+      if [[ -z "${QUERY_SCENARIOS[${SCENARIO}]:-}" ]]; then
+        echo "ERROR: Unknown query scenario '${SCENARIO}'."
+        print_help
+        exit 1
+      fi
+      run_k6 "${SERVICE}" "${QUERY_SCENARIOS[${SCENARIO}]}" "${ENVIRONMENT}"
+    fi
+    ;;
+  order)
+    SCENARIO=${SCENARIO_INPUT:-race}
+    SCENARIO=${SCENARIO,,}
+    case "${SCENARIO}" in
+      race|order_race|orderrace)
+        run_k6 "${SERVICE}" "orderRace" "${ENVIRONMENT}"
+        ;;
+      *)
+        echo "ERROR: Order service supports only the 'race' scenario."
+        print_help
+        exit 1
+        ;;
+    esac
+    ;;
+  *)
+    echo "ERROR: Unsupported service '${SERVICE}'."
+    print_help
+    exit 1
+    ;;
+esac

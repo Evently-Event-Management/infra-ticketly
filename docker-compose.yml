@@ -184,6 +184,8 @@ services:
   event-query-service:
     image: ticketly/event-query-service:latest
     container_name: event-query-service
+    mem_limit: 1280m
+    cpus: 1.0
     depends_on:
       query-db:
         condition: service_healthy
@@ -192,6 +194,7 @@ services:
       event-command-service:
         condition: service_healthy
     environment:
+      # Core app configuration
       - MONGODB_URI=mongodb://query-db:27017/event-seating
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - COMMAND_SERVICE_URL=http://event-command-service:8081/api/event-seating
@@ -209,8 +212,28 @@ services:
       - GOOGLE_PRIVATE_KEY=${GOOGLE_PRIVATE_KEY}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_PRIVATE_KEY_ID=${GOOGLE_PRIVATE_KEY_ID}
+
+      # 🧠 JVM tuning for memory and GC behavior
+      - JAVA_OPTS=-XX:+UseContainerSupport \
+        -XX:InitialRAMPercentage=40.0 \
+        -XX:MinRAMPercentage=40.0 \
+        -XX:MaxRAMPercentage=65.0 \
+        -XX:+UseG1GC \
+        -XX:MaxGCPauseMillis=200 \
+        -XX:ParallelGCThreads=2 \
+        -XX:ConcGCThreads=1 \
+        -XX:InitiatingHeapOccupancyPercent=45 \
+        -XX:G1ReservePercent=10 \
+        -XX:MaxMetaspaceSize=256m \
+        -XX:+ExitOnOutOfMemoryError \
+        -XX:+UseStringDeduplication \
+        -XX:G1PeriodicGCInterval=30000 \
+        -XX:MaxHeapFreeRatio=30 \
+        -XX:MinHeapFreeRatio=10
+
     networks:
       - infra-net
+
 
   # Go Scheduler Service
   scheduler-service:
