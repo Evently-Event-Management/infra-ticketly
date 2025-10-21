@@ -140,7 +140,7 @@ spec:
                   key: GOOGLE_PRIVATE_KEY_ID
           resources:
             requests:
-              cpu: 300m
+              cpu: 600m
               memory: 750Mi
             limits:
               cpu: 1000m
@@ -173,7 +173,7 @@ spec:
     kind: Deployment
     name: event-query-service
   minReplicas: 1
-  maxReplicas: 4
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
