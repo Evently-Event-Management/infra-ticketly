@@ -121,3 +121,9 @@ output "mongo_port_foward_ssh" {
   description = "SSH command to port fowarding the infra mongodb from control plane"
   value       = "ssh -i ${path.module}/ticketly-key -L 27017:${aws_instance.infra.private_ip}:27017 ubuntu@${aws_instance.control_plane.public_ip}"
 }
+
+
+output "redis_port_foward_ssh" {
+  description = "SSH command to port fowarding the infra redis from control plane"
+  value       = "ssh -i ${path.module}/ticketly-key -L 6379:${aws_instance.infra.private_ip}:6379 ubuntu@${aws_instance.control_plane.public_ip}"
+}

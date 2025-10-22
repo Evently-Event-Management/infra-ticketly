@@ -173,7 +173,7 @@ spec:
     kind: Deployment
     name: event-query-service
   minReplicas: 1
-  maxReplicas: 4
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:

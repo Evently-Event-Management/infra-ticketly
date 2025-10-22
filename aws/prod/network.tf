@@ -367,6 +367,25 @@ resource "aws_security_group_rule" "infra_mongo_from_public_in" {
   source_security_group_id = aws_security_group.public.id
 }
 
+resource "aws_security_group_rule" "infra_redis_from_public_in" {
+  description              = "Allow Redis access from infra public security group"
+  type                     = "ingress"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.infra.id
+  source_security_group_id = aws_security_group.public.id
+}
+
+resource "aws_security_group_rule" "infra_kafka_ui_from_public_in" {
+  description              = "Allow Kafka UI access from infra public security group"
+  type                     = "ingress"
+  from_port                = 9000
+  to_port                  = 9000
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.infra.id
+  source_security_group_id = aws_security_group.public.id
+}
 
 # --- Database Rules (aws_security_group.database) ---
 resource "aws_security_group_rule" "db_psql_from_public_in" {
