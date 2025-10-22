@@ -8,15 +8,16 @@ metadata:
     app: microservices-restart
     purpose: maintenance
 spec:
-  # Schedule: Midnight Sri Lanka Time (UTC+5:30)
-  # 18:30 UTC = 00:00 IST (Sri Lanka Time)
-  schedule: "30 18 * * *"
+  # Schedule: Midnight Sri Lanka/Mumbai Time (UTC+5:30)
+  # With timeZone set, this runs at 00:00 Asia/Colombo time
+  schedule: "0 0 * * *"
   
   # Keep last 3 successful and 1 failed job for debugging
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
   
   # Timezone support (requires Kubernetes 1.25+)
+  # This makes the schedule interpret in local time, not UTC
   timeZone: "Asia/Colombo"
   
   # Concurrency policy - don't allow overlapping restarts

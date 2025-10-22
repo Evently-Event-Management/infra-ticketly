@@ -18,15 +18,20 @@ metadata:
   labels:
     app: deployment-restarter
 rules:
-  # Permission to list and get deployments
+  # Permission to list, get, watch, and patch deployments
   - apiGroups: ["apps"]
     resources: ["deployments"]
-    verbs: ["get", "list", "patch"]
+    verbs: ["get", "list", "watch", "patch"]
   
-  # Permission to get pods (for verification)
+  # Permission to get and list pods (for verification)
   - apiGroups: [""]
     resources: ["pods"]
     verbs: ["get", "list"]
+  
+  # Permission to watch replicasets (needed for rollout status)
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]
 
 ---
 # RoleBinding to bind the Role to the ServiceAccount
