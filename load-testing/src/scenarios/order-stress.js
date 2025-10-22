@@ -9,11 +9,13 @@ export const orderStressScenario = {
   executor: 'ramping-vus',
   startVUs: 0,
   stages: [
-    { duration: '2m', target: defaultVUs },      // Ramp up to target VUs
-    { duration: '5m', target: defaultVUs },      // Stay at target for 5 minutes
-    { duration: '2m', target: defaultVUs * 1.5 }, // Increase by 50%
-    { duration: '5m', target: defaultVUs * 1.5 }, // Hold increased load
-    { duration: '2m', target: 0 },               // Ramp down
+    { duration: '30s', target: defaultVUs },      // Ramp up to target VUs
+    { duration: '1m', target: defaultVUs },      // Stay at target for 1 minute
+    { duration: '30s', target: defaultVUs * 1.5 }, // Increase by 50%
+    { duration: '1m', target: defaultVUs * 1.5 }, // Hold increased load
+    { duration: '30s', target: defaultVUs * 2 },      // Further increase load
+    { duration: '1m', target: defaultVUs * 2 },      // Hold further increased load
+    { duration: '1m', target: 0 },               // Ramp down
   ],
   gracefulRampDown: '30s',
   tags: {

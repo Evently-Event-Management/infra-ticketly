@@ -200,11 +200,11 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
 }
 
 /**
- * Simulates a contention-heavy order placement flow where many users attempt
- * to book the same seat simultaneously. Expects most calls to fail while at
- * least one succeeds. Uses environment overrides when provided.
+ * Simulates order stress testing flow where users randomly attempt to book
+ * different seats. Both 201 (success) and 400 (seat locked) are considered
+ * expected responses during stress testing.
  */
-export function simulateOrderStressFlow(authToken, { metrics } = {}) {
+export function simulateOrderStressFlow(authToken, seatId, { metrics } = {}) {
   const orderConfig = config.order;
   const baseUrl = (__ENV.ORDER_BASE_URL || orderConfig.baseUrl).replace(/\/$/, '');
 
