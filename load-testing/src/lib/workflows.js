@@ -252,20 +252,33 @@ export function simulateOrderServiceFlow(authToken, { metrics } = {}) {
   }
 
   let responseBody;
+  let isJsonResponse = false;
+  
   try {
-    responseBody = response.body ? JSON.parse(response.body) : null;
+    if (response.body && response.body.trim()) {
+      responseBody = JSON.parse(response.body);
+      isJsonResponse = true;
+    }
   } catch (error) {
-    console.warn(`Order response not JSON parseable: ${error.message}`);
+    // Response is not JSON (likely plain text error message)
+    responseBody = { message: response.body };
+    isJsonResponse = false;
+    if (__VU <= 3 || __ENV.SCENARIO === 'debug') {
+      console.log(`Order response is plain text (status ${response.status}): ${response.body}`);
+    }
   }
 
-  const success = response.status === 200;
+  const success = response.status === 200 || response.status === 201;
   if (metrics?.successRate) {
     metrics.successRate.add(success);
   }
 
-  if (__VU <= 1 || __ENV.SCENARIO === 'debug') {
+  if (__VU <= 3 || __ENV.SCENARIO === 'debug') {
     if (!success) {
-      console.warn(`Order attempt failed (${response.status}): ${response.body}`);
+      const errorMsg = isJsonResponse 
+        ? JSON.stringify(responseBody) 
+        : responseBody.message || response.body;
+      console.warn(`Order attempt failed (${response.status}): ${errorMsg}`);
     } else if (responseBody?.order_id) {
       console.log(`Order succeeded with id ${responseBody.order_id}`);
     } else {
