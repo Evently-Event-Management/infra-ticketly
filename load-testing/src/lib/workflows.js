@@ -204,6 +204,81 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
  * to book the same seat simultaneously. Expects most calls to fail while at
  * least one succeeds. Uses environment overrides when provided.
  */
+export function simulateOrderStressFlow(authToken, { metrics } = {}) {
+  const orderConfig = config.order;
+  const baseUrl = (__ENV.ORDER_BASE_URL || orderConfig.baseUrl).replace(/\/$/, '');
+
+  const eventId = __ENV.ORDER_EVENT_ID || orderConfig.eventId;
+  const sessionId = __ENV.ORDER_SESSION_ID || orderConfig.sessionId;
+  const organizationId = __ENV.ORDER_ORGANIZATION_ID || orderConfig.organizationId;
+  const discountId = Object.prototype.hasOwnProperty.call(__ENV, 'ORDER_DISCOUNT_ID')
+    ? __ENV.ORDER_DISCOUNT_ID || null
+    : null;
+
+  if (!eventId || !sessionId || !organizationId) {
+    throw new Error('Order workflow requires event, session, and organization identifiers.');
+  }
+
+  if (!seatId) {
+    throw new Error('Order workflow requires a seat ID.');
+  }
+
+  const payload = {
+    event_id: eventId,
+    session_id: sessionId,
+    seat_ids: [seatId],
+    organization_id: organizationId,
+    discount_id: discountId,
+  };
+
+  const params = {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+      'Content-Type': 'application/json',
+    },
+    timeout: '10s',
+  };
+
+  const response = http.post(baseUrl, JSON.stringify(payload), params);
+
+  if (metrics?.requestTrend && typeof response.timings?.duration === 'number') {
+    metrics.requestTrend.add(response.timings.duration);
+  }
+
+  let responseBody;
+  let isJsonResponse = false;
+  
+  try {
+    if (response.body && response.body.trim()) {
+      responseBody = JSON.parse(response.body);
+      isJsonResponse = true;
+    }
+  } catch (error) {
+    // Response is not JSON (likely plain text error message)
+    responseBody = { message: response.body };
+    isJsonResponse = false;
+  }
+
+  // For stress testing: 201 (success) and 400 (already locked) are both expected
+  const isSuccess = response.status === 200 || response.status === 201;
+  const isExpected = isSuccess || response.status === 400;
+
+  if (metrics?.successRate) {
+    metrics.successRate.add(isSuccess);
+  }
+
+  if (metrics?.expectedRate) {
+    metrics.expectedRate.add(isExpected);
+  }
+
+  return { response, responseBody };
+}
+
+/**
+ * Simulates a contention-heavy order placement flow where many users attempt
+ * to book the same seat simultaneously. Expects most calls to fail while at
+ * least one succeeds. Uses environment overrides when provided.
+ */
 export function simulateOrderServiceFlow(authToken, { metrics } = {}) {
   const orderConfig = config.order;
   const baseUrl = (__ENV.ORDER_BASE_URL || orderConfig.baseUrl).replace(/\/$/, '');
