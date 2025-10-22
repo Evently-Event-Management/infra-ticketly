@@ -116,3 +116,8 @@ output "rds_port_foward_ssh_command" {
   description = "SSH command to set up port forwarding to the RDS instance."
   value       = "ssh -i ${path.module}/ticketly-key -L 5432:${aws_db_instance.ticketly_db.address}:${aws_db_instance.ticketly_db.port} ubuntu@${aws_instance.control_plane.public_ip}"
 }
+
+output "mongo_port_foward_ssh" {
+  description = "SSH command to port fowarding the infra mongodb from control plane"
+  value       = "ssh -i ${path.module}/ticketly-key -L 27017:${aws_instance.infra.private_ip}:27017 ubuntu@${aws_instance.control_plane.public_ip}"
+}
