@@ -1,0 +1,176 @@
+{
+    "setup_data": {
+        "seats": [
+            "79cd17f8-e160-4e8b-9c8a-aefb59ee287a",
+            "70910468-5a2d-4b0b-88d9-1427ae167237",
+            "af24bb02-ad5a-4fda-9810-aa54bf86c840",
+            "57c2fbf6-52de-4eaf-bc16-d335a9f9b54a",
+            "b583919f-d650-460b-af24-2864c9acf791",
+            "d6aafba3-1d91-463a-8320-4671c8b00912",
+            "f6b7a2ce-219b-49fb-a105-9609613ef1ca",
+            "b2df57f9-1229-4e60-a92e-c364c0e5c9e6",
+            "a2858ab4-05a0-45e1-894c-fbf7e50b71c1",
+            "c1c8a266-6118-4ac4-a9ae-7c84914460c4",
+            "aecf880d-b9b9-4d15-b864-2ed786822933",
+            "1231d06a-d5c9-49bb-9a26-29f3a313d6f1",
+            "87766d31-439f-406c-aa4d-6f2e0d17f1a2",
+            "7ed51c1e-0c01-4d3e-a91d-ef0cdbe1e1b1",
+            "3c6cf1f2-1fcc-44e3-b4b6-03827016fec2",
+            "24162129-e174-439e-a68f-676c5bcd75b8"
+        ],
+        "tokenData": {
+            "expires_in": 600,
+            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ2N2JYX3RuankyNWMzUzF3VWRmV2Nlcmt0THVZazhYTEszcWJjamhKME9vIn0.eyJleHAiOjE3NjExNDQ5OTMsImlhdCI6MTc2MTE0NDM5MywianRpIjoib25ydHJvOmU2N2IyOTQ0LTIxOWYtZDQyYi0wOWE5LWI2NDk2YmVjZTcyYyIsImlzcyI6Imh0dHBzOi8vYXV0aC5kcGl5dW1hbC5tZS9yZWFsbXMvZXZlbnQtdGlja2V0aW5nIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjUyMTNlNGU4LWU0NjktNGY1ZS05ZDNhLTY0OTY5ZTExNDYyNSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImxvZ2luLXRlc3RpbmciLCJzaWQiOiIxMjExYzgyNi1jZTY1LTQwYzctYjU5MC0zNDlmYWU0NzYzMmYiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1ldmVudC10aWNrZXRpbmciLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJncm91cF9tZW1iZXJzaGlwIGludGVybmFsLWFwaSIsInVzZXJfZ3JvdXBzIjpbIi9UaWVycy9QUk8iLCIvUGVybWlzc2lvbnMvVXNlcnMiXX0.E5iKPMJWG-yfEtwbVddLQztqxrqp9edNLpptkJIayezf51UOhkjDm_KAJCziTVtDxNIJOqCUXKkQb7esmCG9ITUM_Qg235cGHMYeGMHC9pMWgCu_D7op6sDH9ID5rh5g7vsG2hbe7by9LCVBZVqjyKaMJv0nGMYG61apW_siyCmRNelGZ1QiMIjVI0BSzjEmMX8_MzOwLorhOEx7aWduhEhn_xYOpyUTTT4vJVk0-Sqyi130Bou_d9qa-SA65R3R9iyVmRVpoGAjtEhmDh6fA1xShxG_tIwclMfaej0g0pRjxY2O_q8lUU7FB6RE146mtJacAEU-wKHZu1CsLLPe-Q",
+            "expires_at": 1761144963957
+        }
+    },
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {},
+        "name": ""
+    },
+    "metrics": {
+        "http_req_sending": {
+            "min": 0.029776,
+            "med": 0.060675,
+            "max": 4.779498,
+            "p(90)": 0.100902,
+            "p(95)": 0.131151,
+            "avg": 0.07217760149906301
+        },
+        "vus": {
+            "value": 16,
+            "min": 16,
+            "max": 100
+        },
+        "data_received": {
+            "count": 807657,
+            "rate": 24687.833806971536
+        },
+        "http_req_receiving": {
+            "max": 0.803385,
+            "p(90)": 0.108515,
+            "p(95)": 0.142368,
+            "avg": 0.06968249781386636,
+            "min": 0.023547,
+            "med": 0.058921
+        },
+        "failed_bookings": {
+            "count": 1584,
+            "rate": 48.41848550838154
+        },
+        "http_req_connecting": {
+            "min": 0,
+            "med": 0,
+            "max": 9.977061,
+            "p(90)": 0,
+            "p(95)": 2.969916,
+            "avg": 0.28830823860087434
+        },
+        "http_req_waiting": {
+            "p(90)": 166.637188,
+            "p(95)": 190.87632,
+            "avg": 64.32533068894435,
+            "min": 8.788848,
+            "med": 16.564799,
+            "max": 2314.517476
+        },
+        "http_req_duration": {
+            "avg": 64.46719078825743,
+            "min": 8.89902,
+            "med": 16.663973,
+            "max": 2314.841777,
+            "p(90)": 166.735692,
+            "p(95)": 191.131481,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_req_failed": {
+            "fails": 17,
+            "passes": 1584,
+            "thresholds": {
+                "rate<0.99": false
+            },
+            "value": 0.9893816364772018
+        },
+        "successful_bookings": {
+            "count": 16,
+            "rate": 0.48907561119577314
+        },
+        "http_req_blocked": {
+            "avg": 1.5342046658338515,
+            "min": 0.000203,
+            "med": 0.000425,
+            "max": 44.439358,
+            "p(90)": 0.00081,
+            "p(95)": 18.018721
+        },
+        "data_sent": {
+            "rate": 19289.814584526688,
+            "count": 631062
+        },
+        "order_request": {
+            "avg": 64.47064411000008,
+            "min": 8.89902,
+            "med": 16.661413500000002,
+            "max": 2314.841777,
+            "p(90)": 166.75970480000004,
+            "p(95)": 191.1326185,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_reqs": {
+            "rate": 48.93812834527705,
+            "count": 1601
+        },
+        "iterations": {
+            "count": 1600,
+            "rate": 48.907561119577316
+        },
+        "order_success": {
+            "passes": 16,
+            "fails": 1584,
+            "thresholds": {
+                "rate>0": false
+            },
+            "value": 0.01
+        },
+        "http_req_tls_handshaking": {
+            "min": 0,
+            "med": 0,
+            "max": 33.067198,
+            "p(90)": 0,
+            "p(95)": 9.030994,
+            "avg": 0.9453122535915054
+        },
+        "iteration_duration": {
+            "avg": 1941.7352685243732,
+            "min": 53.733518,
+            "med": 2016.379291,
+            "max": 4083.822488,
+            "p(90)": 2101.2252413,
+            "p(95)": 2155.8915562999996
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 1950.2793472941175,
+            "min": 58.941876,
+            "med": 2049.161728,
+            "max": 2314.841777,
+            "p(90)": 2071.8547848000003,
+            "p(95)": 2129.0210386
+        },
+        "seat_locked_400": {
+            "count": 1584,
+            "rate": 48.41848550838154
+        },
+        "vus_max": {
+            "value": 100,
+            "min": 100,
+            "max": 100
+        }
+    }
+}
