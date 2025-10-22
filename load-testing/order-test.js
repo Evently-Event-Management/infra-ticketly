@@ -1,4 +1,5 @@
 import { Rate, Trend, Counter } from 'k6/metrics';
+import { sleep } from 'k6';
 import { getAuthToken, getValidToken } from './src/lib/auth.js';
 import { simulateOrderServiceFlow } from './src/lib/workflows.js';
 import { applyEnvironment, config } from './src/config.js';
@@ -115,6 +116,12 @@ export default function (data) {
   // Log when moving to next seat
   if (vuId === 1 && currentIteration > 0) {
     console.log(`\n🏁 Moving to seat ${seatIndex + 1} (${targetSeat})`);
+  }
+
+  // Add delay between seat iterations to ensure HTML report generation  
+  // (k6 dashboard requires minimum test duration to generate HTML reports)
+  if (currentIteration > 0 && currentIteration < seats.length) {
+    sleep(2);
   }
 
   try {

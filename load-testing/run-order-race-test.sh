@@ -76,16 +76,21 @@ if [[ "${CLOUD_MODE}" == "true" ]]; then
 else
   timestamp=$(date +"%Y%m%d_%H%M%S")
   report_file="output/order_race_all_seats_${ENVIRONMENT}_${timestamp}.html"
+  json_summary="output/order_race_all_seats_${ENVIRONMENT}_${timestamp}.json"
 
   echo "Running race test for all seats..."
+  # Note: Test includes 2-second delays between seats to ensure HTML report generation
+  # (k6 dashboard requires ~30+ seconds minimum test duration)
   k6 run \
     --out "dashboard=export=${report_file}" \
+    --summary-export="${json_summary}" \
     --env ENV="${ENVIRONMENT}" \
     --env ORDER_VUS="${VUS}" \
     order-test.js
 
   echo ""
   echo "========================================="
-  echo "HTML report saved to ${report_file}"
+  echo "HTML report: ${report_file}"
+  echo "JSON summary: ${json_summary}"
   echo "========================================="
 fi
