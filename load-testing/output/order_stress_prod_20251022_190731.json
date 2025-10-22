@@ -1,0 +1,177 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {}
+    },
+    "metrics": {
+        "http_req_waiting": {
+            "med": 4.443354,
+            "max": 54.108123,
+            "p(90)": 34.317447,
+            "p(95)": 44.21278499999999,
+            "avg": 14.369167,
+            "min": 4.236221
+        },
+        "http_req_duration": {
+            "avg": 14.609955,
+            "min": 4.357494,
+            "med": 4.751756,
+            "max": 54.370618,
+            "p(90)": 34.60519480000001,
+            "p(95)": 44.48790639999999,
+            "thresholds": {
+                "p(95)<3000": false
+            }
+        },
+        "data_sent": {
+            "rate": 29479.540362105567,
+            "count": 5548
+        },
+        "data_received": {
+            "count": 15277,
+            "rate": 81175.00686948211
+        },
+        "vus": {
+            "value": 0,
+            "min": 0,
+            "max": 0
+        },
+        "order_success": {
+            "passes": 0,
+            "fails": 8,
+            "value": 0
+        },
+        "vus_max": {
+            "value": 1959,
+            "min": 1959,
+            "max": 1959
+        },
+        "http_req_blocked": {
+            "max": 40.760935,
+            "p(90)": 38.719402200000005,
+            "p(95)": 39.740168600000004,
+            "avg": 17.3062072,
+            "min": 0.000422,
+            "med": 10.112061
+        },
+        "http_req_sending": {
+            "avg": 0.10959379999999999,
+            "min": 0.074843,
+            "med": 0.098218,
+            "max": 0.194903,
+            "p(90)": 0.1566886,
+            "p(95)": 0.17579579999999997
+        },
+        "server_errors_5xx": {
+            "count": 4,
+            "rate": 21.254174738360177,
+            "thresholds": {
+                "count<10": false
+            }
+        },
+        "http_req_duration{expected_response:true}": {
+            "max": 54.370618,
+            "p(90)": 54.370618,
+            "p(95)": 54.370618,
+            "avg": 54.370618,
+            "min": 54.370618,
+            "med": 54.370618
+        },
+        "order_expected": {
+            "passes": 0,
+            "fails": 8,
+            "thresholds": {
+                "rate>0.95": true
+            },
+            "value": 0
+        },
+        "http_reqs": {
+            "rate": 26.567718422950225,
+            "count": 5
+        },
+        "unexpected_failures": {
+            "count": 4,
+            "rate": 21.254174738360177
+        },
+        "http_req_failed": {
+            "passes": 4,
+            "fails": 1,
+            "value": 0.8
+        },
+        "order_request": {
+            "med": 4.6823015,
+            "max": 4.95706,
+            "p(90)": 4.895468800000001,
+            "p(95)": 4.9262644,
+            "avg": 4.66978925,
+            "min": 4.357494,
+            "thresholds": {
+                "p(95)<3000": false
+            }
+        },
+        "http_req_connecting": {
+            "p(95)": 3.5469294,
+            "avg": 2.0050768,
+            "min": 0,
+            "med": 2.946809,
+            "max": 3.552024,
+            "p(90)": 3.5418347999999997
+        },
+        "http_req_tls_handshaking": {
+            "avg": 4.4316334,
+            "min": 0,
+            "med": 5.41136,
+            "max": 10.879228,
+            "p(90)": 8.874568400000001,
+            "p(95)": 9.8768982
+        },
+        "http_req_receiving": {
+            "med": 0.113499,
+            "max": 0.22626,
+            "p(90)": 0.2014668,
+            "p(95)": 0.21386339999999998,
+            "avg": 0.13119419999999998,
+            "min": 0.04643
+        },
+        "iteration_duration": {
+            "avg": 18.0925395,
+            "min": 5.155295,
+            "med": 10.590333999999999,
+            "max": 46.034195,
+            "p(90)": 36.908021600000005,
+            "p(95)": 41.47110829999999
+        },
+        "iterations": {
+            "count": 4,
+            "rate": 21.254174738360177
+        }
+    },
+    "setup_data": {
+        "seats": [
+            "79cd17f8-e160-4e8b-9c8a-aefb59ee287a",
+            "70910468-5a2d-4b0b-88d9-1427ae167237",
+            "af24bb02-ad5a-4fda-9810-aa54bf86c840",
+            "57c2fbf6-52de-4eaf-bc16-d335a9f9b54a",
+            "b583919f-d650-460b-af24-2864c9acf791",
+            "d6aafba3-1d91-463a-8320-4671c8b00912",
+            "f6b7a2ce-219b-49fb-a105-9609613ef1ca",
+            "b2df57f9-1229-4e60-a92e-c364c0e5c9e6",
+            "a2858ab4-05a0-45e1-894c-fbf7e50b71c1",
+            "c1c8a266-6118-4ac4-a9ae-7c84914460c4",
+            "aecf880d-b9b9-4d15-b864-2ed786822933",
+            "1231d06a-d5c9-49bb-9a26-29f3a313d6f1",
+            "87766d31-439f-406c-aa4d-6f2e0d17f1a2",
+            "7ed51c1e-0c01-4d3e-a91d-ef0cdbe1e1b1",
+            "3c6cf1f2-1fcc-44e3-b4b6-03827016fec2",
+            "24162129-e174-439e-a68f-676c5bcd75b8"
+        ],
+        "tokenData": {
+            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ2N2JYX3RuankyNWMzUzF3VWRmV2Nlcmt0THVZazhYTEszcWJjamhKME9vIn0.eyJleHAiOjE3NjExNjA2NTIsImlhdCI6MTc2MTE2MDA1MiwianRpIjoib25ydHJvOjY4NTMyODM2LTZkMTYtZTEzZi1mMzNiLTUwNGY0ZDYwZjYwZCIsImlzcyI6Imh0dHBzOi8vYXV0aC5kcGl5dW1hbC5tZS9yZWFsbXMvZXZlbnQtdGlja2V0aW5nIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjUyMTNlNGU4LWU0NjktNGY1ZS05ZDNhLTY0OTY5ZTExNDYyNSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImxvZ2luLXRlc3RpbmciLCJzaWQiOiI5MmMxMmQ3MC00OWFiLTQ2NWEtOWJlYy02Yjk4OTgxNDY3NjUiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1ldmVudC10aWNrZXRpbmciLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJncm91cF9tZW1iZXJzaGlwIGludGVybmFsLWFwaSIsInVzZXJfZ3JvdXBzIjpbIi9UaWVycy9QUk8iLCIvUGVybWlzc2lvbnMvVXNlcnMiXX0.KfMkNkAv5EV4u_r009tWlbYMhZkfynNL_KSpyfQxv-EyZw24dE--KDALDU16rE1FasQs7zU6GLVNNUhEC0j0MUFV82vA9okrAWE2TZKxdeJZX_V0nqOdniAlZL0iYPQfa1YN65l7fSp26kbctEzRuiY3C13BdWJnkAehi5O5IaITC4cJL_IfSOTNyveEdollmLIpYsfiHpz56cIj_kFO8r8PLNQHh5tEJ312UIUppJczgO4rfm99u7QPDTS9ncpWcfaP7pj3PTR8rgpXzk_7shYp9jQ-JU1mSoF0pyYUU-LtvEOQIuOgPkwvjYLxUij1enSfk4OiBYeUQCT7ihB4cw",
+            "expires_at": 1761160623000,
+            "expires_in": 600
+        }
+    }
+}

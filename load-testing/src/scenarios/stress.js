@@ -5,12 +5,10 @@ export const stressTestScenario = {
   stages: [
     { duration: '30s', target: 500 },     
     { duration: '1m', target: 500 },    
+    { duration: '30s', target: 750 },    
+    { duration: '1m', target: 750 },
     { duration: '30s', target: 1000 },    
     { duration: '1m', target: 1000 },
-    { duration: '30s', target: 1500 },    
-    { duration: '1m', target: 1500 },
-    { duration: '30s', target: 2000 },
-    { duration: '1m', target: 2000 },
     { duration: '1m', target: 0 }
   ],
   gracefulRampDown: '30s',

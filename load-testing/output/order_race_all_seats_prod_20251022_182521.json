@@ -1,0 +1,176 @@
+{
+    "metrics": {
+        "iterations": {
+            "rate": 49.10990244724877,
+            "count": 1600
+        },
+        "vus": {
+            "value": 12,
+            "min": 12,
+            "max": 100
+        },
+        "order_success": {
+            "fails": 1588,
+            "passes": 12,
+            "thresholds": {
+                "rate>0": false
+            },
+            "value": 0.0075
+        },
+        "http_req_connecting": {
+            "avg": 0.29004136289818866,
+            "min": 0,
+            "med": 0,
+            "max": 8.134449,
+            "p(90)": 0,
+            "p(95)": 3.026301
+        },
+        "data_received": {
+            "rate": 26876.192150171657,
+            "count": 875626
+        },
+        "failed_bookings": {
+            "count": 1588,
+            "rate": 48.7415781788944
+        },
+        "http_reqs": {
+            "count": 1601,
+            "rate": 49.1405961362783
+        },
+        "http_req_sending": {
+            "avg": 0.06370965396627107,
+            "min": 0.028966,
+            "med": 0.052902,
+            "max": 0.621177,
+            "p(90)": 0.097272,
+            "p(95)": 0.131791
+        },
+        "http_req_failed": {
+            "passes": 1588,
+            "fails": 13,
+            "thresholds": {
+                "rate<0.99": true
+            },
+            "value": 0.9918800749531543
+        },
+        "vus_max": {
+            "value": 100,
+            "min": 100,
+            "max": 100
+        },
+        "order_request": {
+            "med": 7.361921499999999,
+            "max": 2304.583441,
+            "p(90)": 81.1029481,
+            "p(95)": 188.2499937999999,
+            "avg": 39.88636914062503,
+            "min": 4.225613,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 1918.1868724615388,
+            "min": 61.826691,
+            "med": 2048.321739,
+            "max": 2304.583441,
+            "p(90)": 2067.0225437999998,
+            "p(95)": 2162.498248
+        },
+        "http_req_blocked": {
+            "p(90)": 0.00072,
+            "p(95)": 18.630738,
+            "avg": 1.6743476745783863,
+            "min": 0.000192,
+            "med": 0.000398,
+            "max": 52.521224
+        },
+        "successful_bookings": {
+            "count": 12,
+            "rate": 0.36832426835436577
+        },
+        "iteration_duration": {
+            "avg": 1917.2115779062517,
+            "min": 80.067088,
+            "med": 2007.8062535,
+            "max": 4068.90649,
+            "p(90)": 2024.8291255,
+            "p(95)": 2078.5755713500002
+        },
+        "seat_locked_400": {
+            "count": 1588,
+            "rate": 48.7415781788944
+        },
+        "http_req_duration": {
+            "avg": 39.90007327670209,
+            "min": 4.225613,
+            "med": 7.362914,
+            "max": 2304.583441,
+            "p(90)": 81.094876,
+            "p(95)": 188.151723,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_req_tls_handshaking": {
+            "max": 39.809287,
+            "p(90)": 0,
+            "p(95)": 8.967658,
+            "avg": 1.0530619144284818,
+            "min": 0,
+            "med": 0
+        },
+        "http_req_waiting": {
+            "p(95)": 187.987938,
+            "avg": 39.769930414740834,
+            "min": 4.110144,
+            "med": 7.228231,
+            "max": 2304.352763,
+            "p(90)": 80.69868
+        },
+        "http_req_receiving": {
+            "med": 0.052858,
+            "max": 1.012584,
+            "p(90)": 0.107936,
+            "p(95)": 0.138629,
+            "avg": 0.06643320799500321,
+            "min": 0.020347
+        },
+        "data_sent": {
+            "count": 630962,
+            "rate": 19366.55141745061
+        }
+    },
+    "setup_data": {
+        "seats": [
+            "79cd17f8-e160-4e8b-9c8a-aefb59ee287a",
+            "70910468-5a2d-4b0b-88d9-1427ae167237",
+            "af24bb02-ad5a-4fda-9810-aa54bf86c840",
+            "57c2fbf6-52de-4eaf-bc16-d335a9f9b54a",
+            "b583919f-d650-460b-af24-2864c9acf791",
+            "d6aafba3-1d91-463a-8320-4671c8b00912",
+            "f6b7a2ce-219b-49fb-a105-9609613ef1ca",
+            "b2df57f9-1229-4e60-a92e-c364c0e5c9e6",
+            "a2858ab4-05a0-45e1-894c-fbf7e50b71c1",
+            "c1c8a266-6118-4ac4-a9ae-7c84914460c4",
+            "aecf880d-b9b9-4d15-b864-2ed786822933",
+            "1231d06a-d5c9-49bb-9a26-29f3a313d6f1",
+            "87766d31-439f-406c-aa4d-6f2e0d17f1a2",
+            "7ed51c1e-0c01-4d3e-a91d-ef0cdbe1e1b1",
+            "3c6cf1f2-1fcc-44e3-b4b6-03827016fec2",
+            "24162129-e174-439e-a68f-676c5bcd75b8"
+        ],
+        "tokenData": {
+            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ2N2JYX3RuankyNWMzUzF3VWRmV2Nlcmt0THVZazhYTEszcWJjamhKME9vIn0.eyJleHAiOjE3NjExNTgxMjEsImlhdCI6MTc2MTE1NzUyMSwianRpIjoib25ydHJvOjlmOGExNTcxLTljMmEtMTFhNS1mZDk0LWE3ZDU1ZjQ1YWI2NiIsImlzcyI6Imh0dHBzOi8vYXV0aC5kcGl5dW1hbC5tZS9yZWFsbXMvZXZlbnQtdGlja2V0aW5nIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjUyMTNlNGU4LWU0NjktNGY1ZS05ZDNhLTY0OTY5ZTExNDYyNSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImxvZ2luLXRlc3RpbmciLCJzaWQiOiI1Mzk1YjY2Ny01NTBjLTRkZWYtODY5NS1lODQ4M2JjMGYwZWIiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1ldmVudC10aWNrZXRpbmciLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJncm91cF9tZW1iZXJzaGlwIGludGVybmFsLWFwaSIsInVzZXJfZ3JvdXBzIjpbIi9UaWVycy9QUk8iLCIvUGVybWlzc2lvbnMvVXNlcnMiXX0.ha247wycw6OcVhXv45tt7EzZJooXIYFZsHMtECw-kXALr4G222G2Bjx85SKjQ3pWT-YDw1sPnQW_hmtG5PZ8VzTfwLIUqh_R_B-dCaUpshSKivYB9Hk61dr99F58_YwN0Vj3imjvd6s160RYAiRlYOgQRgSFD6Hg7VTmj1euI38MntXZVb8Ona8c5RdwKvneMhxrAcmux3wrbqnJoR9mVibyVuOwfEaFabVHcQx8p3f1WL19tdhIhQNoSFFtJ4UWqukdclaU12RoMz8iHHAytKU0FxgvYWK8BFEAOD-Zhvou_-g3jwZ1yTH__DBCeFKvp24LFEQq1ig0-I3NDVZZ0g",
+            "expires_at": 1761158091365,
+            "expires_in": 600
+        }
+    },
+    "root_group": {
+        "groups": {},
+        "checks": {},
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+}
