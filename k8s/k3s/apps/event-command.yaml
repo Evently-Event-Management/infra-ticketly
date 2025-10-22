@@ -22,6 +22,24 @@ spec:
           ports:
             - containerPort: 8081
           env:
+            - name: JAVA_OPTS
+              value: >-
+                -XX:+UseContainerSupport
+                -XX:InitialRAMPercentage=40.0
+                -XX:MinRAMPercentage=40.0
+                -XX:MaxRAMPercentage=65.0
+                -XX:+UseG1GC
+                -XX:MaxGCPauseMillis=200
+                -XX:ParallelGCThreads=2 # Keep low for lower CPU limit
+                -XX:ConcGCThreads=1   # Keep low for lower CPU limit
+                -XX:InitiatingHeapOccupancyPercent=45
+                -XX:G1ReservePercent=10
+                -XX:MaxMetaspaceSize=256m
+                -XX:+ExitOnOutOfMemoryError
+                -XX:+UseStringDeduplication
+                -XX:G1PeriodicGCInterval=30000
+                -XX:MaxHeapFreeRatio=30
+                -XX:MinHeapFreeRatio=10
             - name: SERVER_PORT
               value: "8081"
             - name: INFRA_HOST
@@ -177,7 +195,7 @@ spec:
     kind: Deployment
     name: event-command-service
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
@@ -185,27 +203,21 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 60
       policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 60
-      - type: Pods
-        value: 1
-        periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+        - type: Pods
+          value: 1
+          periodSeconds: 60
       selectPolicy: Max
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
-      - type: Percent
-        value: 50
-        periodSeconds: 120
+        - type: Percent
+          value: 50
+          periodSeconds: 120
       selectPolicy: Max
