@@ -6,7 +6,9 @@ export const stressTestScenario = {
     { duration: '30s', target: 500 },     
     { duration: '1m', target: 500 },    
     { duration: '30s', target: 1000 },    
-    { duration: '1m', target: 1000 },  
+    { duration: '1m', target: 1000 },
+    { duration: '30s', target: 1500 },    
+    { duration: '1m', target: 1500 },
     { duration: '30s', target: 2000 },
     { duration: '1m', target: 2000 },
     { duration: '1m', target: 0 }
