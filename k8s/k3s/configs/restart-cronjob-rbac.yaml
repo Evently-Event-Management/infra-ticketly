@@ -1,0 +1,47 @@
+---
+# ServiceAccount for the restart CronJob
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployment-restarter
+  namespace: ticketly
+  labels:
+    app: deployment-restarter
+
+---
+# Role with permissions to perform rollout restart on deployments
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployment-restarter-role
+  namespace: ticketly
+  labels:
+    app: deployment-restarter
+rules:
+  # Permission to list and get deployments
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "patch"]
+  
+  # Permission to get pods (for verification)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+
+---
+# RoleBinding to bind the Role to the ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deployment-restarter-rolebinding
+  namespace: ticketly
+  labels:
+    app: deployment-restarter
+subjects:
+  - kind: ServiceAccount
+    name: deployment-restarter
+    namespace: ticketly
+roleRef:
+  kind: Role
+  name: deployment-restarter-role
+  apiGroup: rbac.authorization.k8s.io
