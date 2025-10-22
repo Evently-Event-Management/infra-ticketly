@@ -177,10 +177,12 @@ export function teardown(data) {
   console.log('========================================');
   console.log('Execution pattern:');
   console.log(`  1. Spawn ${totalVUs} VUs`);
-  console.log(`  2. All ${totalVUs} VUs compete for Seat 1`);
-  console.log(`  3. All ${totalVUs} VUs compete for Seat 2`);
-  console.log(`  4. All ${totalVUs} VUs compete for Seat 3`);
-  console.log(`  5. All ${totalVUs} VUs compete for Seat 4`);
+  for (let i = 0; i < Math.min(seats.length, 5); i++) {
+    console.log(`  ${i + 2}. All ${totalVUs} VUs compete for Seat ${i + 1}`);
+  }
+  if (seats.length > 5) {
+    console.log(`  ... (${seats.length - 5} more seats)`);
+  }
   console.log('----------------------------------------');
   console.log('Metrics to verify:');
   console.log(`  ✓ successful_bookings = ${expectedSuccesses}`);
