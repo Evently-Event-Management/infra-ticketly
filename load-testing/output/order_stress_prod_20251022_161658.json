@@ -1,0 +1,185 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {}
+    },
+    "metrics": {
+        "iteration_duration": {
+            "min": 9.828094,
+            "med": 1102.424024,
+            "max": 10020.27854,
+            "p(90)": 9371.187828999999,
+            "p(95)": 10000.5722799,
+            "avg": 2274.465744803232
+        },
+        "successful_bookings": {
+            "count": 3,
+            "rate": 0.02169215064945343
+        },
+        "server_errors_5xx": {
+            "count": 0,
+            "rate": 0,
+            "thresholds": {
+                "count<10": false
+            }
+        },
+        "vus": {
+            "value": 1500,
+            "min": 0,
+            "max": 1500
+        },
+        "seat_already_locked": {
+            "count": 54388,
+            "rate": 393.2642298408244
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 1489.3064515382712,
+            "min": 9.616866,
+            "med": 852.177316,
+            "max": 10019.90723,
+            "p(90)": 3095.4186344000004,
+            "p(95)": 5145.4110910499885
+        },
+        "http_req_blocked": {
+            "med": 0.000388,
+            "max": 119.846866,
+            "p(90)": 0.000492,
+            "p(95)": 0.00058,
+            "avg": 0.19962522980505779,
+            "min": 0.000154
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0.11828804067360976,
+            "min": 0,
+            "med": 0,
+            "max": 47.884604,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "data_sent": {
+            "count": 21063863,
+            "rate": 152306.82981848269
+        },
+        "http_reqs": {
+            "count": 59916,
+            "rate": 433.23563277088385
+        },
+        "vus_max": {
+            "value": 2000,
+            "min": 1785,
+            "max": 2000
+        },
+        "http_req_duration": {
+            "avg": 2273.9846000930734,
+            "min": 9.616866,
+            "med": 1102.0412150000002,
+            "max": 10019.90723,
+            "p(90)": 9370.947218000001,
+            "p(95)": 10000.27217275,
+            "thresholds": {
+                "p(95)<3000": true
+            }
+        },
+        "unexpected_failures": {
+            "count": 5524,
+            "rate": 39.94248006252691
+        },
+        "order_success": {
+            "passes": 6,
+            "fails": 119824,
+            "value": 0.0000500709338229158
+        },
+        "order_expected": {
+            "passes": 108782,
+            "fails": 11048,
+            "thresholds": {
+                "rate>0.95": true
+            },
+            "value": 0.9078027205207377
+        },
+        "http_req_failed": {
+            "passes": 5524,
+            "fails": 54392,
+            "value": 0.09219574070365177
+        },
+        "http_req_receiving": {
+            "avg": 0.0732097619333735,
+            "min": 0,
+            "med": 0.0483225,
+            "max": 9.823228,
+            "p(90)": 0.10872299999999999,
+            "p(95)": 0.1503505
+        },
+        "order_request": {
+            "p(90)": 9370.9483784,
+            "p(95)": 10000.2721785,
+            "avg": 2274.0121715226664,
+            "min": 9.616866,
+            "med": 1102.053826,
+            "max": 10019.90723,
+            "thresholds": {
+                "p(95)<3000": true
+            }
+        },
+        "http_req_sending": {
+            "avg": 0.05856816636624661,
+            "min": 0.027985,
+            "med": 0.051733,
+            "max": 13.120701,
+            "p(90)": 0.075571,
+            "p(95)": 0.090992
+        },
+        "data_received": {
+            "count": 18716285,
+            "rate": 135332.15793936848
+        },
+        "iterations": {
+            "count": 59915,
+            "rate": 433.22840205400075
+        },
+        "http_req_waiting": {
+            "avg": 2273.8528221647775,
+            "min": 9.460272,
+            "med": 1101.8836234999999,
+            "max": 10019.820125,
+            "p(90)": 9370.847095000001,
+            "p(95)": 10000.21733625
+        },
+        "http_req_connecting": {
+            "avg": 0.0754878977735496,
+            "min": 0,
+            "med": 0,
+            "max": 19.288977,
+            "p(90)": 0,
+            "p(95)": 0
+        }
+    },
+    "setup_data": {
+        "tokenData": {
+            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ2N2JYX3RuankyNWMzUzF3VWRmV2Nlcmt0THVZazhYTEszcWJjamhKME9vIn0.eyJleHAiOjE3NjExNTA0MTksImlhdCI6MTc2MTE0OTgxOSwianRpIjoib25ydHJvOmVlY2Q0Y2UxLTZlYWUtNmIxNy00NTc3LWE5NGUzMDEyM2MzNiIsImlzcyI6Imh0dHBzOi8vYXV0aC5kcGl5dW1hbC5tZS9yZWFsbXMvZXZlbnQtdGlja2V0aW5nIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjUyMTNlNGU4LWU0NjktNGY1ZS05ZDNhLTY0OTY5ZTExNDYyNSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImxvZ2luLXRlc3RpbmciLCJzaWQiOiJhZThjYzZkZC00ZDIyLTQ4ZGItODE2ZC0yZjQ4MDk2MTcyMDIiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1ldmVudC10aWNrZXRpbmciLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJncm91cF9tZW1iZXJzaGlwIGludGVybmFsLWFwaSIsInVzZXJfZ3JvdXBzIjpbIi9UaWVycy9QUk8iLCIvUGVybWlzc2lvbnMvVXNlcnMiXX0.hzot9D-x5LcFfIHeLyVFbfe1wvmmXpHpZwSQWStRujLJZ1Io78jxOtFcUcWQ6MLmQSLuudFajngpcwfiiYhhyekmDE2NqaXX-tGBF6cFiSPoGDnyaRIf5_5p-aPm9tJ6HvfgaMPZ0_oECQh1twQhIXOFjUp5VKS0s1usnfgPTpi85U0tD3-iavCydBccARqcfngRnXoUOC9vebExVUCOKFdn37DfCoR6lQpdcZd66HwCeWnAyAfuzI1FUB0wd0jH8WT0hK_0WiE-ZkwagZEQ2GWib_NVo3H2IyWQZNB07Ml3GbF2vXxAd9SywnhefKXA-9TkqPjaIRuYftluy8zxlQ",
+            "expires_at": 1761150389901,
+            "expires_in": 600
+        },
+        "seats": [
+            "79cd17f8-e160-4e8b-9c8a-aefb59ee287a",
+            "70910468-5a2d-4b0b-88d9-1427ae167237",
+            "af24bb02-ad5a-4fda-9810-aa54bf86c840",
+            "57c2fbf6-52de-4eaf-bc16-d335a9f9b54a",
+            "b583919f-d650-460b-af24-2864c9acf791",
+            "d6aafba3-1d91-463a-8320-4671c8b00912",
+            "f6b7a2ce-219b-49fb-a105-9609613ef1ca",
+            "b2df57f9-1229-4e60-a92e-c364c0e5c9e6",
+            "a2858ab4-05a0-45e1-894c-fbf7e50b71c1",
+            "c1c8a266-6118-4ac4-a9ae-7c84914460c4",
+            "aecf880d-b9b9-4d15-b864-2ed786822933",
+            "1231d06a-d5c9-49bb-9a26-29f3a313d6f1",
+            "87766d31-439f-406c-aa4d-6f2e0d17f1a2",
+            "7ed51c1e-0c01-4d3e-a91d-ef0cdbe1e1b1",
+            "3c6cf1f2-1fcc-44e3-b4b6-03827016fec2",
+            "24162129-e174-439e-a68f-676c5bcd75b8"
+        ]
+    }
+}

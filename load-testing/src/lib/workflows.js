@@ -116,7 +116,7 @@ export function simulateTicketPurchaseQueryFlow(authToken, { trends } = {}) {
   }
 
   if (!eventId) {
-  eventId = ensureId(searchData.content[0]?.id, 'event id from search');
+    eventId = ensureId(searchData.content[0]?.id, 'event id from search');
   }
 
   sleep(Math.random() * 3 + 2);
@@ -237,6 +237,7 @@ export function simulateOrderStressFlow(authToken, seatId, { metrics } = {}) {
       'Content-Type': 'application/json',
     },
     timeout: '10s',
+    responseCallback: http.expectedStatuses(200, 201, 400),
   };
 
   const response = http.post(baseUrl, JSON.stringify(payload), params);
@@ -247,7 +248,7 @@ export function simulateOrderStressFlow(authToken, seatId, { metrics } = {}) {
 
   let responseBody;
   let isJsonResponse = false;
-  
+
   try {
     if (response.body && response.body.trim()) {
       responseBody = JSON.parse(response.body);
@@ -328,7 +329,7 @@ export function simulateOrderServiceFlow(authToken, { metrics } = {}) {
 
   let responseBody;
   let isJsonResponse = false;
-  
+
   try {
     if (response.body && response.body.trim()) {
       responseBody = JSON.parse(response.body);
@@ -350,8 +351,8 @@ export function simulateOrderServiceFlow(authToken, { metrics } = {}) {
 
   if (__VU <= 3 || __ENV.SCENARIO === 'debug') {
     if (!success) {
-      const errorMsg = isJsonResponse 
-        ? JSON.stringify(responseBody) 
+      const errorMsg = isJsonResponse
+        ? JSON.stringify(responseBody)
         : responseBody.message || response.body;
       console.warn(`Order attempt failed (${response.status}): ${errorMsg}`);
     } else if (responseBody?.order_id) {

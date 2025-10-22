@@ -3,7 +3,7 @@
 // Considers both successful bookings (201) and seat-locked responses (400) as expected outcomes
 
 const parsedVUs = Number(__ENV.ORDER_STRESS_VUS);
-const defaultVUs = Number.isFinite(parsedVUs) && parsedVUs > 0 ? parsedVUs : 50;
+const defaultVUs = Number.isFinite(parsedVUs) && parsedVUs > 0 ? parsedVUs : 100;
 
 export const orderStressScenario = {
   executor: 'ramping-vus',

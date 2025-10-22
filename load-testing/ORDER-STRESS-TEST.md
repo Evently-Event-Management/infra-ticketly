@@ -48,7 +48,7 @@ Response time p95:    <3000ms
 # Development environment
 ./run-order-stress-test.sh dev
 
-# Custom VU count (100 VUs base, 150 VUs peak)
+# Custom VU count (100 VUs base, 200 VUs peak)
 ORDER_STRESS_VUS=100 ./run-order-stress-test.sh prod
 
 # Cloud execution
