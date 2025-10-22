@@ -140,7 +140,7 @@ spec:
                   key: GOOGLE_PRIVATE_KEY_ID
           resources:
             requests:
-              cpu: 600m
+              cpu: 500m
               memory: 750Mi
             limits:
               cpu: 1000m

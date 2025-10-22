@@ -110,3 +110,9 @@ output "infra_private_ip" {
   description = "Private IP address for the infrastructure services node."
   value       = aws_instance.infra.private_ip
 }
+
+
+output "rds_port_foward_ssh_command" {
+  description = "SSH command to set up port forwarding to the RDS instance."
+  value       = "ssh -i ${path.module}/ticketly-key -L 5432:${aws_db_instance.ticketly_db.address}:${aws_db_instance.ticketly_db.port} ubuntu@${aws_instance.control_plane.public_ip}"
+}
