@@ -1,0 +1,130 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: microservices-daily-restart
+  namespace: ticketly
+  labels:
+    app: microservices-restart
+    purpose: maintenance
+spec:
+  # Schedule: Midnight Sri Lanka Time (UTC+5:30)
+  # 18:30 UTC = 00:00 IST (Sri Lanka Time)
+  schedule: "30 18 * * *"
+  
+  # Keep last 3 successful and 1 failed job for debugging
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  
+  # Timezone support (requires Kubernetes 1.25+)
+  timeZone: "Asia/Colombo"
+  
+  # Concurrency policy - don't allow overlapping restarts
+  concurrencyPolicy: Forbid
+  
+  # If job fails, retry up to 2 times
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      # Jobs should complete within 10 minutes
+      activeDeadlineSeconds: 600
+      
+      template:
+        metadata:
+          labels:
+            app: microservices-restart
+            job-type: scheduled-maintenance
+        spec:
+          serviceAccountName: deployment-restarter
+          restartPolicy: OnFailure
+          
+          containers:
+            - name: kubectl-restarter
+              image: bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+                  
+                  echo "=========================================="
+                  echo "Starting microservices rollout restart"
+                  echo "Time: $(date)"
+                  echo "=========================================="
+                  echo ""
+                  
+                  # List of deployments to restart
+                  DEPLOYMENTS=(
+                    "event-command-service"
+                    "event-query-service"
+                    "order-service"
+                    "scheduler-service"
+                  )
+                  
+                  # Track success/failure
+                  FAILED=0
+                  SUCCEEDED=0
+                  
+                  # Restart each deployment
+                  for deployment in "${DEPLOYMENTS[@]}"; do
+                    echo "┌─────────────────────────────────────────"
+                    echo "│ Restarting: $deployment"
+                    echo "└─────────────────────────────────────────"
+                    
+                    # Check if deployment exists
+                    if ! kubectl get deployment "$deployment" -n ticketly &>/dev/null; then
+                      echo "⚠️  WARNING: Deployment '$deployment' not found. Skipping..."
+                      echo ""
+                      continue
+                    fi
+                    
+                    # Perform rollout restart
+                    if kubectl rollout restart deployment/"$deployment" -n ticketly; then
+                      echo "✓ Initiated restart for $deployment"
+                      
+                      # Wait for rollout to complete (timeout: 5 minutes)
+                      if kubectl rollout status deployment/"$deployment" -n ticketly --timeout=5m; then
+                        echo "✓ Successfully restarted $deployment"
+                        ((SUCCEEDED++))
+                      else
+                        echo "✗ Failed to complete rollout for $deployment"
+                        ((FAILED++))
+                      fi
+                    else
+                      echo "✗ Failed to initiate restart for $deployment"
+                      ((FAILED++))
+                    fi
+                    
+                    echo ""
+                    # Brief pause between restarts to avoid overwhelming the cluster
+                    sleep 10
+                  done
+                  
+                  echo "=========================================="
+                  echo "Restart Summary"
+                  echo "=========================================="
+                  echo "Succeeded: $SUCCEEDED"
+                  echo "Failed: $FAILED"
+                  echo "Completed at: $(date)"
+                  echo "=========================================="
+                  
+                  # Exit with error if any deployment failed
+                  if [ "$FAILED" -gt 0 ]; then
+                    echo ""
+                    echo "❌ Some deployments failed to restart"
+                    exit 1
+                  fi
+                  
+                  echo ""
+                  echo "✅ All deployments restarted successfully"
+                  exit 0
+              
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
