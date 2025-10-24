@@ -61,19 +61,19 @@ services:
       retries: 10
 
   # Kafka UI for easy topic management and message browsing
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    ports:
-      - "9000:8080"
-    environment:
-      - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
-    depends_on:
-      kafka:
-        condition: service_healthy
-    networks:
-      - infra-net
+  # kafka-ui:
+  #   image: provectuslabs/kafka-ui:latest
+  #   container_name: kafka-ui
+  #   ports:
+  #     - "9000:8080"
+  #   environment:
+  #     - KAFKA_CLUSTERS_0_NAME=local
+  #     - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+  #   depends_on:
+  #     kafka:
+  #       condition: service_healthy
+  #   networks:
+  #     - infra-net
 
   # Debezium for Change Data Capture (CDC)
   debezium-connect:
@@ -118,15 +118,15 @@ services:
     networks:
       - infra-net
 
-  dozzle:
-    container_name: dozzle
-    image: amir20/dozzle:latest
-    volumes:
-      - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro"
-    ports:
-      - "9999:8080"
-    networks:
-      - infra-net
+  # dozzle:
+  #   container_name: dozzle
+  #   image: amir20/dozzle:latest
+  #   volumes:
+  #     - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro"
+  #   ports:
+  #     - "9999:8080"
+  #   networks:
+  #     - infra-net
 
 volumes:
   redis-data:
