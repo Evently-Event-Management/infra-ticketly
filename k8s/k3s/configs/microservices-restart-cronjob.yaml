@@ -27,15 +27,15 @@ spec:
   jobTemplate:
     spec:
       backoffLimit: 2
-      # Jobs should complete within 10 minutes
-      activeDeadlineSeconds: 600
+      # Jobs should complete within 20 minutes (4 deployments * 5min = 20min buffer)
+      activeDeadlineSeconds: 1200
       
       template:
         metadata:
           labels:
             app: microservices-restart
             job-type: scheduled-maintenance
-        spec:
+        shttps://gamma.app/signinpec:
           serviceAccountName: deployment-restarter
           restartPolicy: OnFailure
           
@@ -68,10 +68,13 @@ spec:
                   FAILED=0
                   SUCCEEDED=0
                   
-                  # Restart each deployment
+                  # Phase 1: Trigger all rollout restarts in parallel
+                  echo "Phase 1: Initiating restarts for all services..."
+                  echo ""
+                  
                   for deployment in "${DEPLOYMENTS[@]}"; do
                     echo "┌─────────────────────────────────────────"
-                    echo "│ Restarting: $deployment"
+                    echo "│ Triggering restart: $deployment"
                     echo "└─────────────────────────────────────────"
                     
                     # Check if deployment exists
@@ -81,26 +84,39 @@ spec:
                       continue
                     fi
                     
-                    # Perform rollout restart
+                    # Perform rollout restart (don't wait)
                     if kubectl rollout restart deployment/"$deployment" -n ticketly; then
                       echo "✓ Initiated restart for $deployment"
-                      
-                      # Wait for rollout to complete (timeout: 5 minutes)
-                      if kubectl rollout status deployment/"$deployment" -n ticketly --timeout=5m; then
-                        echo "✓ Successfully restarted $deployment"
-                        ((SUCCEEDED++))
-                      else
-                        echo "✗ Failed to complete rollout for $deployment"
-                        ((FAILED++))
-                      fi
                     else
                       echo "✗ Failed to initiate restart for $deployment"
                       ((FAILED++))
                     fi
-                    
                     echo ""
-                    # Brief pause between restarts to avoid overwhelming the cluster
-                    sleep 10
+                  done
+                  
+                  echo "=========================================="
+                  echo "Phase 2: Waiting for all rollouts to complete..."
+                  echo "=========================================="
+                  echo ""
+                  
+                  # Phase 2: Wait for all rollouts to complete
+                  for deployment in "${DEPLOYMENTS[@]}"; do
+                    # Skip if deployment doesn't exist
+                    if ! kubectl get deployment "$deployment" -n ticketly &>/dev/null; then
+                      continue
+                    fi
+                    
+                    echo "Waiting for: $deployment"
+                    
+                    # Wait for rollout to complete (timeout: 3 minutes per service)
+                    if kubectl rollout status deployment/"$deployment" -n ticketly --timeout=3m; then
+                      echo "✓ Successfully restarted $deployment"
+                      ((SUCCEEDED++))
+                    else
+                      echo "✗ Failed to complete rollout for $deployment (timeout or error)"
+                      ((FAILED++))
+                    fi
+                    echo ""
                   done
                   
                   echo "=========================================="
