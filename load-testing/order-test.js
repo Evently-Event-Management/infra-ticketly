@@ -31,9 +31,10 @@ export const options = {
   },
   thresholds: {
     'http_req_duration': ['p(95)<2000'],
-    'http_req_failed': ['rate<0.99'], // Most should fail due to contention
+    'http_req_failed': ['rate<1.0'], // Allow up to 100% failures (race condition test - most should fail)
     'order_request': ['p(95)<2000'],
-    'order_success': ['rate>0'], // At least one should succeed
+    'order_success': ['rate>0'], // At least one should succeed per seat
+    'successful_bookings': ['count>0'], // Verify at least some bookings succeeded
   }
 };
 
@@ -171,16 +172,19 @@ export function teardown(data) {
   const totalRequests = seats.length * totalVUs;
   const expectedSuccesses = seats.length;
   const expectedFailures = totalRequests - expectedSuccesses;
+  const expectedFailureRate = ((expectedFailures / totalRequests) * 100).toFixed(2);
   
   console.log('\n========================================');
   console.log('Order Race Test Results Summary');
   console.log('========================================');
   console.log(`Total VUs: ${totalVUs}`);
   console.log(`Total seats tested: ${seats.length}`);
-  console.log(`Total requests: ${totalRequests}`);
+  console.log(`Total order requests: ${totalRequests}`);
+  console.log(`Total http requests: ${totalRequests + 1} (includes 1 auth request)`);
   console.log('----------------------------------------');
   console.log(`Expected successes: ${expectedSuccesses} (1 per seat)`);
   console.log(`Expected failures: ${expectedFailures} (${totalVUs - 1} per seat)`);
+  console.log(`Expected failure rate: ${expectedFailureRate}%`);
   console.log('========================================');
   console.log('Execution pattern:');
   console.log(`  1. Spawn ${totalVUs} VUs`);
@@ -194,6 +198,7 @@ export function teardown(data) {
   console.log('Metrics to verify:');
   console.log(`  ✓ successful_bookings = ${expectedSuccesses}`);
   console.log(`  ✗ failed_bookings = ${expectedFailures}`);
+  console.log(`  📊 http_req_failed rate ≈ ${expectedFailureRate}% (expected)`);
   console.log('  📊 Failure breakdown by status code:');
   console.log('     - seat_locked_400 (seat already locked/booked)');
   console.log('     - conflict_409 (conflict response)');
