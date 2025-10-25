@@ -6,6 +6,12 @@ resource "aws_lb" "cluster" {
   subnets            = aws_subnet.public[*].id
   idle_timeout       = 600
 
+  # Enable HTTP/2 for better performance with large uploads
+  enable_http2 = true
+
+  # Disable request desync mitigation mode that can interfere with multipart uploads
+  desync_mitigation_mode = "monitor"
+
   tags = {
     Name        = "ticketly-cluster-alb"
     Environment = terraform.workspace
@@ -90,6 +96,53 @@ resource "aws_wafv2_web_acl" "alb" {
     sampled_requests_enabled   = true
   }
 
+  # Custom rule to allow large bodies for specific endpoints
+  rule {
+    name     = "AllowLargeBodyForImageUploads"
+    priority = 0
+
+    action {
+      allow {}
+    }
+
+    statement {
+      or_statement {
+        statement {
+          byte_match_statement {
+            search_string         = "/api/event-seating/v1/organizations/"
+            positional_constraint = "CONTAINS"
+            field_to_match {
+              uri_path {}
+            }
+            text_transformation {
+              priority = 0
+              type     = "NONE"
+            }
+          }
+        }
+        statement {
+          byte_match_statement {
+            search_string         = "/api/event-seating/v1/events"
+            positional_constraint = "CONTAINS"
+            field_to_match {
+              uri_path {}
+            }
+            text_transformation {
+              priority = 0
+              type     = "NONE"
+            }
+          }
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "allowLargeBodyForImageUploads"
+      sampled_requests_enabled   = true
+    }
+  }
+
   rule {
     name     = "AWS-AWSManagedRulesCommonRuleSet"
     priority = 1
@@ -102,6 +155,21 @@ resource "aws_wafv2_web_acl" "alb" {
       managed_rule_group_statement {
         name        = "AWSManagedRulesCommonRuleSet"
         vendor_name = "AWS"
+
+        # Exclude rules that block large request bodies
+        rule_action_override {
+          action_to_use {
+            allow {}
+          }
+          name = "SizeRestrictions_BODY"
+        }
+
+        rule_action_override {
+          action_to_use {
+            allow {}
+          }
+          name = "GenericRFI_BODY"
+        }
       }
     }
 
