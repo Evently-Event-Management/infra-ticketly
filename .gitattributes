@@ -1,0 +1,3 @@
+# Ignore generated HTML and JSON files in language statistics
+*.html linguist-generated=true
+*.json linguist-generated=true
