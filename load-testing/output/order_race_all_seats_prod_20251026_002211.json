@@ -1,0 +1,179 @@
+{
+    "setup_data": {
+        "seats": [
+            "79cd17f8-e160-4e8b-9c8a-aefb59ee287a",
+            "70910468-5a2d-4b0b-88d9-1427ae167237",
+            "af24bb02-ad5a-4fda-9810-aa54bf86c840",
+            "57c2fbf6-52de-4eaf-bc16-d335a9f9b54a",
+            "b583919f-d650-460b-af24-2864c9acf791",
+            "d6aafba3-1d91-463a-8320-4671c8b00912",
+            "f6b7a2ce-219b-49fb-a105-9609613ef1ca",
+            "b2df57f9-1229-4e60-a92e-c364c0e5c9e6",
+            "a2858ab4-05a0-45e1-894c-fbf7e50b71c1",
+            "c1c8a266-6118-4ac4-a9ae-7c84914460c4",
+            "aecf880d-b9b9-4d15-b864-2ed786822933",
+            "1231d06a-d5c9-49bb-9a26-29f3a313d6f1",
+            "87766d31-439f-406c-aa4d-6f2e0d17f1a2",
+            "7ed51c1e-0c01-4d3e-a91d-ef0cdbe1e1b1",
+            "3c6cf1f2-1fcc-44e3-b4b6-03827016fec2",
+            "24162129-e174-439e-a68f-676c5bcd75b8"
+        ],
+        "tokenData": {
+            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ2N2JYX3RuankyNWMzUzF3VWRmV2Nlcmt0THVZazhYTEszcWJjamhKME9vIn0.eyJleHAiOjE3NjE0Mzg3MzIsImlhdCI6MTc2MTQzODEzMiwianRpIjoib25ydHJvOjQ5MjFjNmU1LTVkYTMtNDA3Mi05MjExLTQ2ZDBhNDIzZDY4NiIsImlzcyI6Imh0dHBzOi8vYXV0aC5kcGl5dW1hbC5tZS9yZWFsbXMvZXZlbnQtdGlja2V0aW5nIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjUyMTNlNGU4LWU0NjktNGY1ZS05ZDNhLTY0OTY5ZTExNDYyNSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImxvZ2luLXRlc3RpbmciLCJzaWQiOiJiZDI1MzU4Ny1jODdkLTQxNWQtYTU2My0wOGVjYzIyYTNlZmIiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1ldmVudC10aWNrZXRpbmciLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJncm91cF9tZW1iZXJzaGlwIGludGVybmFsLWFwaSIsInVzZXJfZ3JvdXBzIjpbIi9UaWVycy9QUk8iLCIvUGVybWlzc2lvbnMvVXNlcnMiXX0.a3NCrkGnPmeqMjtYaCKkS_skuvLZFb4ozn97hxevQT8oMOuyTGiRWADjRltcWgXMDTKXHqXQUL4t4cutG0nyNCiqYRSrpQjFLEbMUNqTkFyjjN7QU71Xe144rieJ24YWad-tCxgdgBP3fLkrM8NpJIBLrNE8sMhgO_ptiBRuXtMr11hypfoEEmYKUQh895qctXlyVxB8WHk-oa4k9HhEIoyHYFpcy0RZ_gu-7ceaqKoMzc_7T4g5EjcOUshkAxJtN9t6xT31u7NIFCmxrBZB_KKzIUkakVskkjtavnKO-5_P9559XIWhYsZ63XeNwyknMv57BPUjAubZ_85IZ1oLKw",
+            "expires_at": 1761438702326,
+            "expires_in": 600
+        }
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {}
+    },
+    "metrics": {
+        "http_req_sending": {
+            "avg": 0.07126756177738913,
+            "min": 0.022665,
+            "med": 0.048017,
+            "max": 6.935447,
+            "p(90)": 0.102967,
+            "p(95)": 0.148281
+        },
+        "failed_bookings": {
+            "rate": 476.9961140069304,
+            "count": 15984
+        },
+        "http_req_receiving": {
+            "p(90)": 0.105087,
+            "p(95)": 0.178908,
+            "avg": 0.07215595869008196,
+            "min": 0.012758,
+            "med": 0.044502,
+            "max": 7.666589
+        },
+        "http_reqs": {
+            "count": 16001,
+            "rate": 477.5034296937496
+        },
+        "data_received": {
+            "count": 8693741,
+            "rate": 259439.4815554758
+        },
+        "seat_locked_400": {
+            "rate": 476.9961140069304,
+            "count": 15984
+        },
+        "successful_bookings": {
+            "count": 16,
+            "rate": 0.4774735875945249,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "iteration_duration": {
+            "max": 4104.93793,
+            "p(90)": 2066.1692263,
+            "p(95)": 2148.9368346499996,
+            "avg": 1958.0387482654883,
+            "min": 463.062426,
+            "med": 2007.977959
+        },
+        "http_req_waiting": {
+            "avg": 58.83448492156741,
+            "min": 4.336888,
+            "med": 7.727577,
+            "max": 2347.374122,
+            "p(90)": 167.406558,
+            "p(95)": 364.972612
+        },
+        "order_request": {
+            "avg": 58.97037900712467,
+            "min": 4.414673,
+            "med": 7.854618,
+            "max": 2347.570747,
+            "p(90)": 167.32229780000006,
+            "p(95)": 365.0680702499998,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_req_blocked": {
+            "avg": 23.562289342416147,
+            "min": 0.000171,
+            "med": 0.000372,
+            "max": 876.957034,
+            "p(90)": 0.000493,
+            "p(95)": 249.989085
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 2066.393502,
+            "max": 2347.570747,
+            "p(90)": 2099.6108424,
+            "p(95)": 2153.0423198,
+            "avg": 1978.7713885294118,
+            "min": 179.448867
+        },
+        "http_req_duration": {
+            "p(95)": 365.053177,
+            "avg": 58.97790844203454,
+            "min": 4.414673,
+            "med": 7.854689,
+            "max": 2347.570747,
+            "p(90)": 167.51297,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "data_sent": {
+            "count": 6306662,
+            "rate": 188204.03318037884
+        },
+        "http_req_tls_handshaking": {
+            "max": 682.079029,
+            "p(90)": 0,
+            "p(95)": 96.162114,
+            "avg": 12.061149792262993,
+            "min": 0,
+            "med": 0
+        },
+        "iterations": {
+            "count": 16000,
+            "rate": 477.47358759452493
+        },
+        "vus": {
+            "value": 2,
+            "min": 2,
+            "max": 1000
+        },
+        "http_req_failed": {
+            "passes": 15984,
+            "fails": 17,
+            "thresholds": {
+                "rate<1.0": false
+            },
+            "value": 0.9989375664020999
+        },
+        "http_req_connecting": {
+            "avg": 3.5673272521717374,
+            "min": 0,
+            "med": 0,
+            "max": 95.408511,
+            "p(90)": 0,
+            "p(95)": 45.360577
+        },
+        "order_success": {
+            "fails": 15984,
+            "passes": 16,
+            "thresholds": {
+                "rate>0": false
+            },
+            "value": 0.001
+        },
+        "vus_max": {
+            "value": 1000,
+            "min": 1000,
+            "max": 1000
+        }
+    }
+}
