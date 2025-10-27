@@ -26,7 +26,7 @@ resource "aws_db_instance" "ticketly_db" {
   instance_class         = "db.t3.micro"
   username               = var.rds_user
   password               = var.rds_password
-  allocated_storage      = 20
+  allocated_storage      = 22
   parameter_group_name   = aws_db_parameter_group.ticketly_logical_replication.name
   vpc_security_group_ids = [aws_security_group.database.id]
   db_subnet_group_name   = aws_db_subnet_group.ticketly.name
